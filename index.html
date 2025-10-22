@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我が家 - 家族専用ホームページ</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FB923C">
+</head>
+<body>
+    <!-- ログイン画面 -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="login-icon">🏠</div>
+            <h1>我が家</h1>
+            <p class="login-subtitle">家族専用ホームページ</p>
+            <button id="loginBtn" class="btn-primary">ログイン</button>
+            <button id="settingsBtn" class="btn-text">⚙️ 初期設定</button>
+            <p class="login-note">※ 許可されたメールアドレスのみアクセスできます</p>
+        </div>
+    </div>
+
+    <!-- メインアプリ -->
+    <div id="mainApp" class="main-app" style="display: none;">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-content">
+                <div>
+                    <h1>🏠 我が家</h1>
+                    <p class="header-user" id="userName"></p>
+                </div>
+                <div class="header-actions">
+                    <button id="headerSettingsBtn" class="icon-btn">⚙️</button>
+                    <button id="logoutBtn" class="icon-btn">🚪</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content">
+            <!-- ベスト写真 -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>📷 ベスト写真</h2>
+                    <label class="btn-add">
+                        ➕ 追加
+                        <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
+                    </label>
+                </div>
+                <div class="month-selector">
+                    <button id="prevMonth" class="month-btn">◀</button>
+                    <div id="currentMonth" class="month-display"></div>
+                    <button id="nextMonth" class="month-btn">▶</button>
+                </div>
+                <div id="photoGrid" class="photo-grid"></div>
+            </section>
+
+            <!-- カレンダー -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>📅 予定</h2>
+                </div>
+                <div class="calendar-tabs">
+                    <button class="cal-tab active" data-view="today">今日</button>
+                    <button class="cal-tab" data-view="week">今週</button>
+                    <button class="cal-tab" data-view="month">今月</button>
+                </div>
+                <div id="calendarEvents" class="calendar-events"></div>
+            </section>
+
+            <!-- お知らせ -->
+            <section class="card">
+                <div class="card-header">
+                    <h2>🔔 保育園のお知らせ</h2>
+                    <button id="addNoticeBtn" class="btn-add">➕ 追加</button>
+                </div>
+                <div id="noticeList" class="notice-list"></div>
+            </section>
+        </main>
+
+        <!-- フッター -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-header">
+                    <h3>📞 連絡先</h3>
+                    <button id="addContactBtn" class="btn-add-white">➕ 追加</button>
+                </div>
+                <div id="contactList" class="contact-list"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 設定モーダル -->
+    <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>設定</h3>
+            
+            <!-- 許可メールアドレス -->
+            <div class="settings-section">
+                <h4>許可するメールアドレス</h4>
+                <div class="email-input-group">
+                    <input type="email" id="emailInput" placeholder="example@gmail.com">
+                    <button id="addEmailBtn" class="btn-small">追加</button>
+                </div>
+                <div id="emailList" class="email-list"></div>
+                <p class="note">※ 空の場合は全てのメールアドレスを許可</p>
+            </div>
+
+            <!-- Firebase設定 -->
+            <div class="settings-section">
+                <h4>Firebase設定</h4>
+                <input type="text" id="firebaseApiKey" placeholder="API Key">
+                <input type="text" id="firebaseAuthDomain" placeholder="Auth Domain">
+                <input type="text" id="firebaseProjectId" placeholder="Project ID">
+                <input type="text" id="firebaseStorageBucket" placeholder="Storage Bucket">
+            </div>
+
+            <!-- Google Calendar設定 -->
+            <div class="settings-section">
+                <h4>Google Calendar設定</h4>
+                <input type="text" id="calendarApiKey" placeholder="API Key">
+                <input type="text" id="calendarId" placeholder="Calendar ID (primary)">
+                <p class="note">通常は "primary" のままでOK</p>
+            </div>
+
+            <div class="modal-actions">
+                <button id="saveSettingsBtn" class="btn-primary">保存</button>
+                <button id="closeSettingsBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 連絡先追加モーダル -->
+    <div id="contactModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>連絡先を追加</h3>
+            <input type="text" id="contactName" placeholder="例: ○○保育園">
+            <input type="tel" id="contactPhone" placeholder="例: 03-1234-5678">
+            <div class="modal-actions">
+                <button id="saveContactBtn" class="btn-primary">追加</button>
+                <button id="closeContactBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- お知らせ追加モーダル -->
+    <div id="noticeModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>お知らせを追加</h3>
+            <input type="text" id="noticeTitle" placeholder="例: 運動会のお知らせ">
+            <textarea id="noticeContent" placeholder="お知らせの内容"></textarea>
+            <input type="file" id="noticeImage" accept="image/*">
+            <div id="noticeImagePreview"></div>
+            <div class="modal-actions">
+                <button id="saveNoticeBtn" class="btn-primary-blue">追加</button>
+                <button id="closeNoticeBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
