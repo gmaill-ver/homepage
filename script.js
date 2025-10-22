@@ -29,6 +29,68 @@ let calendarView = 'today';
 const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
 
 // ==========================================
+// 画像圧縮ユーティリティ
+// ==========================================
+
+/**
+ * 画像を圧縮する
+ * @param {File} file - 元の画像ファイル
+ * @param {number} maxWidth - 最大幅（デフォルト: 1920px）
+ * @param {number} maxHeight - 最大高さ（デフォルト: 1920px）
+ * @param {number} quality - JPEG品質 0-1（デフォルト: 0.8）
+ * @returns {Promise<Blob>} 圧縮された画像Blob
+ */
+async function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const img = new Image();
+
+            img.onload = () => {
+                // アスペクト比を保ったままリサイズ
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width = Math.floor(width * ratio);
+                    height = Math.floor(height * ratio);
+                }
+
+                // Canvas で画像をリサイズ
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Blob に変換
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            console.log(`圧縮完了: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(blob.size / 1024 / 1024).toFixed(2)}MB`);
+                            resolve(blob);
+                        } else {
+                            reject(new Error('画像圧縮に失敗しました'));
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+
+            img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+            img.src = e.target.result;
+        };
+
+        reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました'));
+        reader.readAsDataURL(file);
+    });
+}
+
+// ==========================================
 // Firebase Authentication
 // ==========================================
 
@@ -283,13 +345,18 @@ async function uploadPhotos(files) {
 
     try {
         for (const file of Array.from(files)) {
+            // 画像を圧縮（1920px, 品質80%）
+            const compressedBlob = await compressImage(file, 1920, 1920, 0.8);
+
             // ファイル名を生成
             const timestamp = Date.now();
-            const fileName = `photos/${monthKey}/${timestamp}_${file.name}`;
+            const fileName = `photos/${monthKey}/${timestamp}_${file.name.replace(/\.[^/.]+$/, '')}.jpg`;
 
-            // Storageにアップロード
+            // Storageにアップロード（圧縮後の画像）
             const storageRef = storage.ref(fileName);
-            await storageRef.put(file);
+            await storageRef.put(compressedBlob, {
+                contentType: 'image/jpeg'
+            });
 
             // ダウンロードURL取得
             const url = await storageRef.getDownloadURL();
@@ -556,11 +623,17 @@ async function addNotice() {
         // 画像がある場合はStorageにアップロード
         if (imageInput.files.length > 0) {
             const file = imageInput.files[0];
+
+            // 画像を圧縮（1920px, 品質80%）
+            const compressedBlob = await compressImage(file, 1920, 1920, 0.8);
+
             const timestamp = Date.now();
-            const fileName = `notices/${timestamp}_${file.name}`;
+            const fileName = `notices/${timestamp}_${file.name.replace(/\.[^/.]+$/, '')}.jpg`;
 
             const storageRef = storage.ref(fileName);
-            await storageRef.put(file);
+            await storageRef.put(compressedBlob, {
+                contentType: 'image/jpeg'
+            });
             imageUrl = await storageRef.getDownloadURL();
         }
 
