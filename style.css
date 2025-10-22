@@ -1,0 +1,592 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #FFF7ED 0%, #FCE7F3 50%, #FEF9C3 100%);
+    min-height: 100vh;
+}
+
+/* ログイン画面 */
+.login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.login-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.login-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.login-card h1 {
+    font-size: 2rem;
+    color: #1F2937;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: #6B7280;
+    margin-bottom: 2rem;
+}
+
+.login-note {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    color: #9CA3AF;
+}
+
+/* ヘッダー */
+.header {
+    background: linear-gradient(to right, #FB923C, #F472B6);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.header-user {
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* メインコンテンツ */
+.main-content {
+    padding: 1rem;
+}
+
+.card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.card h2 {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #1F2937;
+}
+
+/* ボタン */
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(to right, #FB923C, #F472B6);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-text {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #6B7280;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.btn-text:hover {
+    color: #1F2937;
+}
+
+.btn-add {
+    background: #FB923C;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-add-white {
+    background: white;
+    color: #FB923C;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-small {
+    background: #FB923C;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    flex: 1;
+    background: #E5E7EB;
+    color: #374151;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary-blue {
+    flex: 1;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* 月選択 */
+.month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #FFF7ED;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.month-btn {
+    background: white;
+    border: none;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.month-display {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #EA580C;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* 写真グリッド */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.photo-item {
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+
+.photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #EF4444;
+    color: white;
+    border: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9CA3AF;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    opacity: 0.3;
+    margin-bottom: 0.75rem;
+}
+
+/* カレンダー */
+.calendar-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.cal-tab {
+    flex: 1;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: #F3E8FF;
+    color: #7C3AED;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.cal-tab.active {
+    background: #7C3AED;
+    color: white;
+}
+
+.calendar-events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.event-item {
+    border: 2px solid #E9D5FF;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    display: flex;
+    gap: 0.75rem;
+}
+
+.event-date {
+    background: #F3E8FF;
+    color: #7C3AED;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.event-info h3 {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #1F2937;
+    margin-bottom: 0.25rem;
+}
+
+.event-info p {
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+/* お知らせ */
+.notice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notice-item {
+    border: 2px solid #DBEAFE;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.notice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.notice-title {
+    font-weight: bold;
+    color: #1F2937;
+    flex: 1;
+}
+
+.notice-delete {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+
+.notice-content {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin-bottom: 0.5rem;
+}
+
+.notice-date {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+}
+
+.notice-image {
+    margin-top: 0.75rem;
+    border-radius: 0.5rem;
+    max-width: 100%;
+}
+
+/* フッター */
+.footer {
+    background: linear-gradient(to right, #FB923C, #F472B6);
+    color: white;
+    padding: 1.5rem 1rem;
+}
+
+.footer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.footer h3 {
+    font-size: 1.125rem;
+    font-weight: bold;
+}
+
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.contact-item {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    position: relative;
+}
+
+.contact-delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #EF4444;
+    color: white;
+    border: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.contact-name {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.contact-phone {
+    color: white;
+    text-decoration: none;
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.contact-empty {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+}
+
+/* モーダル */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-small {
+    max-width: 350px;
+}
+
+.modal-content h3 {
+    font-size: 1.125rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.settings-section {
+    margin-bottom: 1.5rem;
+}
+
+.settings-section h4 {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.modal-content textarea {
+    min-height: 8rem;
+    resize: vertical;
+}
+
+.email-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.email-input-group input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.email-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.email-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #F9FAFB;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.email-remove {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.note {
+    font-size: 0.75rem;
+    color: #6B7280;
+    margin-top: 0.25rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+#noticeImagePreview {
+    margin-top: 0.5rem;
+}
+
+#noticeImagePreview img {
+    width: 100%;
+    height: 10rem;
+    object-fit: cover;
+    border-radius: 0.5rem;
+}
