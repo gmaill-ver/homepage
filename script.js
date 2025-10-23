@@ -314,6 +314,7 @@ function showMainApp() {
     renderCalendar();
     renderNotices();
     renderContacts();
+    renderInsurances();
     updateMonthDisplay();
 }
 
@@ -808,6 +809,157 @@ async function deleteContact(id) {
 }
 
 // ==========================================
+// カード折りたたみ機能
+// ==========================================
+function toggleCard(cardId) {
+    const card = document.getElementById(cardId);
+    const content = card.querySelector('.card-content');
+    const toggle = card.querySelector('.card-toggle');
+
+    content.classList.toggle('collapsed');
+    toggle.classList.toggle('collapsed');
+}
+
+// ==========================================
+// 保険情報機能 (Firestore)
+// ==========================================
+
+// 保険情報を表示
+async function renderInsurances() {
+    const insuranceList = document.getElementById('insuranceList');
+
+    try {
+        const snapshot = await db.collection('insurances').get();
+
+        const insurances = [];
+        snapshot.forEach(doc => {
+            insurances.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (insurances.length === 0) {
+            insuranceList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🏥</div>
+                    <p>保険情報を追加してください</p>
+                </div>
+            `;
+            return;
+        }
+
+        insuranceList.innerHTML = insurances.map(insurance => `
+            <div class="insurance-item">
+                <div class="insurance-header">
+                    <div class="insurance-name">${insurance.name}</div>
+                    <span class="insurance-status ${insurance.status}">${insurance.status === 'active' ? '加入中' : '解約済み'}</span>
+                </div>
+                <div class="insurance-info">📋 ${insurance.company}</div>
+                ${insurance.number ? `<div class="insurance-info">🔢 ${insurance.number}</div>` : ''}
+                ${insurance.premium ? `<div class="insurance-info">💰 月額 ${Number(insurance.premium).toLocaleString()}円</div>` : ''}
+                ${insurance.notes ? `<div class="insurance-info" style="margin-top: 0.5rem;">📝 ${insurance.notes}</div>` : ''}
+                <div class="insurance-actions">
+                    <button class="insurance-edit" onclick="editInsurance('${insurance.id}')">編集</button>
+                    <button class="insurance-delete" onclick="deleteInsurance('${insurance.id}')">削除</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('保険情報読み込みエラー:', error);
+        insuranceList.innerHTML = `
+            <div class="empty-state">
+                <p>保険情報の読み込みに失敗しました</p>
+            </div>
+        `;
+    }
+}
+
+// 保険を追加/編集
+async function saveInsurance() {
+    const id = document.getElementById('insuranceId').value;
+    const name = document.getElementById('insuranceName').value;
+    const company = document.getElementById('insuranceCompany').value;
+    const number = document.getElementById('insuranceNumber').value;
+    const premium = document.getElementById('insurancePremium').value;
+    const status = document.getElementById('insuranceStatus').value;
+    const notes = document.getElementById('insuranceNotes').value;
+
+    if (!name || !company) {
+        alert('保険名と保険会社を入力してください');
+        return;
+    }
+
+    try {
+        const data = {
+            name,
+            company,
+            number,
+            premium: premium ? Number(premium) : null,
+            status,
+            notes
+        };
+
+        if (id) {
+            // 編集
+            await db.collection('insurances').doc(id).update(data);
+        } else {
+            // 新規追加
+            await db.collection('insurances').add(data);
+        }
+
+        // フォームをリセット
+        document.getElementById('insuranceId').value = '';
+        document.getElementById('insuranceName').value = '';
+        document.getElementById('insuranceCompany').value = '';
+        document.getElementById('insuranceNumber').value = '';
+        document.getElementById('insurancePremium').value = '';
+        document.getElementById('insuranceStatus').value = 'active';
+        document.getElementById('insuranceNotes').value = '';
+
+        closeModal('insuranceModal');
+        renderInsurances();
+    } catch (error) {
+        console.error('保険情報保存エラー:', error);
+        alert('保険情報の保存に失敗しました');
+    }
+}
+
+// 保険を編集
+async function editInsurance(id) {
+    try {
+        const doc = await db.collection('insurances').doc(id).get();
+        if (!doc.exists) return;
+
+        const insurance = doc.data();
+
+        document.getElementById('insuranceModalTitle').textContent = '保険を編集';
+        document.getElementById('insuranceId').value = id;
+        document.getElementById('insuranceName').value = insurance.name || '';
+        document.getElementById('insuranceCompany').value = insurance.company || '';
+        document.getElementById('insuranceNumber').value = insurance.number || '';
+        document.getElementById('insurancePremium').value = insurance.premium || '';
+        document.getElementById('insuranceStatus').value = insurance.status || 'active';
+        document.getElementById('insuranceNotes').value = insurance.notes || '';
+
+        openModal('insuranceModal');
+    } catch (error) {
+        console.error('保険情報読み込みエラー:', error);
+        alert('保険情報の読み込みに失敗しました');
+    }
+}
+
+// 保険を削除
+async function deleteInsurance(id) {
+    if (!confirm('この保険情報を削除しますか？')) return;
+
+    try {
+        await db.collection('insurances').doc(id).delete();
+        renderInsurances();
+    } catch (error) {
+        console.error('保険情報削除エラー:', error);
+        alert('保険情報の削除に失敗しました');
+    }
+}
+
+// ==========================================
 // 初期化
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -852,6 +1004,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addContactBtn').addEventListener('click', () => openModal('contactModal'));
     document.getElementById('saveContactBtn').addEventListener('click', addContact);
     document.getElementById('closeContactBtn').addEventListener('click', () => closeModal('contactModal'));
+
+    // 保険
+    document.getElementById('addInsuranceBtn').addEventListener('click', () => {
+        document.getElementById('insuranceModalTitle').textContent = '保険を追加';
+        document.getElementById('insuranceId').value = '';
+        document.getElementById('insuranceName').value = '';
+        document.getElementById('insuranceCompany').value = '';
+        document.getElementById('insuranceNumber').value = '';
+        document.getElementById('insurancePremium').value = '';
+        document.getElementById('insuranceStatus').value = 'active';
+        document.getElementById('insuranceNotes').value = '';
+        openModal('insuranceModal');
+    });
+    document.getElementById('saveInsuranceBtn').addEventListener('click', saveInsurance);
+    document.getElementById('closeInsuranceBtn').addEventListener('click', () => closeModal('insuranceModal'));
 });
 
 /*

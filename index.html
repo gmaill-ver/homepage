@@ -40,42 +40,69 @@
         <!-- メインコンテンツ -->
         <main class="main-content">
             <!-- ベスト写真 -->
-            <section class="card">
-                <div class="card-header">
+            <section class="card" id="photoCard">
+                <div class="card-header" onclick="toggleCard('photoCard')">
                     <h2>📷 ベスト写真</h2>
-                    <label class="btn-add">
-                        ➕ 追加
-                        <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
-                    </label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <label class="btn-add" onclick="event.stopPropagation()">
+                            ➕ 追加
+                            <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
+                        </label>
+                        <span class="card-toggle">▼</span>
+                    </div>
                 </div>
-                <div class="month-selector">
-                    <button id="prevMonth" class="month-btn">◀</button>
-                    <div id="currentMonth" class="month-display"></div>
-                    <button id="nextMonth" class="month-btn">▶</button>
+                <div class="card-content">
+                    <div class="month-selector">
+                        <button id="prevMonth" class="month-btn">◀</button>
+                        <div id="currentMonth" class="month-display"></div>
+                        <button id="nextMonth" class="month-btn">▶</button>
+                    </div>
+                    <div id="photoGrid" class="photo-grid"></div>
                 </div>
-                <div id="photoGrid" class="photo-grid"></div>
             </section>
 
             <!-- カレンダー -->
-            <section class="card">
-                <div class="card-header">
+            <section class="card" id="calendarCard">
+                <div class="card-header" onclick="toggleCard('calendarCard')">
                     <h2>📅 予定</h2>
+                    <span class="card-toggle">▼</span>
                 </div>
-                <div class="calendar-tabs">
-                    <button class="cal-tab active" data-view="today">今日</button>
-                    <button class="cal-tab" data-view="week">今週</button>
-                    <button class="cal-tab" data-view="month">今月</button>
+                <div class="card-content">
+                    <div class="calendar-tabs">
+                        <button class="cal-tab active" data-view="today">今日</button>
+                        <button class="cal-tab" data-view="week">今週</button>
+                        <button class="cal-tab" data-view="month">今月</button>
+                    </div>
+                    <div id="calendarEvents" class="calendar-events"></div>
                 </div>
-                <div id="calendarEvents" class="calendar-events"></div>
             </section>
 
             <!-- お知らせ -->
-            <section class="card">
-                <div class="card-header">
+            <section class="card" id="noticeCard">
+                <div class="card-header" onclick="toggleCard('noticeCard')">
                     <h2>🔔 保育園のお知らせ</h2>
-                    <button id="addNoticeBtn" class="btn-add">➕ 追加</button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addNoticeBtn" class="btn-add" onclick="event.stopPropagation()">➕ 追加</button>
+                        <span class="card-toggle">▼</span>
+                    </div>
                 </div>
-                <div id="noticeList" class="notice-list"></div>
+                <div class="card-content">
+                    <div id="noticeList" class="notice-list"></div>
+                </div>
+            </section>
+
+            <!-- 保険加入状況 -->
+            <section class="card" id="insuranceCard">
+                <div class="card-header" onclick="toggleCard('insuranceCard')">
+                    <h2>🏥 保険加入状況</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addInsuranceBtn" class="btn-add" onclick="event.stopPropagation()">➕ 追加</button>
+                        <span class="card-toggle">▼</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="insuranceList" class="insurance-list"></div>
+                </div>
             </section>
         </main>
 
@@ -146,6 +173,27 @@
             <div class="modal-actions">
                 <button id="saveNoticeBtn" class="btn-primary-blue">追加</button>
                 <button id="closeNoticeBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保険追加/編集モーダル -->
+    <div id="insuranceModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3 id="insuranceModalTitle">保険を追加</h3>
+            <input type="hidden" id="insuranceId">
+            <input type="text" id="insuranceName" placeholder="例: 医療保険">
+            <input type="text" id="insuranceCompany" placeholder="例: ○○生命">
+            <input type="text" id="insuranceNumber" placeholder="証券番号">
+            <input type="number" id="insurancePremium" placeholder="月額保険料（円）">
+            <select id="insuranceStatus">
+                <option value="active">加入中</option>
+                <option value="inactive">解約済み</option>
+            </select>
+            <textarea id="insuranceNotes" placeholder="メモ・備考"></textarea>
+            <div class="modal-actions">
+                <button id="saveInsuranceBtn" class="btn-primary-blue">保存</button>
+                <button id="closeInsuranceBtn" class="btn-secondary">キャンセル</button>
             </div>
         </div>
     </div>

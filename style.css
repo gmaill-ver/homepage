@@ -116,12 +116,41 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.card-header:hover h2 {
+    color: #FB923C;
 }
 
 .card h2 {
     font-size: 1.125rem;
     font-weight: bold;
     color: #1F2937;
+    transition: color 0.2s;
+}
+
+.card-toggle {
+    font-size: 0.875rem;
+    color: #9CA3AF;
+    transition: transform 0.3s;
+}
+
+.card-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.card-content {
+    max-height: 5000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s;
+    opacity: 1;
+}
+
+.card-content.collapsed {
+    max-height: 0;
+    opacity: 0;
 }
 
 /* ボタン */
@@ -492,6 +521,82 @@ body {
     padding: 2rem;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 0.75rem;
+}
+
+/* 保険情報 */
+.insurance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.insurance-item {
+    border: 2px solid #FED7AA;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: #FFF7ED;
+}
+
+.insurance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.insurance-name {
+    font-weight: bold;
+    color: #1F2937;
+    flex: 1;
+}
+
+.insurance-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.insurance-status.active {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.insurance-status.inactive {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.insurance-info {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin-bottom: 0.25rem;
+}
+
+.insurance-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.insurance-edit {
+    background: #FB923C;
+    color: white;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.insurance-delete {
+    background: #E5E7EB;
+    color: #6B7280;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
 }
 
 /* モーダル */
