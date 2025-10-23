@@ -24,6 +24,7 @@ let currentUser = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let calendarView = 'today';
+let isLoggingIn = false; // ログイン処理中フラグ
 
 // 月の名前
 const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -96,6 +97,14 @@ async function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 
 
 // Googleログイン
 async function login() {
+    // 既にログイン処理中の場合は何もしない
+    if (isLoggingIn) {
+        console.log('ログイン処理中です');
+        return;
+    }
+
+    isLoggingIn = true;
+
     try {
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await auth.signInWithPopup(provider);
@@ -106,6 +115,7 @@ async function login() {
         if (allowedEmails.length > 0 && !allowedEmails.includes(result.user.email)) {
             alert('このメールアドレスはアクセスが許可されていません。');
             await auth.signOut();
+            isLoggingIn = false;
             return;
         }
 
@@ -113,7 +123,12 @@ async function login() {
         showMainApp();
     } catch (error) {
         console.error('ログインエラー:', error);
-        alert('ログインに失敗しました: ' + error.message);
+        // キャンセルされた場合は通知しない
+        if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+            alert('ログインに失敗しました: ' + error.message);
+        }
+    } finally {
+        isLoggingIn = false;
     }
 }
 
