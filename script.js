@@ -17,6 +17,9 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
+// 認証状態の永続化を有効化（ブラウザを閉じても保持）
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
 // ==========================================
 // グローバル変数
 // ==========================================
