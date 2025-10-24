@@ -310,6 +310,9 @@ function showMainApp() {
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
 
+    // ホームページを表示
+    switchPage('home');
+
     renderWeather();
     renderPhotos();
     renderCalendar();
@@ -475,6 +478,10 @@ async function deletePhoto(photoId) {
 
 // 天気情報APIキー
 const WEATHER_API_KEY = '2edf15f522d541879f2223518252410';
+
+// Claude API設定
+const CLAUDE_API_KEY = 'sk-ant-api03-W2J...1wAA'; // ユーザーから提供されたAPIキー
+let chatHistory = [];
 
 // 天気情報を取得して表示
 async function renderWeather() {
@@ -1005,6 +1012,178 @@ function toggleCard(cardId) {
 }
 
 // ==========================================
+// ページ切り替え機能
+// ==========================================
+function switchPage(pageName) {
+    // すべてのページを非表示
+    document.querySelectorAll('.page-content').forEach(page => {
+        page.classList.remove('active');
+        page.style.display = 'none';
+    });
+
+    // フッターの表示切り替え
+    const footer = document.querySelector('.footer');
+    if (pageName === 'home') {
+        footer.style.display = 'block';
+    } else {
+        footer.style.display = 'none';
+    }
+
+    // 選択されたページを表示
+    const selectedPage = document.getElementById(`${pageName}Page`);
+    if (selectedPage) {
+        selectedPage.classList.add('active');
+        selectedPage.style.display = 'block';
+    }
+
+    // タブのアクティブ状態を更新
+    document.querySelectorAll('.header-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    const activeTab = document.querySelector(`[data-page="${pageName}"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+}
+
+// ==========================================
+// Claude チャット機能
+// ==========================================
+
+// チャットメッセージを表示
+function addChatMessage(role, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+
+    const avatar = role === 'user' ? '👤' : '🤖';
+
+    messageDiv.innerHTML = `
+        <div class="chat-avatar">${avatar}</div>
+        <div class="chat-bubble">${formatChatMessage(content)}</div>
+    `;
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// メッセージのフォーマット（改行やコードブロックを処理）
+function formatChatMessage(text) {
+    // 改行を<br>に変換
+    let formatted = text.replace(/\n/g, '<br>');
+
+    // コードブロックを検出して整形
+    formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        return `<pre><code>${code.trim()}</code></pre>`;
+    });
+
+    return formatted;
+}
+
+// ローディング表示
+function showChatLoading() {
+    const chatMessages = document.getElementById('chatMessages');
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'chat-message assistant';
+    loadingDiv.id = 'chatLoading';
+    loadingDiv.innerHTML = `
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">
+            <div class="chat-loading">
+                <div class="chat-loading-dot"></div>
+                <div class="chat-loading-dot"></div>
+                <div class="chat-loading-dot"></div>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(loadingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// ローディング削除
+function hideChatLoading() {
+    const loading = document.getElementById('chatLoading');
+    if (loading) {
+        loading.remove();
+    }
+}
+
+// Claude APIにメッセージを送信
+async function sendChatMessage() {
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendChatBtn');
+    const message = input.value.trim();
+
+    if (!message) return;
+
+    // ユーザーメッセージを表示
+    addChatMessage('user', message);
+    input.value = '';
+
+    // 送信ボタンを無効化
+    sendBtn.disabled = true;
+
+    // 会話履歴に追加
+    chatHistory.push({
+        role: 'user',
+        content: message
+    });
+
+    try {
+        // ローディング表示
+        showChatLoading();
+
+        // Claude APIを呼び出し
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': CLAUDE_API_KEY,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 4096,
+                messages: chatHistory
+            })
+        });
+
+        hideChatLoading();
+
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const assistantMessage = data.content[0].text;
+
+        // アシスタントメッセージを表示
+        addChatMessage('assistant', assistantMessage);
+
+        // 会話履歴に追加
+        chatHistory.push({
+            role: 'assistant',
+            content: assistantMessage
+        });
+
+    } catch (error) {
+        hideChatLoading();
+        console.error('Claude API エラー:', error);
+        addChatMessage('assistant', '申し訳ございません。エラーが発生しました。もう一度お試しください。');
+    } finally {
+        sendBtn.disabled = false;
+    }
+}
+
+// Enterキーで送信（Shift+Enterで改行）
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChatMessage();
+    }
+}
+
+// ==========================================
 // 保険情報機能 (Firestore)
 // ==========================================
 
@@ -1205,6 +1384,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('saveInsuranceBtn').addEventListener('click', saveInsurance);
     document.getElementById('closeInsuranceBtn').addEventListener('click', () => closeModal('insuranceModal'));
+
+    // ページ切り替えタブ
+    document.querySelectorAll('.header-tab').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            const pageName = e.target.dataset.page;
+            switchPage(pageName);
+        });
+    });
+
+    // チャット機能
+    document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput').addEventListener('keypress', handleChatKeyPress);
 });
 
 /*

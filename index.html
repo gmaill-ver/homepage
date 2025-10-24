@@ -35,10 +35,14 @@
                     <button id="logoutBtn" class="icon-btn">🚪</button>
                 </div>
             </div>
+            <div class="header-tabs">
+                <button class="header-tab active" data-page="home">ホーム</button>
+                <button class="header-tab" data-page="chat">チャット</button>
+            </div>
         </header>
 
-        <!-- メインコンテンツ -->
-        <main class="main-content">
+        <!-- ホームページ -->
+        <main class="main-content page-content" id="homePage">
             <!-- 天気 -->
             <section class="card weather-card" id="weatherCard">
                 <div class="card-header" onclick="toggleCard('weatherCard')">
@@ -130,6 +134,24 @@
                 <div id="contactList" class="contact-list"></div>
             </div>
         </footer>
+
+        <!-- チャットページ -->
+        <main class="main-content page-content" id="chatPage" style="display: none;">
+            <section class="card chat-card">
+                <div class="card-header">
+                    <h2>💬 Claude AI チャット</h2>
+                </div>
+                <div class="card-content">
+                    <div class="chat-container">
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <textarea id="chatInput" class="chat-input" placeholder="メッセージを入力..." rows="3"></textarea>
+                            <button id="sendChatBtn" class="btn-send">送信</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <!-- 設定モーダル -->
