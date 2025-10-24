@@ -20,6 +20,9 @@ exports.chatWithClaude = functions.https.onRequest((request, response) => {
     try {
       const { messages } = request.body;
 
+      console.log('Received messages:', JSON.stringify(messages));
+      console.log('API Key (first 20 chars):', CLAUDE_API_KEY.substring(0, 20));
+
       if (!messages || !Array.isArray(messages)) {
         response.status(400).send('Invalid request: messages array required');
         return;
@@ -32,14 +35,19 @@ exports.chatWithClaude = functions.https.onRequest((request, response) => {
         messages: messages,
       });
 
+      console.log('Claude API Success');
+
       // レスポンスを返す
       response.json(message);
 
     } catch (error) {
-      console.error('Claude API Error:', error);
+      console.error('Claude API Error:', error.message);
+      console.error('Error status:', error.status);
+      console.error('Error type:', error.error?.type);
       response.status(500).json({
         error: 'Internal Server Error',
-        message: error.message
+        message: error.message,
+        type: error.error?.type
       });
     }
   });
