@@ -479,8 +479,7 @@ async function deletePhoto(photoId) {
 // 天気情報APIキー
 const WEATHER_API_KEY = '2edf15f522d541879f2223518252410';
 
-// Claude API設定
-const CLAUDE_API_KEY = 'sk-ant-api03-W2J...1wAA'; // ユーザーから提供されたAPIキー
+// Claude API設定（Firebase Functions経由）
 let chatHistory = [];
 
 // 天気情報を取得して表示
@@ -1133,17 +1132,13 @@ async function sendChatMessage() {
         // ローディング表示
         showChatLoading();
 
-        // Claude APIを呼び出し
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        // Firebase Functions経由でClaude APIを呼び出し
+        const response = await fetch('https://chatwithclaude-ydgcevv45q-uc.a.run.app', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': CLAUDE_API_KEY,
-                'anthropic-version': '2023-06-01'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 4096,
                 messages: chatHistory
             })
         });

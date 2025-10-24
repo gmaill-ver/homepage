@@ -2,8 +2,8 @@ const functions = require('firebase-functions');
 const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors')({origin: true});
 
-// Claude APIキー（環境変数から取得）
-const CLAUDE_API_KEY = 'sk-ant-api03-W2J...1wAA';
+// Claude APIキー
+const CLAUDE_API_KEY = 'sk-ant-api03-W2JlvHYhctHWQTmUhXnyt5-7NZGcqx37eoMOA8LJCcEUGPbJDkPLW04vipnCKWq9M3r_SaBl_g4gRFuaXfyKAA-w16NB1wAA';
 
 const anthropic = new Anthropic({
   apiKey: CLAUDE_API_KEY,
