@@ -1,4 +1,3 @@
-const functions = require('firebase-functions');
 const {onRequest} = require('firebase-functions/v2/https');
 const {defineSecret} = require('firebase-functions/params');
 const Anthropic = require('@anthropic-ai/sdk');
@@ -8,8 +7,13 @@ const cors = require('cors')({origin: true});
 const claudeApiKey = defineSecret('CLAUDE_API_KEY');
 
 exports.chatWithClaude = onRequest({secrets: [claudeApiKey]}, (request, response) => {
+  const apiKey = claudeApiKey.value();
+
+  console.log('API Key exists:', !!apiKey);
+  console.log('API Key length:', apiKey?.length || 0);
+
   const anthropic = new Anthropic({
-    apiKey: claudeApiKey.value(),
+    apiKey: apiKey,
   });
   return cors(request, response, async () => {
     // POSTリクエストのみ許可
