@@ -757,7 +757,6 @@ async function renderContacts() {
 
         contactList.innerHTML = contacts.map(contact => `
             <div class="contact-item">
-                <button class="contact-delete" onclick="deleteContact('${contact.id}')">✕</button>
                 <div class="contact-name">${contact.name}</div>
                 <a href="tel:${contact.phone}" class="contact-phone">📞 ${contact.phone}</a>
             </div>
