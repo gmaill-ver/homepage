@@ -481,8 +481,8 @@ async function renderWeather() {
     const weatherInfo = document.getElementById('weatherInfo');
 
     try {
-        // 東京の天気を取得（3日間予報）
-        const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API_KEY}&q=Tokyo&days=3&aqi=no&lang=ja`;
+        // 高崎の天気を取得（3日間予報）
+        const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API_KEY}&q=Takasaki&days=3&aqi=no&lang=ja`;
 
         const response = await fetch(url);
         if (!response.ok) throw new Error('天気情報の取得に失敗しました');
