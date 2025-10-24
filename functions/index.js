@@ -3,7 +3,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors')({origin: true});
 
 // Claude APIキー
-const CLAUDE_API_KEY = 'sk-ant-api03-W2JlvHYhctHWQTmUhXnyt5-7NZGcqx37eoMOA8LJCcEUGPbJDkPLW04vipnCKWq9M3r_SaBl_g4gRFuaXfyKAA-w16NB1wAA';
+const CLAUDE_API_KEY = 'sk-ant-api03-mnpTDuO-njHFn4I4IbuL-LS-55mNlQcOE0PAtQHyDW2Tm-yJ_1BVCWs3UR6mEEGK5hpJ33Tze2q5SfPGlXNbPg-jMvFdwAA';
 
 const anthropic = new Anthropic({
   apiKey: CLAUDE_API_KEY,
