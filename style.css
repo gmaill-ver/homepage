@@ -191,7 +191,7 @@ body {
 .btn-add {
     background: transparent;
     color: #FB923C;
-    border: 2px solid #FB923C;
+    border: none; 
     border-radius: 50%;
     width: 2rem;
     height: 2rem;
