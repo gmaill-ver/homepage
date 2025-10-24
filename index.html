@@ -45,7 +45,7 @@
                     <h2>📷 ベスト写真</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <label class="btn-add" onclick="event.stopPropagation()">
-                            ➕ 追加
+                            ➕
                             <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
                         </label>
                         <span class="card-toggle">▼</span>
@@ -69,9 +69,9 @@
                 </div>
                 <div class="card-content">
                     <div class="calendar-tabs">
-                        <button class="cal-tab active" data-view="today">今日</button>
-                        <button class="cal-tab" data-view="week">今週</button>
+                        <button class="cal-tab active" data-view="week">今週</button>
                         <button class="cal-tab" data-view="month">今月</button>
+                        <button class="cal-tab" data-view="nextMonth">翌月</button>
                     </div>
                     <div id="calendarEvents" class="calendar-events"></div>
                 </div>
@@ -82,7 +82,7 @@
                 <div class="card-header" onclick="toggleCard('noticeCard')">
                     <h2>🔔 保育園のお知らせ</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="addNoticeBtn" class="btn-add" onclick="event.stopPropagation()">➕ 追加</button>
+                        <button id="addNoticeBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
                         <span class="card-toggle">▼</span>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
                 <div class="card-header" onclick="toggleCard('insuranceCard')">
                     <h2>🏥 保険加入状況</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="addInsuranceBtn" class="btn-add" onclick="event.stopPropagation()">➕ 追加</button>
+                        <button id="addInsuranceBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
                         <span class="card-toggle">▼</span>
                     </div>
                 </div>
@@ -111,7 +111,10 @@
             <div class="footer-content">
                 <div class="footer-header">
                     <h3>📞 連絡先</h3>
-                    <button id="addContactBtn" class="btn-add-white">➕ 追加</button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="editContactsBtn" class="btn-edit">✏️</button>
+                        <button id="addContactBtn" class="btn-add-white">➕</button>
+                    </div>
                 </div>
                 <div id="contactList" class="contact-list"></div>
             </div>
@@ -158,6 +161,17 @@
             <div class="modal-actions">
                 <button id="saveContactBtn" class="btn-primary">追加</button>
                 <button id="closeContactBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 連絡先編集モーダル -->
+    <div id="contactEditModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>連絡先を編集</h3>
+            <div id="contactEditList" class="contact-edit-list"></div>
+            <div class="modal-actions">
+                <button id="closeContactEditBtn" class="btn-secondary" style="width: 100%;">閉じる</button>
             </div>
         </div>
     </div>

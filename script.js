@@ -26,7 +26,7 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 let currentUser = null;
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
-let calendarView = 'today';
+let calendarView = 'week';
 let isLoggingIn = false; // ログイン処理中フラグ
 
 // 月の名前
@@ -537,21 +537,23 @@ async function loadCalendarEvents(config) {
     const now = new Date();
     let timeMin, timeMax;
 
-    if (calendarView === 'today') {
-        timeMin = new Date(now.setHours(0, 0, 0, 0)).toISOString();
-        timeMax = new Date(now.setHours(23, 59, 59, 999)).toISOString();
-    } else if (calendarView === 'week') {
+    if (calendarView === 'week') {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay());
         timeMin = new Date(weekStart.setHours(0, 0, 0, 0)).toISOString();
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 7);
         timeMax = new Date(weekEnd.setHours(23, 59, 59, 999)).toISOString();
-    } else {
+    } else if (calendarView === 'month') {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         timeMin = new Date(monthStart.setHours(0, 0, 0, 0)).toISOString();
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         timeMax = new Date(monthEnd.setHours(23, 59, 59, 999)).toISOString();
+    } else if (calendarView === 'nextMonth') {
+        const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        timeMin = new Date(nextMonthStart.setHours(0, 0, 0, 0)).toISOString();
+        const nextMonthEnd = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+        timeMax = new Date(nextMonthEnd.setHours(23, 59, 59, 999)).toISOString();
     }
 
     const calendarId = config.calendarId || 'primary';
@@ -808,6 +810,115 @@ async function deleteContact(id) {
     }
 }
 
+// 連絡先編集モーダルを開く
+async function openContactEditModal() {
+    try {
+        const snapshot = await db.collection('contacts').get();
+
+        const contacts = [];
+        snapshot.forEach(doc => {
+            contacts.push({ id: doc.id, ...doc.data() });
+        });
+
+        const contactEditList = document.getElementById('contactEditList');
+
+        if (contacts.length === 0) {
+            contactEditList.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #9CA3AF;">
+                    連絡先がありません
+                </div>
+            `;
+        } else {
+            contactEditList.innerHTML = contacts.map(contact => `
+                <div class="contact-edit-item" id="edit-${contact.id}">
+                    <div class="contact-edit-header">
+                        <div class="contact-edit-info">
+                            <div class="contact-edit-name">${contact.name}</div>
+                            <div class="contact-edit-phone">📞 ${contact.phone}</div>
+                        </div>
+                        <div class="contact-edit-actions">
+                            <button class="contact-edit-btn" onclick="editContactInline('${contact.id}')">編集</button>
+                            <button class="contact-delete-btn" onclick="deleteContactFromEdit('${contact.id}')">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        openModal('contactEditModal');
+    } catch (error) {
+        console.error('連絡先編集モーダル表示エラー:', error);
+        alert('連絡先の読み込みに失敗しました');
+    }
+}
+
+// 連絡先をインライン編集
+async function editContactInline(id) {
+    try {
+        const doc = await db.collection('contacts').doc(id).get();
+        if (!doc.exists) return;
+
+        const contact = doc.data();
+        const editItem = document.getElementById(`edit-${id}`);
+
+        editItem.innerHTML = `
+            <div class="contact-edit-header">
+                <div class="contact-edit-info" style="width: 100%;">
+                    <input type="text" id="editName-${id}" value="${contact.name}"
+                           style="width: 100%; padding: 0.5rem; border: 1px solid #D1D5DB; border-radius: 0.375rem; margin-bottom: 0.5rem;">
+                    <input type="tel" id="editPhone-${id}" value="${contact.phone}"
+                           style="width: 100%; padding: 0.5rem; border: 1px solid #D1D5DB; border-radius: 0.375rem; margin-bottom: 0.5rem;">
+                </div>
+            </div>
+            <div class="contact-edit-actions" style="justify-content: flex-end;">
+                <button class="contact-edit-btn" onclick="saveContactEdit('${id}')">保存</button>
+                <button class="btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.75rem;" onclick="openContactEditModal()">キャンセル</button>
+            </div>
+        `;
+    } catch (error) {
+        console.error('連絡先編集エラー:', error);
+        alert('連絡先の読み込みに失敗しました');
+    }
+}
+
+// 連絡先編集を保存
+async function saveContactEdit(id) {
+    const name = document.getElementById(`editName-${id}`).value;
+    const phone = document.getElementById(`editPhone-${id}`).value;
+
+    if (!name || !phone) {
+        alert('名前と電話番号を入力してください');
+        return;
+    }
+
+    try {
+        await db.collection('contacts').doc(id).update({
+            name: name,
+            phone: phone
+        });
+
+        openContactEditModal(); // リストを再表示
+        renderContacts(); // メインの連絡先リストも更新
+    } catch (error) {
+        console.error('連絡先更新エラー:', error);
+        alert('連絡先の更新に失敗しました');
+    }
+}
+
+// 連絡先を編集モーダルから削除
+async function deleteContactFromEdit(id) {
+    if (!confirm('この連絡先を削除しますか？')) return;
+
+    try {
+        await db.collection('contacts').doc(id).delete();
+        openContactEditModal(); // リストを再表示
+        renderContacts(); // メインの連絡先リストも更新
+    } catch (error) {
+        console.error('連絡先削除エラー:', error);
+        alert('連絡先の削除に失敗しました');
+    }
+}
+
 // ==========================================
 // カード折りたたみ機能
 // ==========================================
@@ -1004,6 +1115,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addContactBtn').addEventListener('click', () => openModal('contactModal'));
     document.getElementById('saveContactBtn').addEventListener('click', addContact);
     document.getElementById('closeContactBtn').addEventListener('click', () => closeModal('contactModal'));
+    document.getElementById('editContactsBtn').addEventListener('click', openContactEditModal);
+    document.getElementById('closeContactEditBtn').addEventListener('click', () => closeModal('contactEditModal'));
 
     // 保険
     document.getElementById('addInsuranceBtn').addEventListener('click', () => {
