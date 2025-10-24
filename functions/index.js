@@ -1,15 +1,16 @@
 const functions = require('firebase-functions');
+const {onRequest} = require('firebase-functions/v2/https');
+const {defineSecret} = require('firebase-functions/params');
 const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors')({origin: true});
 
-// Claude APIキー
-const CLAUDE_API_KEY = 'sk-ant-api03-mnpTDuO-njHFn4I4IbuL-LS-55mNlQcOE0PAtQHyDW2Tm-yJ_1BVCWs3UR6mEEGK5hpJ33Tze2q5SfPGlXNbPg-jMvFdwAA';
+// Claude APIキー（シークレットとして定義）
+const claudeApiKey = defineSecret('CLAUDE_API_KEY');
 
-const anthropic = new Anthropic({
-  apiKey: CLAUDE_API_KEY,
-});
-
-exports.chatWithClaude = functions.https.onRequest((request, response) => {
+exports.chatWithClaude = onRequest({secrets: [claudeApiKey]}, (request, response) => {
+  const anthropic = new Anthropic({
+    apiKey: claudeApiKey.value(),
+  });
   return cors(request, response, async () => {
     // POSTリクエストのみ許可
     if (request.method !== 'POST') {
