@@ -39,6 +39,17 @@
 
         <!-- メインコンテンツ -->
         <main class="main-content">
+            <!-- 天気 -->
+            <section class="card weather-card" id="weatherCard">
+                <div class="card-header" onclick="toggleCard('weatherCard')">
+                    <h2>🌤️ 天気</h2>
+                    <span class="card-toggle">▼</span>
+                </div>
+                <div class="card-content">
+                    <div id="weatherInfo" class="weather-info"></div>
+                </div>
+            </section>
+
             <!-- ベスト写真 -->
             <section class="card" id="photoCard">
                 <div class="card-header" onclick="toggleCard('photoCard')">

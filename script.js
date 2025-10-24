@@ -310,6 +310,7 @@ function showMainApp() {
     document.getElementById('mainApp').style.display = 'block';
     document.getElementById('userName').textContent = currentUser.displayName || currentUser.email;
 
+    renderWeather();
     renderPhotos();
     renderCalendar();
     renderNotices();
@@ -465,6 +466,79 @@ async function deletePhoto(photoId) {
     } catch (error) {
         console.error('写真削除エラー:', error);
         alert('写真の削除に失敗しました');
+    }
+}
+
+// ==========================================
+// 天気機能 (WeatherAPI.com)
+// ==========================================
+
+// 天気情報APIキー
+const WEATHER_API_KEY = '2edf15f522d541879f2223518252410';
+
+// 天気情報を取得して表示
+async function renderWeather() {
+    const weatherInfo = document.getElementById('weatherInfo');
+
+    try {
+        // 東京の天気を取得（3日間予報）
+        const url = `https://api.weatherapi.com/v1/forecast.json?key=${WEATHER_API_KEY}&q=Tokyo&days=3&aqi=no&lang=ja`;
+
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('天気情報の取得に失敗しました');
+
+        const data = await response.json();
+
+        // 現在の天気
+        const current = data.current;
+        const location = data.location;
+
+        // 3日間の予報
+        const forecast = data.forecast.forecastday;
+
+        weatherInfo.innerHTML = `
+            <!-- 現在の天気 -->
+            <div class="weather-current">
+                <div class="weather-main">
+                    <img src="https:${current.condition.icon}" alt="${current.condition.text}" class="weather-icon">
+                    <div class="weather-temp">${Math.round(current.temp_c)}°C</div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-condition">${current.condition.text}</div>
+                    <div class="weather-location">${location.name}</div>
+                    <div style="font-size: 0.75rem; color: #9CA3AF;">
+                        湿度: ${current.humidity}% | 風: ${current.wind_kph}km/h
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3日間予報 -->
+            <div class="weather-forecast">
+                ${forecast.map((day, index) => {
+                    const date = new Date(day.date);
+                    const dayName = index === 0 ? '今日' : index === 1 ? '明日' : `${date.getMonth() + 1}/${date.getDate()}`;
+
+                    return `
+                        <div class="forecast-day">
+                            <div class="forecast-date">${dayName}</div>
+                            <img src="https:${day.day.condition.icon}" alt="${day.day.condition.text}" class="forecast-icon">
+                            <div class="forecast-temp">${Math.round(day.day.avgtemp_c)}°C</div>
+                            <div class="forecast-temp-range">
+                                ${Math.round(day.day.mintemp_c)}° / ${Math.round(day.day.maxtemp_c)}°
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    } catch (error) {
+        console.error('天気情報取得エラー:', error);
+        weatherInfo.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🌤️</div>
+                <p>天気情報の取得に失敗しました</p>
+            </div>
+        `;
     }
 }
 
