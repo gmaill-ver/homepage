@@ -1526,7 +1526,6 @@ function renderExpenseInputs() {
         <div class="expense-item">
             <label>${item}</label>
             <input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}">
-            <span>円</span>
         </div>
     `).join('');
 

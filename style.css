@@ -1233,19 +1233,6 @@ body {
     border-color: #FB923C;
 }
 
-.expense-item span {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #6B7280;
-    pointer-events: none;
-}
-
-.expense-item {
-    position: relative;
-}
-
 .expenses-total {
     display: flex;
     justify-content: space-between;
