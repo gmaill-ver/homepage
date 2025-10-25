@@ -594,7 +594,7 @@ async function renderCalendar() {
         }
 
         // カレンダーごとの色設定
-        const calendarColors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6'];
+        const calendarColors = ['#60A5FA', '#3B82F6', '#34D399', '#8B5CF6'];
 
         eventsDiv.innerHTML = events.map(event => {
             const startDate = new Date(event.start.dateTime || event.start.date);
@@ -1643,7 +1643,7 @@ async function renderExpenseChart() {
         document.getElementById('currentChartYear').textContent = `${currentChartYear}年`;
 
         const itemAverages = {}; // 各項目の平均金額
-        const colors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6', '#FBBF24', '#A78BFA', '#F87171', '#4ADE80'];
+        const colors = ['#60A5FA', '#3B82F6', '#34D399', '#8B5CF6', '#60A5FA', '#A78BFA', '#3B82F6', '#4ADE80'];
 
         // 各項目のデータと平均を計算
         const itemData = {};
