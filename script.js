@@ -17,9 +17,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// 認証状態の永続化を有効化（ブラウザを閉じても保持）
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
 // ==========================================
 // グローバル変数
 // ==========================================
@@ -28,6 +25,10 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let calendarView = 'week';
 let isLoggingIn = false; // ログイン処理中フラグ
+let chatHistory = []; // チャット履歴（メモリ内）
+let lastVisibleMessage = null; // ページネーション用
+let isLoadingMoreMessages = false; // 追加読み込み中フラグ
+const MESSAGES_PER_PAGE = 20; // 1ページあたりのメッセージ数
 
 // 月の名前
 const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -195,7 +196,13 @@ async function loadSettings() {
             const data = doc.data();
 
             document.getElementById('calendarApiKey').value = data.calendarApiKey || '';
-            document.getElementById('calendarId').value = data.calendarId || 'primary';
+
+            // 複数のカレンダーIDに対応（旧形式との互換性も保持）
+            const calendarIds = data.calendarIds || (data.calendarId ? [data.calendarId] : ['primary']);
+            document.getElementById('calendarId1').value = calendarIds[0] || 'primary';
+            document.getElementById('calendarId2').value = calendarIds[1] || '';
+            document.getElementById('calendarId3').value = calendarIds[2] || '';
+            document.getElementById('calendarId4').value = calendarIds[3] || '';
 
             renderEmailList(data.allowedEmails || []);
         } else {
@@ -212,7 +219,12 @@ async function saveSettings() {
     try {
         const calendarConfig = {
             calendarApiKey: document.getElementById('calendarApiKey').value,
-            calendarId: document.getElementById('calendarId').value
+            calendarIds: [
+                document.getElementById('calendarId1').value,
+                document.getElementById('calendarId2').value,
+                document.getElementById('calendarId3').value,
+                document.getElementById('calendarId4').value
+            ].filter(id => id.trim() !== '') // 空白を除外
         };
 
         // Firestoreから現在の許可メールアドレスを取得
@@ -222,7 +234,7 @@ async function saveSettings() {
         await db.collection('settings').doc('config').set({
             allowedEmails: allowedEmails,
             calendarApiKey: calendarConfig.calendarApiKey,
-            calendarId: calendarConfig.calendarId
+            calendarIds: calendarConfig.calendarIds
         });
 
         alert('設定を保存しました');
@@ -479,9 +491,6 @@ async function deletePhoto(photoId) {
 // 天気情報APIキー
 const WEATHER_API_KEY = '2edf15f522d541879f2223518252410';
 
-// Claude API設定（Firebase Functions経由）
-let chatHistory = [];
-
 // 天気情報を取得して表示
 async function renderWeather() {
     const weatherInfo = document.getElementById('weatherInfo');
@@ -615,35 +624,54 @@ async function renderCalendar() {
 // Googleカレンダーからイベントを取得
 async function loadCalendarEvents(config) {
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 今日の00:00:00
     let timeMin, timeMax;
 
+    // 常に今日以降のイベントのみ取得
+    timeMin = today.toISOString();
+
     if (calendarView === 'week') {
-        const weekStart = new Date(now);
-        weekStart.setDate(now.getDate() - now.getDay());
-        timeMin = new Date(weekStart.setHours(0, 0, 0, 0)).toISOString();
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 7);
+        const weekEnd = new Date(today);
+        weekEnd.setDate(today.getDate() + 7);
         timeMax = new Date(weekEnd.setHours(23, 59, 59, 999)).toISOString();
     } else if (calendarView === 'month') {
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        timeMin = new Date(monthStart.setHours(0, 0, 0, 0)).toISOString();
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         timeMax = new Date(monthEnd.setHours(23, 59, 59, 999)).toISOString();
     } else if (calendarView === 'nextMonth') {
-        const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        timeMin = new Date(nextMonthStart.setHours(0, 0, 0, 0)).toISOString();
         const nextMonthEnd = new Date(now.getFullYear(), now.getMonth() + 2, 0);
         timeMax = new Date(nextMonthEnd.setHours(23, 59, 59, 999)).toISOString();
     }
 
-    const calendarId = config.calendarId || 'primary';
-    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?key=${config.calendarApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`;
+    // 複数カレンダーIDに対応
+    const calendarIds = config.calendarIds || [config.calendarId || 'primary'];
+    let allEvents = [];
 
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('カレンダーAPI呼び出し失敗');
+    // 各カレンダーからイベントを取得
+    for (const calendarId of calendarIds) {
+        try {
+            const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?key=${config.calendarApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`;
 
-    const data = await response.json();
-    return data.items || [];
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.warn(`カレンダー ${calendarId} の取得に失敗`);
+                continue;
+            }
+
+            const data = await response.json();
+            allEvents = allEvents.concat(data.items || []);
+        } catch (error) {
+            console.error(`カレンダー ${calendarId} エラー:`, error);
+        }
+    }
+
+    // 開始時刻でソート（今日の予定が最上部に来る）
+    allEvents.sort((a, b) => {
+        const startA = new Date(a.start.dateTime || a.start.date);
+        const startB = new Date(b.start.dateTime || b.start.date);
+        return startA - startB;
+    });
+
+    return allEvents;
 }
 
 // カレンダービューを変更
@@ -1035,6 +1063,11 @@ function switchPage(pageName) {
         selectedPage.style.display = 'block';
     }
 
+    // チャットページに切り替えた時は履歴をロード
+    if (pageName === 'chat' && currentUser) {
+        loadChatHistory();
+    }
+
     // タブのアクティブ状態を更新
     document.querySelectorAll('.header-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -1107,6 +1140,81 @@ function hideChatLoading() {
     }
 }
 
+// Firestoreからチャット履歴を読み込む（ページネーション対応）
+async function loadChatHistory(loadMore = false) {
+    if (!currentUser) return;
+
+    if (isLoadingMoreMessages) return;
+    isLoadingMoreMessages = true;
+
+    try {
+        let query = db.collection('chatrooms')
+            .doc(currentUser.uid)
+            .collection('messages')
+            .orderBy('timestamp', 'desc')
+            .limit(MESSAGES_PER_PAGE);
+
+        // 追加読み込みの場合は、前回の最後のドキュメントから開始
+        if (loadMore && lastVisibleMessage) {
+            query = query.startAfter(lastVisibleMessage);
+        }
+
+        const snapshot = await query.get();
+
+        if (snapshot.empty) {
+            isLoadingMoreMessages = false;
+            return;
+        }
+
+        // 最後のドキュメントを保存（次のページネーション用）
+        lastVisibleMessage = snapshot.docs[snapshot.docs.length - 1];
+
+        // メッセージを古い順に並び替えて表示
+        const messages = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            messages.push(data);
+
+            // チャット履歴配列にも追加
+            if (data.role === 'user' || data.role === 'assistant') {
+                chatHistory.push({
+                    role: data.role,
+                    content: data.content
+                });
+            }
+        });
+
+        // 古い順に表示
+        messages.reverse().forEach(msg => {
+            addChatMessage(msg.role, msg.content);
+        });
+
+        isLoadingMoreMessages = false;
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+        isLoadingMoreMessages = false;
+    }
+}
+
+// 「さらに読み込む」ボタンをチャットエリアの上部に追加
+function addLoadMoreButton() {
+    const chatMessages = document.getElementById('chatMessages');
+
+    // 既存のボタンがあれば削除
+    const existingButton = document.getElementById('loadMoreBtn');
+    if (existingButton) {
+        existingButton.remove();
+    }
+
+    const loadMoreBtn = document.createElement('button');
+    loadMoreBtn.id = 'loadMoreBtn';
+    loadMoreBtn.className = 'load-more-btn';
+    loadMoreBtn.textContent = '過去のメッセージを読み込む';
+    loadMoreBtn.onclick = () => loadChatHistory(true);
+
+    chatMessages.insertBefore(loadMoreBtn, chatMessages.firstChild);
+}
+
 // Claude APIにメッセージを送信
 async function sendChatMessage() {
     const input = document.getElementById('chatInput');
@@ -1132,6 +1240,10 @@ async function sendChatMessage() {
         // ローディング表示
         showChatLoading();
 
+        // 現在のユーザーを取得
+        const user = auth.currentUser;
+        console.log('Current user:', user ? user.uid : 'not logged in');
+
         // Firebase Functions経由でClaude APIを呼び出し
         const response = await fetch('https://chatwithclaude-ydgcevv45q-uc.a.run.app', {
             method: 'POST',
@@ -1139,7 +1251,8 @@ async function sendChatMessage() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                messages: chatHistory
+                messages: chatHistory,
+                userId: user ? user.uid : null
             })
         });
 
