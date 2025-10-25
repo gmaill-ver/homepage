@@ -1640,9 +1640,11 @@ async function renderExpenseChart() {
             months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
         }
 
-        const datasets = [];
+        const itemAverages = {}; // 各項目の平均金額
         const colors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6', '#FBBF24', '#A78BFA', '#F87171', '#4ADE80'];
 
+        // 各項目のデータと平均を計算
+        const itemData = {};
         for (let i = 0; i < expenseItems.length; i++) {
             const item = expenseItems[i];
             const data = [];
@@ -1656,14 +1658,43 @@ async function renderExpenseChart() {
                 }
             }
 
-            datasets.push({
+            itemData[item] = data;
+            // 平均を計算（0を除く）
+            const nonZeroData = data.filter(v => v > 0);
+            itemAverages[item] = nonZeroData.length > 0
+                ? nonZeroData.reduce((a, b) => a + b, 0) / nonZeroData.length
+                : 0;
+        }
+
+        // 全項目の平均の中央値を閾値として計算
+        const allAverages = Object.values(itemAverages).filter(v => v > 0).sort((a, b) => a - b);
+        const threshold = allAverages.length > 0
+            ? allAverages[Math.floor(allAverages.length / 2)]
+            : 30000; // デフォルト3万円
+
+        // 左軸・右軸に振り分け
+        const leftAxisDatasets = [];
+        const rightAxisDatasets = [];
+
+        expenseItems.forEach((item, i) => {
+            const dataset = {
                 label: item,
-                data: data,
+                data: itemData[item],
                 borderColor: colors[i % colors.length],
                 backgroundColor: colors[i % colors.length] + '20',
                 tension: 0.3
-            });
-        }
+            };
+
+            if (itemAverages[item] >= threshold) {
+                dataset.yAxisID = 'y';
+                leftAxisDatasets.push(dataset);
+            } else {
+                dataset.yAxisID = 'y1';
+                rightAxisDatasets.push(dataset);
+            }
+        });
+
+        const datasets = [...leftAxisDatasets, ...rightAxisDatasets];
 
         const ctx = document.getElementById('expenseChart');
 
@@ -1683,6 +1714,10 @@ async function renderExpenseChart() {
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: {
                         position: 'top',
@@ -1693,11 +1728,38 @@ async function renderExpenseChart() {
                 },
                 scales: {
                     y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
                         beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '高額項目',
+                            color: '#666'
+                        },
                         ticks: {
                             callback: function(value) {
                                 return value.toLocaleString() + '円';
                             }
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '少額項目',
+                            color: '#666'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '円';
+                            }
+                        },
+                        grid: {
+                            drawOnChartArea: false,
                         }
                     }
                 }
