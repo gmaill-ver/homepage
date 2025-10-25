@@ -592,6 +592,9 @@ async function renderCalendar() {
             return;
         }
 
+        // カレンダーごとの色設定
+        const calendarColors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6'];
+
         eventsDiv.innerHTML = events.map(event => {
             const startDate = new Date(event.start.dateTime || event.start.date);
             const endDate = new Date(event.end.dateTime || event.end.date);
@@ -600,8 +603,12 @@ async function renderCalendar() {
                 ? `${startDate.getHours()}:${String(startDate.getMinutes()).padStart(2, '0')} - ${endDate.getHours()}:${String(endDate.getMinutes()).padStart(2, '0')}`
                 : '終日';
 
+            // カレンダーインデックスに応じた色を取得
+            const colorIndex = event.calendarIndex || 0;
+            const borderColor = calendarColors[colorIndex % calendarColors.length];
+
             return `
-                <div class="event-item">
+                <div class="event-item" style="border-left: 4px solid ${borderColor};">
                     <div class="event-date">${dateStr}</div>
                     <div class="event-info">
                         <h3>${event.summary || '(タイトルなし)'}</h3>
@@ -647,7 +654,8 @@ async function loadCalendarEvents(config) {
     let allEvents = [];
 
     // 各カレンダーからイベントを取得
-    for (const calendarId of calendarIds) {
+    for (let i = 0; i < calendarIds.length; i++) {
+        const calendarId = calendarIds[i];
         try {
             const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?key=${config.calendarApiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`;
 
@@ -658,7 +666,12 @@ async function loadCalendarEvents(config) {
             }
 
             const data = await response.json();
-            allEvents = allEvents.concat(data.items || []);
+            // カレンダーインデックスを各イベントに追加
+            const eventsWithCalendarIndex = (data.items || []).map(event => ({
+                ...event,
+                calendarIndex: i
+            }));
+            allEvents = allEvents.concat(eventsWithCalendarIndex);
         } catch (error) {
             console.error(`カレンダー ${calendarId} エラー:`, error);
         }
