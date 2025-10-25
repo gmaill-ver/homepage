@@ -1190,6 +1190,14 @@ body {
 }
 
 /* 月次費用 */
+.expense-month-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
 .expenses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

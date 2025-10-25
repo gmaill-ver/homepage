@@ -331,7 +331,7 @@ function showMainApp() {
     renderNotices();
     renderContacts();
     renderInsurances();
-    renderMonthlyExpenses();
+    initializeMonthlyExpenses();
     updateMonthDisplay();
 }
 
@@ -1440,53 +1440,281 @@ async function deleteInsurance(id) {
 // 月次費用管理機能
 // ==========================================
 
-// 月次費用を表示
-async function renderMonthlyExpenses() {
+let expenseItems = []; // 費用項目リスト
+let currentExpenseYear = new Date().getFullYear();
+let currentExpenseMonth = new Date().getMonth();
+let expenseChart = null;
+
+// 費用項目を読み込み
+async function loadExpenseItems() {
     try {
-        const doc = await db.collection('settings').doc('monthlyExpenses').get();
+        const doc = await db.collection('settings').doc('expenseItems').get();
+        if (doc.exists) {
+            expenseItems = doc.data().items || [];
+        } else {
+            // デフォルト項目
+            expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
+            await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+        }
+    } catch (error) {
+        console.error('費用項目読み込みエラー:', error);
+        expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
+    }
+}
+
+// 費用項目リストを表示（モーダル内）
+function renderExpenseItemsList() {
+    const list = document.getElementById('expenseItemsList');
+    list.innerHTML = expenseItems.map((item, index) => `
+        <div class="email-item">
+            <span>${item}</span>
+            <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
+        </div>
+    `).join('');
+}
+
+// 費用項目を追加
+async function addExpenseItem() {
+    const input = document.getElementById('expenseItemName');
+    const name = input.value.trim();
+
+    if (!name) {
+        alert('項目名を入力してください');
+        return;
+    }
+
+    if (expenseItems.includes(name)) {
+        alert('この項目は既に存在します');
+        return;
+    }
+
+    expenseItems.push(name);
+
+    try {
+        await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+        input.value = '';
+        renderExpenseItemsList();
+        renderExpenseInputs();
+    } catch (error) {
+        console.error('費用項目追加エラー:', error);
+        alert('費用項目の追加に失敗しました');
+    }
+}
+
+// 費用項目を削除
+async function removeExpenseItem(index) {
+    if (!confirm('この項目を削除しますか？')) return;
+
+    expenseItems.splice(index, 1);
+
+    try {
+        await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+        renderExpenseItemsList();
+        renderExpenseInputs();
+    } catch (error) {
+        console.error('費用項目削除エラー:', error);
+        alert('費用項目の削除に失敗しました');
+    }
+}
+
+// 費用入力フォームを表示
+function renderExpenseInputs() {
+    const container = document.getElementById('expenseInputs');
+    const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
+
+    container.innerHTML = expenseItems.map((item, index) => `
+        <div class="expense-item">
+            <label>${item}</label>
+            <input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}">
+            <span>円</span>
+        </div>
+    `).join('');
+
+    // イベントリスナーを追加
+    expenseItems.forEach((item, index) => {
+        document.getElementById(`expense_${index}`).addEventListener('input', calculateExpenseTotal);
+    });
+
+    // 保存済みデータを読み込み
+    loadExpenseData(yearMonth);
+}
+
+// 指定月の費用データを読み込み
+async function loadExpenseData(yearMonth) {
+    try {
+        const doc = await db.collection('monthlyExpenses').doc(yearMonth).get();
 
         if (doc.exists) {
             const data = doc.data();
-            document.getElementById('electricityFee').value = data.electricity || '';
-            document.getElementById('gasFee').value = data.gas || '';
-            document.getElementById('housingLoan').value = data.housingLoan || '';
-            document.getElementById('managementFee').value = data.managementFee || '';
+            expenseItems.forEach((item, index) => {
+                const input = document.getElementById(`expense_${index}`);
+                if (input) {
+                    input.value = data[item] || '';
+                }
+            });
+        } else {
+            // データがない場合は空にする
+            expenseItems.forEach((item, index) => {
+                const input = document.getElementById(`expense_${index}`);
+                if (input) {
+                    input.value = '';
+                }
+            });
         }
 
-        calculateTotal();
+        calculateExpenseTotal();
     } catch (error) {
-        console.error('月次費用読み込みエラー:', error);
+        console.error('費用データ読み込みエラー:', error);
     }
 }
 
 // 合計を計算
-function calculateTotal() {
-    const electricity = Number(document.getElementById('electricityFee').value) || 0;
-    const gas = Number(document.getElementById('gasFee').value) || 0;
-    const housingLoan = Number(document.getElementById('housingLoan').value) || 0;
-    const managementFee = Number(document.getElementById('managementFee').value) || 0;
-
-    const total = electricity + gas + housingLoan + managementFee;
+function calculateExpenseTotal() {
+    let total = 0;
+    expenseItems.forEach((item, index) => {
+        const input = document.getElementById(`expense_${index}`);
+        if (input) {
+            total += Number(input.value) || 0;
+        }
+    });
     document.getElementById('totalExpenses').textContent = total.toLocaleString() + ' 円';
 }
 
 // 月次費用を保存
 async function saveMonthlyExpenses() {
-    try {
-        const data = {
-            electricity: Number(document.getElementById('electricityFee').value) || 0,
-            gas: Number(document.getElementById('gasFee').value) || 0,
-            housingLoan: Number(document.getElementById('housingLoan').value) || 0,
-            managementFee: Number(document.getElementById('managementFee').value) || 0
-        };
+    const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
+    const data = {};
 
-        await db.collection('settings').doc('monthlyExpenses').set(data);
-        alert('月次費用を保存しました');
-        calculateTotal();
+    expenseItems.forEach((item, index) => {
+        const input = document.getElementById(`expense_${index}`);
+        if (input) {
+            data[item] = Number(input.value) || 0;
+        }
+    });
+
+    try {
+        await db.collection('monthlyExpenses').doc(yearMonth).set(data);
+        alert(`${currentExpenseYear}年${currentExpenseMonth + 1}月の費用を保存しました`);
+        renderExpenseChart();
     } catch (error) {
         console.error('月次費用保存エラー:', error);
         alert('月次費用の保存に失敗しました');
     }
+}
+
+// 年月表示を更新
+function updateExpenseMonthDisplay() {
+    document.getElementById('currentExpenseMonth').textContent =
+        `${currentExpenseYear}年 ${currentExpenseMonth + 1}月`;
+}
+
+// 前月へ
+function previousExpenseMonth() {
+    currentExpenseMonth--;
+    if (currentExpenseMonth < 0) {
+        currentExpenseMonth = 11;
+        currentExpenseYear--;
+    }
+    updateExpenseMonthDisplay();
+    renderExpenseInputs();
+}
+
+// 次月へ
+function nextExpenseMonth() {
+    currentExpenseMonth++;
+    if (currentExpenseMonth > 11) {
+        currentExpenseMonth = 0;
+        currentExpenseYear++;
+    }
+    updateExpenseMonthDisplay();
+    renderExpenseInputs();
+}
+
+// 折れ線グラフを表示
+async function renderExpenseChart() {
+    try {
+        // 過去6ヶ月のデータを取得
+        const months = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        }
+
+        const datasets = [];
+        const colors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6', '#FBBF24', '#A78BFA', '#F87171', '#4ADE80'];
+
+        for (let i = 0; i < expenseItems.length; i++) {
+            const item = expenseItems[i];
+            const data = [];
+
+            for (const month of months) {
+                const doc = await db.collection('monthlyExpenses').doc(month).get();
+                if (doc.exists) {
+                    data.push(doc.data()[item] || 0);
+                } else {
+                    data.push(0);
+                }
+            }
+
+            datasets.push({
+                label: item,
+                data: data,
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '20',
+                tension: 0.3
+            });
+        }
+
+        const ctx = document.getElementById('expenseChart');
+
+        if (expenseChart) {
+            expenseChart.destroy();
+        }
+
+        expenseChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months.map(m => {
+                    const [y, mo] = m.split('-');
+                    return `${y}/${mo}`;
+                }),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '円';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('グラフ表示エラー:', error);
+    }
+}
+
+// 月次費用機能の初期化
+async function initializeMonthlyExpenses() {
+    await loadExpenseItems();
+    updateExpenseMonthDisplay();
+    renderExpenseInputs();
+    renderExpenseChart();
 }
 
 // ==========================================
@@ -1554,8 +1782,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 月次費用
     document.getElementById('saveExpensesBtn').addEventListener('click', saveMonthlyExpenses);
-    ['electricityFee', 'gasFee', 'housingLoan', 'managementFee'].forEach(id => {
-        document.getElementById(id).addEventListener('input', calculateTotal);
+    document.getElementById('prevExpenseMonth').addEventListener('click', previousExpenseMonth);
+    document.getElementById('nextExpenseMonth').addEventListener('click', nextExpenseMonth);
+    document.getElementById('manageExpenseItemsBtn').addEventListener('click', () => {
+        renderExpenseItemsList();
+        openModal('expenseItemsModal');
+    });
+    document.getElementById('addExpenseItemBtn').addEventListener('click', addExpenseItem);
+    document.getElementById('closeExpenseItemsBtn').addEventListener('click', () => closeModal('expenseItemsModal'));
+    document.getElementById('expenseItemName').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addExpenseItem();
     });
 
     // ページ切り替えタブ

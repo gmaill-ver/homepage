@@ -139,36 +139,33 @@
             <section class="card" id="monthlyExpensesCard">
                 <div class="card-header" onclick="toggleCard('monthlyExpensesCard')">
                     <h2>💰 月次費用</h2>
-                    <span class="card-toggle">▼</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="manageExpenseItemsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️ 項目管理</button>
+                        <span class="card-toggle">▼</span>
+                    </div>
                 </div>
                 <div class="card-content">
-                    <div class="expenses-grid">
-                        <div class="expense-item">
-                            <label for="electricityFee">⚡ 電気代</label>
-                            <input type="number" id="electricityFee" placeholder="0" min="0">
-                            <span>円</span>
-                        </div>
-                        <div class="expense-item">
-                            <label for="gasFee">🔥 ガス代</label>
-                            <input type="number" id="gasFee" placeholder="0" min="0">
-                            <span>円</span>
-                        </div>
-                        <div class="expense-item">
-                            <label for="housingLoan">🏠 住宅ローン</label>
-                            <input type="number" id="housingLoan" placeholder="0" min="0">
-                            <span>円</span>
-                        </div>
-                        <div class="expense-item">
-                            <label for="managementFee">🏢 管理費</label>
-                            <input type="number" id="managementFee" placeholder="0" min="0">
-                            <span>円</span>
-                        </div>
+                    <!-- 年月選択 -->
+                    <div class="expense-month-selector">
+                        <button id="prevExpenseMonth" class="month-btn">◀</button>
+                        <div id="currentExpenseMonth" class="month-display"></div>
+                        <button id="nextExpenseMonth" class="month-btn">▶</button>
                     </div>
+
+                    <!-- 費用入力エリア -->
+                    <div id="expenseInputs" class="expenses-grid"></div>
+
                     <div class="expenses-total">
                         <span>合計</span>
                         <span id="totalExpenses" class="total-amount">0 円</span>
                     </div>
-                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">保存</button>
+                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月の費用を保存</button>
+
+                    <!-- 折れ線グラフ -->
+                    <div class="expense-chart-container">
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">📊 費用推移</h3>
+                        <canvas id="expenseChart" style="max-height: 300px;"></canvas>
+                    </div>
                 </div>
             </section>
         </main>
@@ -286,12 +283,29 @@
         </div>
     </div>
 
+    <!-- 費用項目管理モーダル -->
+    <div id="expenseItemsModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>費用項目を管理</h3>
+            <div class="email-input-group">
+                <input type="text" id="expenseItemName" placeholder="例: Netflix">
+                <button id="addExpenseItemBtn" class="btn-small">追加</button>
+            </div>
+            <div id="expenseItemsList" class="email-list"></div>
+            <div class="modal-actions">
+                <button id="closeExpenseItemsBtn" class="btn-secondary" style="width: 100%;">閉じる</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
+    <!-- Chart.js for line charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102506"></script>
+    <script src="script.js?v=2025102507"></script>
 </body>
 </html>
