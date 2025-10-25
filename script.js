@@ -1986,11 +1986,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('loginBtn').addEventListener('click', login);
     document.getElementById('logoutBtn').addEventListener('click', logout);
 
-    document.getElementById('settingsBtn').addEventListener('click', () => {
-        loadSettings();
-        openModal('settingsModal');
-    });
-
     document.getElementById('headerSettingsBtn').addEventListener('click', () => {
         loadSettings();
         openModal('settingsModal');
