@@ -151,14 +151,35 @@
                         <button id="nextExpenseMonth" class="month-btn">▶</button>
                     </div>
 
-                    <!-- 費用入力エリア -->
-                    <div id="expenseInputs" class="expenses-grid"></div>
-
-                    <div class="expenses-total">
-                        <span>合計</span>
-                        <span id="totalExpenses" class="total-amount">0 円</span>
+                    <!-- 収入セクション -->
+                    <div class="income-section">
+                        <h3>💵 収入</h3>
+                        <div id="incomeInputs" class="expenses-grid"></div>
+                        <div class="expenses-total income-total">
+                            <span>収入合計</span>
+                            <span id="totalIncome" class="total-amount">0 円</span>
+                        </div>
                     </div>
-                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月の費用を保存</button>
+
+                    <!-- 支出セクション -->
+                    <div class="expense-section">
+                        <h3>💸 支出</h3>
+                        <div id="expenseInputs" class="expenses-grid"></div>
+                        <div class="expenses-total expense-total">
+                            <span>支出合計</span>
+                            <span id="totalExpenses" class="total-amount">0 円</span>
+                        </div>
+                    </div>
+
+                    <!-- 収支 -->
+                    <div class="balance-section">
+                        <div class="balance-total">
+                            <span>収支</span>
+                            <span id="totalBalance" class="balance-amount">0 円</span>
+                        </div>
+                    </div>
+
+                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月のデータを保存</button>
 
                     <!-- 折れ線グラフ -->
                     <div class="expense-chart-container">
@@ -312,6 +333,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102513"></script>
+    <script src="script.js?v=2025102514"></script>
 </body>
 </html>

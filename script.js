@@ -1440,25 +1440,46 @@ async function deleteInsurance(id) {
 // 月次費用管理機能
 // ==========================================
 
-let expenseItems = []; // 費用項目リスト
+let incomeItems = []; // 収入項目リスト
+let expenseItems = []; // 支出項目リスト
 let currentExpenseYear = new Date().getFullYear();
 let currentExpenseMonth = new Date().getMonth();
 let currentChartYear = new Date().getFullYear(); // グラフ表示用の年
 let expenseChart = null;
 
-// 費用項目を読み込み
+// 収入・支出項目を読み込み
 async function loadExpenseItems() {
     try {
         const doc = await db.collection('settings').doc('expenseItems').get();
         if (doc.exists) {
-            expenseItems = doc.data().items || [];
+            const data = doc.data();
+            incomeItems = data.incomeItems || [];
+            expenseItems = data.expenseItems || [];
+
+            // 旧形式からの移行
+            if (!data.incomeItems && data.items) {
+                expenseItems = data.items;
+            }
         } else {
             // デフォルト項目
+            incomeItems = ['給与'];
             expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
-            await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+            await db.collection('settings').doc('expenseItems').set({
+                incomeItems: incomeItems,
+                expenseItems: expenseItems
+            });
+        }
+
+        // デフォルト値がない場合
+        if (incomeItems.length === 0) {
+            incomeItems = ['給与'];
+        }
+        if (expenseItems.length === 0) {
+            expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
         }
     } catch (error) {
-        console.error('費用項目読み込みエラー:', error);
+        console.error('項目読み込みエラー:', error);
+        incomeItems = ['給与'];
         expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
     }
 }
@@ -1492,7 +1513,10 @@ async function addExpenseItem() {
     expenseItems.push(name);
 
     try {
-        await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+        await db.collection('settings').doc('expenseItems').set({
+            incomeItems: incomeItems,
+            expenseItems: expenseItems
+        });
         input.value = '';
         renderExpenseItemsList();
         renderExpenseInputs();
@@ -1509,7 +1533,10 @@ async function removeExpenseItem(index) {
     expenseItems.splice(index, 1);
 
     try {
-        await db.collection('settings').doc('expenseItems').set({ items: expenseItems });
+        await db.collection('settings').doc('expenseItems').set({
+            incomeItems: incomeItems,
+            expenseItems: expenseItems
+        });
         renderExpenseItemsList();
         renderExpenseInputs();
     } catch (error) {
@@ -1518,12 +1545,22 @@ async function removeExpenseItem(index) {
     }
 }
 
-// 費用入力フォームを表示
+// 収入・支出入力フォームを表示
 function renderExpenseInputs() {
-    const container = document.getElementById('expenseInputs');
+    const incomeContainer = document.getElementById('incomeInputs');
+    const expenseContainer = document.getElementById('expenseInputs');
     const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
 
-    container.innerHTML = expenseItems.map((item, index) => `
+    // 収入入力欄
+    incomeContainer.innerHTML = incomeItems.map((item, index) => `
+        <div class="expense-item">
+            <label>${item}</label>
+            <input type="number" id="income_${index}" placeholder="0" min="0" data-item="${item}">
+        </div>
+    `).join('');
+
+    // 支出入力欄
+    expenseContainer.innerHTML = expenseItems.map((item, index) => `
         <div class="expense-item">
             <label>${item}</label>
             <input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}">
@@ -1531,6 +1568,9 @@ function renderExpenseInputs() {
     `).join('');
 
     // イベントリスナーを追加
+    incomeItems.forEach((item, index) => {
+        document.getElementById(`income_${index}`).addEventListener('input', calculateExpenseTotal);
+    });
     expenseItems.forEach((item, index) => {
         document.getElementById(`expense_${index}`).addEventListener('input', calculateExpenseTotal);
     });
@@ -1546,19 +1586,31 @@ async function loadExpenseData(yearMonth) {
 
         if (doc.exists) {
             const data = doc.data();
+
+            // 収入データを読み込み
+            incomeItems.forEach((item, index) => {
+                const input = document.getElementById(`income_${index}`);
+                if (input) {
+                    input.value = data.income?.[item] || '';
+                }
+            });
+
+            // 支出データを読み込み
             expenseItems.forEach((item, index) => {
                 const input = document.getElementById(`expense_${index}`);
                 if (input) {
-                    input.value = data[item] || '';
+                    input.value = data.expenses?.[item] || data[item] || ''; // 旧形式も対応
                 }
             });
         } else {
             // データがない場合は空にする
+            incomeItems.forEach((item, index) => {
+                const input = document.getElementById(`income_${index}`);
+                if (input) input.value = '';
+            });
             expenseItems.forEach((item, index) => {
                 const input = document.getElementById(`expense_${index}`);
-                if (input) {
-                    input.value = '';
-                }
+                if (input) input.value = '';
             });
         }
 
@@ -1570,25 +1622,54 @@ async function loadExpenseData(yearMonth) {
 
 // 合計を計算
 function calculateExpenseTotal() {
-    let total = 0;
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    // 収入合計
+    incomeItems.forEach((item, index) => {
+        const input = document.getElementById(`income_${index}`);
+        if (input) {
+            totalIncome += Number(input.value) || 0;
+        }
+    });
+
+    // 支出合計
     expenseItems.forEach((item, index) => {
         const input = document.getElementById(`expense_${index}`);
         if (input) {
-            total += Number(input.value) || 0;
+            totalExpense += Number(input.value) || 0;
         }
     });
-    document.getElementById('totalExpenses').textContent = total.toLocaleString() + ' 円';
+
+    // 収支
+    const balance = totalIncome - totalExpense;
+
+    document.getElementById('totalIncome').textContent = totalIncome.toLocaleString() + ' 円';
+    document.getElementById('totalExpenses').textContent = totalExpense.toLocaleString() + ' 円';
+    document.getElementById('totalBalance').textContent = balance.toLocaleString() + ' 円';
 }
 
 // 月次費用を保存
 async function saveMonthlyExpenses() {
     const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
-    const data = {};
+    const data = {
+        income: {},
+        expenses: {}
+    };
 
+    // 収入データ
+    incomeItems.forEach((item, index) => {
+        const input = document.getElementById(`income_${index}`);
+        if (input) {
+            data.income[item] = Number(input.value) || 0;
+        }
+    });
+
+    // 支出データ
     expenseItems.forEach((item, index) => {
         const input = document.getElementById(`expense_${index}`);
         if (input) {
-            data[item] = Number(input.value) || 0;
+            data.expenses[item] = Number(input.value) || 0;
         }
     });
 
@@ -1647,6 +1728,29 @@ async function renderExpenseChart() {
 
         // 各項目のデータと平均を計算
         const itemData = {};
+
+        // 収入項目のデータ収集
+        for (let i = 0; i < incomeItems.length; i++) {
+            const item = incomeItems[i];
+            const data = [];
+
+            for (const month of months) {
+                const doc = await db.collection('monthlyExpenses').doc(month).get();
+                if (doc.exists) {
+                    data.push(doc.data().income?.[item] || 0);
+                } else {
+                    data.push(0);
+                }
+            }
+
+            itemData[item] = data;
+            const nonZeroData = data.filter(v => v > 0);
+            itemAverages[item] = nonZeroData.length > 0
+                ? nonZeroData.reduce((a, b) => a + b, 0) / nonZeroData.length
+                : 0;
+        }
+
+        // 支出項目のデータ収集
         for (let i = 0; i < expenseItems.length; i++) {
             const item = expenseItems[i];
             const data = [];
@@ -1654,14 +1758,13 @@ async function renderExpenseChart() {
             for (const month of months) {
                 const doc = await db.collection('monthlyExpenses').doc(month).get();
                 if (doc.exists) {
-                    data.push(doc.data()[item] || 0);
+                    data.push(doc.data().expenses?.[item] || doc.data()[item] || 0); // 旧形式も対応
                 } else {
                     data.push(0);
                 }
             }
 
             itemData[item] = data;
-            // 平均を計算（0を除く）
             const nonZeroData = data.filter(v => v > 0);
             itemAverages[item] = nonZeroData.length > 0
                 ? nonZeroData.reduce((a, b) => a + b, 0) / nonZeroData.length
@@ -1677,13 +1780,15 @@ async function renderExpenseChart() {
         // 左軸・右軸に振り分け
         const leftAxisDatasets = [];
         const rightAxisDatasets = [];
+        let colorIndex = 0;
 
-        expenseItems.forEach((item, i) => {
+        // 収入項目
+        incomeItems.forEach((item) => {
             const dataset = {
-                label: item,
+                label: `[収入] ${item}`,
                 data: itemData[item],
-                borderColor: colors[i % colors.length],
-                backgroundColor: colors[i % colors.length] + '20',
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '20',
                 tension: 0.3
             };
 
@@ -1694,6 +1799,27 @@ async function renderExpenseChart() {
                 dataset.yAxisID = 'y1';
                 rightAxisDatasets.push(dataset);
             }
+            colorIndex++;
+        });
+
+        // 支出項目
+        expenseItems.forEach((item) => {
+            const dataset = {
+                label: `[支出] ${item}`,
+                data: itemData[item],
+                borderColor: colors[colorIndex % colors.length],
+                backgroundColor: colors[colorIndex % colors.length] + '20',
+                tension: 0.3
+            };
+
+            if (itemAverages[item] >= threshold) {
+                dataset.yAxisID = 'y';
+                leftAxisDatasets.push(dataset);
+            } else {
+                dataset.yAxisID = 'y1';
+                rightAxisDatasets.push(dataset);
+            }
+            colorIndex++;
         });
 
         const datasets = [...leftAxisDatasets, ...rightAxisDatasets];
