@@ -1443,6 +1443,7 @@ async function deleteInsurance(id) {
 let expenseItems = []; // 費用項目リスト
 let currentExpenseYear = new Date().getFullYear();
 let currentExpenseMonth = new Date().getMonth();
+let currentChartYear = new Date().getFullYear(); // グラフ表示用の年
 let expenseChart = null;
 
 // 費用項目を読み込み
@@ -1632,13 +1633,14 @@ function nextExpenseMonth() {
 // 折れ線グラフを表示
 async function renderExpenseChart() {
     try {
-        // 過去6ヶ月のデータを取得
+        // 指定年の12ヶ月分のデータを取得
         const months = [];
-        const now = new Date();
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        for (let i = 1; i <= 12; i++) {
+            months.push(`${currentChartYear}-${String(i).padStart(2, '0')}`);
         }
+
+        // グラフ年表示を更新
+        document.getElementById('currentChartYear').textContent = `${currentChartYear}年`;
 
         const itemAverages = {}; // 各項目の平均金額
         const colors = ['#FB923C', '#60A5FA', '#34D399', '#F472B6', '#FBBF24', '#A78BFA', '#F87171', '#4ADE80'];
@@ -1707,7 +1709,7 @@ async function renderExpenseChart() {
             data: {
                 labels: months.map(m => {
                     const [y, mo] = m.split('-');
-                    return `${y}/${mo}`;
+                    return `${mo}月`;
                 }),
                 datasets: datasets
             },
@@ -1768,6 +1770,18 @@ async function renderExpenseChart() {
     } catch (error) {
         console.error('グラフ表示エラー:', error);
     }
+}
+
+// グラフの前年へ
+function previousChartYear() {
+    currentChartYear--;
+    renderExpenseChart();
+}
+
+// グラフの次年へ
+function nextChartYear() {
+    currentChartYear++;
+    renderExpenseChart();
 }
 
 // 月次費用機能の初期化
@@ -1845,6 +1859,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveExpensesBtn').addEventListener('click', saveMonthlyExpenses);
     document.getElementById('prevExpenseMonth').addEventListener('click', previousExpenseMonth);
     document.getElementById('nextExpenseMonth').addEventListener('click', nextExpenseMonth);
+    document.getElementById('prevChartYear').addEventListener('click', previousChartYear);
+    document.getElementById('nextChartYear').addEventListener('click', nextChartYear);
     document.getElementById('manageExpenseItemsBtn').addEventListener('click', () => {
         renderExpenseItemsList();
         openModal('expenseItemsModal');

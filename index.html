@@ -163,7 +163,14 @@
 
                     <!-- 折れ線グラフ -->
                     <div class="expense-chart-container">
-                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">📊 費用推移</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; margin-bottom: 1rem;">
+                            <h3>📊 費用推移</h3>
+                            <div class="expense-month-selector">
+                                <button id="prevChartYear" class="month-btn">◀</button>
+                                <div id="currentChartYear" class="month-display"></div>
+                                <button id="nextChartYear" class="month-btn">▶</button>
+                            </div>
+                        </div>
                         <canvas id="expenseChart" style="max-height: 300px;"></canvas>
                     </div>
                 </div>
@@ -306,6 +313,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102509"></script>
+    <script src="script.js?v=2025102510"></script>
 </body>
 </html>
