@@ -1484,10 +1484,20 @@ async function loadExpenseItems() {
     }
 }
 
-// 費用項目リストを表示（モーダル内）
+// 収入・支出項目リストを表示（モーダル内）
 function renderExpenseItemsList() {
-    const list = document.getElementById('expenseItemsList');
-    list.innerHTML = expenseItems.map((item, index) => `
+    // 収入項目リスト
+    const incomeList = document.getElementById('incomeItemsList');
+    incomeList.innerHTML = incomeItems.map((item, index) => `
+        <div class="email-item">
+            <span>${item}</span>
+            <button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>
+        </div>
+    `).join('');
+
+    // 支出項目リスト
+    const expenseList = document.getElementById('expenseItemsList');
+    expenseList.innerHTML = expenseItems.map((item, index) => `
         <div class="email-item">
             <span>${item}</span>
             <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
@@ -1495,7 +1505,57 @@ function renderExpenseItemsList() {
     `).join('');
 }
 
-// 費用項目を追加
+// 収入項目を追加
+async function addIncomeItem() {
+    const input = document.getElementById('incomeItemName');
+    const name = input.value.trim();
+
+    if (!name) {
+        alert('項目名を入力してください');
+        return;
+    }
+
+    if (incomeItems.includes(name)) {
+        alert('この項目は既に存在します');
+        return;
+    }
+
+    incomeItems.push(name);
+
+    try {
+        await db.collection('settings').doc('expenseItems').set({
+            incomeItems: incomeItems,
+            expenseItems: expenseItems
+        });
+        input.value = '';
+        renderExpenseItemsList();
+        renderExpenseInputs();
+    } catch (error) {
+        console.error('収入項目追加エラー:', error);
+        alert('収入項目の追加に失敗しました');
+    }
+}
+
+// 収入項目を削除
+async function removeIncomeItem(index) {
+    if (!confirm('この項目を削除しますか？')) return;
+
+    incomeItems.splice(index, 1);
+
+    try {
+        await db.collection('settings').doc('expenseItems').set({
+            incomeItems: incomeItems,
+            expenseItems: expenseItems
+        });
+        renderExpenseItemsList();
+        renderExpenseInputs();
+    } catch (error) {
+        console.error('収入項目削除エラー:', error);
+        alert('収入項目の削除に失敗しました');
+    }
+}
+
+// 支出項目を追加
 async function addExpenseItem() {
     const input = document.getElementById('expenseItemName');
     const name = input.value.trim();
@@ -1521,12 +1581,12 @@ async function addExpenseItem() {
         renderExpenseItemsList();
         renderExpenseInputs();
     } catch (error) {
-        console.error('費用項目追加エラー:', error);
-        alert('費用項目の追加に失敗しました');
+        console.error('支出項目追加エラー:', error);
+        alert('支出項目の追加に失敗しました');
     }
 }
 
-// 費用項目を削除
+// 支出項目を削除
 async function removeExpenseItem(index) {
     if (!confirm('この項目を削除しますか？')) return;
 
@@ -1540,8 +1600,8 @@ async function removeExpenseItem(index) {
         renderExpenseItemsList();
         renderExpenseInputs();
     } catch (error) {
-        console.error('費用項目削除エラー:', error);
-        alert('費用項目の削除に失敗しました');
+        console.error('支出項目削除エラー:', error);
+        alert('支出項目の削除に失敗しました');
     }
 }
 
@@ -1991,11 +2051,20 @@ document.addEventListener('DOMContentLoaded', function() {
         renderExpenseItemsList();
         openModal('expenseItemsModal');
     });
+
+    // 収入項目の追加
+    document.getElementById('addIncomeItemBtn').addEventListener('click', addIncomeItem);
+    document.getElementById('incomeItemName').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addIncomeItem();
+    });
+
+    // 支出項目の追加
     document.getElementById('addExpenseItemBtn').addEventListener('click', addExpenseItem);
-    document.getElementById('closeExpenseItemsBtn').addEventListener('click', () => closeModal('expenseItemsModal'));
     document.getElementById('expenseItemName').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addExpenseItem();
     });
+
+    document.getElementById('closeExpenseItemsBtn').addEventListener('click', () => closeModal('expenseItemsModal'));
 
     // ページ切り替えタブ
     document.querySelectorAll('.header-tab').forEach(tab => {

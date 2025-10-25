@@ -313,12 +313,28 @@
     <!-- 費用項目管理モーダル -->
     <div id="expenseItemsModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
-            <h3>費用項目を管理</h3>
-            <div class="email-input-group">
-                <input type="text" id="expenseItemName" placeholder="例: Netflix">
-                <button id="addExpenseItemBtn" class="btn-small">追加</button>
+            <h3>収入・支出項目を管理</h3>
+
+            <!-- 収入項目 -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: #10B981; margin-bottom: 0.5rem;">💵 収入項目</h4>
+                <div class="email-input-group">
+                    <input type="text" id="incomeItemName" placeholder="例: 給与（夫）">
+                    <button id="addIncomeItemBtn" class="btn-small">追加</button>
+                </div>
+                <div id="incomeItemsList" class="email-list"></div>
             </div>
-            <div id="expenseItemsList" class="email-list"></div>
+
+            <!-- 支出項目 -->
+            <div>
+                <h4 style="color: #EF4444; margin-bottom: 0.5rem;">💸 支出項目</h4>
+                <div class="email-input-group">
+                    <input type="text" id="expenseItemName" placeholder="例: Netflix">
+                    <button id="addExpenseItemBtn" class="btn-small">追加</button>
+                </div>
+                <div id="expenseItemsList" class="email-list"></div>
+            </div>
+
             <div class="modal-actions">
                 <button id="closeExpenseItemsBtn" class="btn-secondary" style="width: 100%;">閉じる</button>
             </div>
@@ -333,6 +349,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102514"></script>
+    <script src="script.js?v=2025102515"></script>
 </body>
 </html>
