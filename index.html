@@ -134,6 +134,43 @@
                     <div id="insuranceList" class="insurance-list"></div>
                 </div>
             </section>
+
+            <!-- 月次費用 -->
+            <section class="card" id="monthlyExpensesCard">
+                <div class="card-header" onclick="toggleCard('monthlyExpensesCard')">
+                    <h2>💰 月次費用</h2>
+                    <span class="card-toggle">▼</span>
+                </div>
+                <div class="card-content">
+                    <div class="expenses-grid">
+                        <div class="expense-item">
+                            <label for="electricityFee">⚡ 電気代</label>
+                            <input type="number" id="electricityFee" placeholder="0" min="0">
+                            <span>円</span>
+                        </div>
+                        <div class="expense-item">
+                            <label for="gasFee">🔥 ガス代</label>
+                            <input type="number" id="gasFee" placeholder="0" min="0">
+                            <span>円</span>
+                        </div>
+                        <div class="expense-item">
+                            <label for="housingLoan">🏠 住宅ローン</label>
+                            <input type="number" id="housingLoan" placeholder="0" min="0">
+                            <span>円</span>
+                        </div>
+                        <div class="expense-item">
+                            <label for="managementFee">🏢 管理費</label>
+                            <input type="number" id="managementFee" placeholder="0" min="0">
+                            <span>円</span>
+                        </div>
+                    </div>
+                    <div class="expenses-total">
+                        <span>合計</span>
+                        <span id="totalExpenses" class="total-amount">0 円</span>
+                    </div>
+                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">保存</button>
+                </div>
+            </section>
         </main>
 
         <!-- チャットページ -->
@@ -255,6 +292,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102505"></script>
+    <script src="script.js?v=2025102506"></script>
 </body>
 </html>

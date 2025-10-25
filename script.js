@@ -331,6 +331,7 @@ function showMainApp() {
     renderNotices();
     renderContacts();
     renderInsurances();
+    renderMonthlyExpenses();
     updateMonthDisplay();
 }
 
@@ -1436,6 +1437,59 @@ async function deleteInsurance(id) {
 }
 
 // ==========================================
+// 月次費用管理機能
+// ==========================================
+
+// 月次費用を表示
+async function renderMonthlyExpenses() {
+    try {
+        const doc = await db.collection('settings').doc('monthlyExpenses').get();
+
+        if (doc.exists) {
+            const data = doc.data();
+            document.getElementById('electricityFee').value = data.electricity || '';
+            document.getElementById('gasFee').value = data.gas || '';
+            document.getElementById('housingLoan').value = data.housingLoan || '';
+            document.getElementById('managementFee').value = data.managementFee || '';
+        }
+
+        calculateTotal();
+    } catch (error) {
+        console.error('月次費用読み込みエラー:', error);
+    }
+}
+
+// 合計を計算
+function calculateTotal() {
+    const electricity = Number(document.getElementById('electricityFee').value) || 0;
+    const gas = Number(document.getElementById('gasFee').value) || 0;
+    const housingLoan = Number(document.getElementById('housingLoan').value) || 0;
+    const managementFee = Number(document.getElementById('managementFee').value) || 0;
+
+    const total = electricity + gas + housingLoan + managementFee;
+    document.getElementById('totalExpenses').textContent = total.toLocaleString() + ' 円';
+}
+
+// 月次費用を保存
+async function saveMonthlyExpenses() {
+    try {
+        const data = {
+            electricity: Number(document.getElementById('electricityFee').value) || 0,
+            gas: Number(document.getElementById('gasFee').value) || 0,
+            housingLoan: Number(document.getElementById('housingLoan').value) || 0,
+            managementFee: Number(document.getElementById('managementFee').value) || 0
+        };
+
+        await db.collection('settings').doc('monthlyExpenses').set(data);
+        alert('月次費用を保存しました');
+        calculateTotal();
+    } catch (error) {
+        console.error('月次費用保存エラー:', error);
+        alert('月次費用の保存に失敗しました');
+    }
+}
+
+// ==========================================
 // 初期化
 // ==========================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -1497,6 +1551,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('saveInsuranceBtn').addEventListener('click', saveInsurance);
     document.getElementById('closeInsuranceBtn').addEventListener('click', () => closeModal('insuranceModal'));
+
+    // 月次費用
+    document.getElementById('saveExpensesBtn').addEventListener('click', saveMonthlyExpenses);
+    ['electricityFee', 'gasFee', 'housingLoan', 'managementFee'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateTotal);
+    });
 
     // ページ切り替えタブ
     document.querySelectorAll('.header-tab').forEach(tab => {

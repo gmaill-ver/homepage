@@ -1188,3 +1188,68 @@ body {
     object-fit: cover;
     border-radius: 0.5rem;
 }
+
+/* 月次費用 */
+.expenses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.expense-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.expense-item label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.expense-item input {
+    padding: 0.75rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.expense-item input:focus {
+    outline: none;
+    border-color: #FB923C;
+}
+
+.expense-item span {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6B7280;
+    pointer-events: none;
+}
+
+.expense-item {
+    position: relative;
+}
+
+.expenses-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(to right, #FB923C, #F472B6);
+    border-radius: 0.75rem;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.total-amount {
+    font-size: 1.75rem;
+}
