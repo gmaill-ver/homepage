@@ -1709,7 +1709,7 @@ async function renderExpenseChart() {
             data: {
                 labels: months.map(m => {
                     const [y, mo] = m.split('-');
-                    return `${mo}月`;
+                    return `${parseInt(mo)}月`;
                 }),
                 datasets: datasets
             },
