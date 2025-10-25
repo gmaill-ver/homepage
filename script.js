@@ -1061,14 +1061,6 @@ function switchPage(pageName) {
         page.style.display = 'none';
     });
 
-    // フッターの表示切り替え
-    const footer = document.querySelector('.footer');
-    if (pageName === 'home') {
-        footer.style.display = 'block';
-    } else {
-        footer.style.display = 'none';
-    }
-
     // 選択されたページを表示
     const selectedPage = document.getElementById(`${pageName}Page`);
     if (selectedPage) {
