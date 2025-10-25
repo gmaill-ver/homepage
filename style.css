@@ -800,6 +800,31 @@ body {
     }
 }
 
+/* さらに読み込むボタン */
+.load-more-btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #FB923C, #F472B6);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.load-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
+}
+
+.load-more-btn:active {
+    transform: translateY(0);
+}
+
 /* フッター */
 .footer {
     background: linear-gradient(to right, #FB923C, #F472B6);
@@ -826,19 +851,26 @@ body {
 }
 
 .contact-item {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 0.75rem;
     padding: 1rem;
     position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.footer .contact-item {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: none;
 }
 
 .contact-delete {
     position: absolute;
     top: 0.5rem;
     left: 0.5rem;
-    background: rgba(0, 0, 0, 0.2);
-    color: white;
+    background: rgba(0, 0, 0, 0.1);
+    color: #666;
     border: none;
     width: 1.5rem;
     height: 1.5rem;
@@ -849,21 +881,39 @@ body {
     transition: opacity 0.2s, background 0.2s;
 }
 
+.footer .contact-delete {
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
 .contact-delete:hover {
     opacity: 1;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.footer .contact-delete:hover {
     background: rgba(0, 0, 0, 0.5);
 }
 
 .contact-name {
     font-weight: bold;
     margin-bottom: 0.25rem;
+    color: #1f2937;
+}
+
+.footer .contact-name {
+    color: white;
 }
 
 .contact-phone {
-    color: white;
+    color: #6b7280;
     text-decoration: none;
     font-size: 1.125rem;
     font-weight: 600;
+}
+
+.footer .contact-phone {
+    color: white;
 }
 
 .contact-empty {

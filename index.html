@@ -106,6 +106,21 @@
                 </div>
             </section>
 
+            <!-- 連絡先 -->
+            <section class="card" id="contactCard">
+                <div class="card-header" onclick="toggleCard('contactCard')">
+                    <h2>📞 連絡先</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="editContactsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️</button>
+                        <button id="addContactBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
+                        <span class="card-toggle">▼</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="contactList" class="contact-list"></div>
+                </div>
+            </section>
+
             <!-- 保険加入状況 -->
             <section class="card" id="insuranceCard">
                 <div class="card-header" onclick="toggleCard('insuranceCard')">
@@ -120,20 +135,6 @@
                 </div>
             </section>
         </main>
-
-        <!-- フッター -->
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-header">
-                    <h3>📞 連絡先</h3>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button id="editContactsBtn" class="btn-edit">✏️</button>
-                        <button id="addContactBtn" class="btn-add-white">➕</button>
-                    </div>
-                </div>
-                <div id="contactList" class="contact-list"></div>
-            </div>
-        </footer>
 
         <!-- チャットページ -->
         <main class="main-content page-content" id="chatPage" style="display: none;">
@@ -254,6 +255,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102503"></script>
+    <script src="script.js?v=2025102504"></script>
 </body>
 </html>
