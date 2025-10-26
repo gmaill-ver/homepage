@@ -2,7 +2,7 @@
 // 持ち物チェックリスト機能
 // ==========================================
 
-let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: {checked: false, quantity: 1}, outing: {...}, nursery: {...}} }
+let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: {checked: false, quantity: 1, packed: false}, outing: {...}, nursery: {...}} }
 let currentCategory = 'travel'; // 現在選択中のカテゴリ
 let currentPersonFilter = 'all'; // 現在選択中の人物フィルター（アイテム一覧用）
 let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っていくものリスト用）
@@ -61,15 +61,20 @@ async function loadChecklistItems() {
                     const value = item.categories[catId];
 
                     if (typeof value === 'boolean') {
-                        // 旧形式: boolean → 新形式: {checked, quantity}
-                        itemCategories[catId] = { checked: value, quantity: 1 };
+                        // 旧形式: boolean → 新形式: {checked, quantity, packed}
+                        itemCategories[catId] = { checked: value, quantity: 1, packed: false };
                         needsMigration = true;
                     } else if (value && typeof value === 'object' && 'checked' in value) {
-                        // 新形式: そのまま使用
-                        itemCategories[catId] = { checked: value.checked, quantity: value.quantity || 1 };
+                        // 新形式: そのまま使用（packedがない場合は追加）
+                        itemCategories[catId] = {
+                            checked: value.checked,
+                            quantity: value.quantity || 1,
+                            packed: value.packed || false
+                        };
+                        if (!('packed' in value)) needsMigration = true;
                     } else {
                         // 不正なデータまたは存在しない: 初期化
-                        itemCategories[catId] = { checked: false, quantity: 1 };
+                        itemCategories[catId] = { checked: false, quantity: 1, packed: false };
                         needsMigration = true;
                     }
                 }
@@ -93,7 +98,7 @@ async function loadChecklistItems() {
             // デフォルトアイテム（すべてのカテゴリに対応）
             const defaultCats = {};
             categories.forEach(cat => {
-                defaultCats[cat.id] = { checked: false, quantity: 1 };
+                defaultCats[cat.id] = { checked: false, quantity: 1, packed: false };
             });
 
             checklistItems = [
@@ -195,19 +200,19 @@ function renderChecklist() {
         packingList.innerHTML = checkedItems.map((item) => {
             const realIndex = checklistItems.findIndex(i => i.name === item.name && i.person === item.person);
             const quantity = item.categories[currentCategory]?.quantity || 1;
+            const packed = item.categories[currentCategory]?.packed || false;
             return `
                 <div class="checklist-item">
                     <input type="checkbox"
                            id="packing_${realIndex}"
-                           checked
-                           onchange="toggleChecklistItem(${realIndex})">
+                           ${packed ? 'checked' : ''}
+                           onchange="togglePackedStatus(${realIndex})">
                     <label for="packing_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
                     <div class="quantity-controls">
                         <button class="quantity-btn" onclick="changeQuantity(${realIndex}, -1)">−</button>
                         <span class="quantity-display">×${quantity}</span>
                         <button class="quantity-btn" onclick="changeQuantity(${realIndex}, 1)">+</button>
                     </div>
-                    <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
                 </div>
             `;
         }).join('');
@@ -238,16 +243,20 @@ function renderChecklist() {
     }).join('');
 }
 
-// チェック状態を切り替え
+// チェック状態を切り替え（アイテム一覧用）
 async function toggleChecklistItem(index) {
     const currentState = checklistItems[index].categories[currentCategory];
 
     if (currentState?.checked) {
-        // チェックを外す
-        checklistItems[index].categories[currentCategory] = { checked: false, quantity: 1 };
+        // チェックを外す（持っていくものリストから削除）
+        checklistItems[index].categories[currentCategory] = { checked: false, quantity: 1, packed: false };
     } else {
-        // チェックを入れる
-        checklistItems[index].categories[currentCategory] = { checked: true, quantity: currentState?.quantity || 1 };
+        // チェックを入れる（持っていくものリストに追加）
+        checklistItems[index].categories[currentCategory] = {
+            checked: true,
+            quantity: currentState?.quantity || 1,
+            packed: false
+        };
     }
 
     try {
@@ -255,6 +264,22 @@ async function toggleChecklistItem(index) {
         renderChecklist();
     } catch (error) {
         console.error('チェック状態保存エラー:', error);
+        alert('保存に失敗しました');
+    }
+}
+
+// 準備完了状態を切り替え（持っていくものリスト用）
+async function togglePackedStatus(index) {
+    const currentState = checklistItems[index].categories[currentCategory];
+    if (!currentState?.checked) return;
+
+    checklistItems[index].categories[currentCategory].packed = !currentState.packed;
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        renderChecklist();
+    } catch (error) {
+        console.error('準備完了状態保存エラー:', error);
         alert('保存に失敗しました');
     }
 }
@@ -310,14 +335,16 @@ async function addChecklistItem() {
         return;
     }
 
+    // すべてのカテゴリに対応
+    const newItemCategories = {};
+    categories.forEach(cat => {
+        newItemCategories[cat.id] = { checked: false, quantity: 1, packed: false };
+    });
+
     checklistItems.push({
         name: name,
         person: person,
-        categories: {
-            travel: { checked: false, quantity: 1 },
-            outing: { checked: false, quantity: 1 },
-            nursery: { checked: false, quantity: 1 }
-        }
+        categories: newItemCategories
     });
 
     try {
@@ -381,7 +408,7 @@ async function addCategory() {
     // すべてのアイテムに新しいカテゴリを追加
     checklistItems.forEach(item => {
         if (!item.categories[id]) {
-            item.categories[id] = { checked: false, quantity: 1 };
+            item.categories[id] = { checked: false, quantity: 1, packed: false };
         }
     });
 
