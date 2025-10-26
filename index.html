@@ -37,6 +37,7 @@
             <div class="header-tabs">
                 <button class="header-tab active" data-page="home">ホーム</button>
                 <button class="header-tab" data-page="chat">チャット</button>
+                <button class="header-tab" data-page="game">🚴 チャリ走</button>
             </div>
         </header>
 
@@ -240,6 +241,51 @@
                 </div>
             </section>
         </main>
+
+        <!-- チャリ走ゲームページ -->
+        <main class="main-content page-content" id="gamePage" style="display: none;">
+            <section class="card">
+                <div class="card-header">
+                    <h2>🚴 チャリ走</h2>
+                </div>
+                <div class="card-content">
+                    <div class="game-container">
+                        <div class="game-stats">
+                            <div class="stat-box">
+                                <div class="stat-label">スコア</div>
+                                <div class="stat-value" id="gameScoreDisplay">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label">距離</div>
+                                <div class="stat-value" id="gameDistanceDisplay">0m</div>
+                            </div>
+                        </div>
+
+                        <canvas id="gameCanvas"></canvas>
+
+                        <div class="game-controls">
+                            <p>スペースキー or ↑キー でジャンプ<br>タップ or クリック でもOK</p>
+                        </div>
+
+                        <div class="game-buttons">
+                            <button class="btn-primary" id="gameStartBtn">ゲーム開始</button>
+                            <button class="btn-secondary" id="gameResetBtn">リセット</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ゲームオーバーモーダル -->
+    <div id="gameOverModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>ゲームオーバー!</h3>
+            <div id="gameResultText" style="background: #FEF3C7; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; font-weight: bold; color: #D97706;"></div>
+            <div class="modal-actions">
+                <button id="gameRetryBtn" class="btn-primary" style="width: 100%;">もう一度プレイ</button>
+            </div>
+        </div>
     </div>
 
     <!-- 設定モーダル -->
@@ -375,6 +421,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="script.js?v=2025102517"></script>
+    <script src="game.js"></script>
+    <script src="script.js?v=2025102518"></script>
 </body>
 </html>

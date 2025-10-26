@@ -1074,6 +1074,11 @@ function switchPage(pageName) {
         loadChatHistory();
     }
 
+    // ゲームページに切り替えた時は初期化
+    if (pageName === 'game') {
+        setTimeout(() => initCharisoGame(), 100);
+    }
+
     // タブのアクティブ状態を更新
     document.querySelectorAll('.header-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -2180,6 +2185,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // チャット機能
     document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
     document.getElementById('chatInput').addEventListener('keypress', handleChatKeyPress);
+
+    // ゲーム機能
+    initGameEventListeners();
 });
 
 /*

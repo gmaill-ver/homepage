@@ -1289,3 +1289,66 @@ body {
 .balance-amount {
     font-size: 1.75rem;
 }
+
+/* ゲームページ */
+.game-container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.game-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.game-stats .stat-box {
+    background: #F3F4F6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.game-stats .stat-label {
+    font-size: 0.75rem;
+    color: #6B7280;
+    margin-bottom: 0.25rem;
+}
+
+.game-stats .stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #60A5FA;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 350px;
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+    border-radius: 0.75rem;
+    border: 3px solid #60A5FA;
+    display: block;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+}
+
+.game-controls {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+.game-controls p {
+    margin-bottom: 0.5rem;
+}
+
+.game-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.game-buttons button {
+    flex: 1;
+}
