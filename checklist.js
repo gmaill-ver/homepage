@@ -12,6 +12,36 @@ async function loadChecklistItems() {
         const doc = await db.collection('settings').doc('checklistItems').get();
         if (doc.exists) {
             checklistItems = doc.data().items || [];
+
+            // 旧データ形式から新データ形式へのマイグレーション
+            let needsMigration = false;
+            checklistItems = checklistItems.map(item => {
+                if (item.categories) {
+                    // 各カテゴリをチェック
+                    const categories = {};
+                    for (const [category, value] of Object.entries(item.categories)) {
+                        if (typeof value === 'boolean') {
+                            // 旧形式: boolean → 新形式: {checked, quantity}
+                            categories[category] = { checked: value, quantity: 1 };
+                            needsMigration = true;
+                        } else if (value && typeof value === 'object' && 'checked' in value) {
+                            // 新形式: そのまま使用
+                            categories[category] = { checked: value.checked, quantity: value.quantity || 1 };
+                        } else {
+                            // 不正なデータ: 初期化
+                            categories[category] = { checked: false, quantity: 1 };
+                            needsMigration = true;
+                        }
+                    }
+                    item.categories = categories;
+                }
+                return item;
+            });
+
+            // マイグレーションが必要な場合は保存
+            if (needsMigration) {
+                await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+            }
         } else {
             // デフォルトアイテム
             checklistItems = [
