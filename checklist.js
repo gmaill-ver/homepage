@@ -16,10 +16,9 @@ let categories = [
 
 // 人物名のマッピング
 const personNames = {
-    'me': 'しでき',
-    'wife': 'あゆ',
-    'son': '翔真',
-    'common': '共通'
+    'me': '英',
+    'wife': '歩',
+    'son': '翔'
 };
 
 // カテゴリを読み込み
@@ -207,12 +206,7 @@ function renderChecklist() {
                            id="packing_${realIndex}"
                            ${packed ? 'checked' : ''}
                            onchange="togglePackedStatus(${realIndex})">
-                    <label for="packing_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, -1)">−</button>
-                        <span class="quantity-display">×${quantity}</span>
-                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, 1)">+</button>
-                    </div>
+                    <label for="packing_${realIndex}">${getPersonLabel(item.person)} ${item.name} ${quantity > 1 ? `×${quantity}` : ''}</label>
                 </div>
             `;
         }).join('');
@@ -223,6 +217,12 @@ function renderChecklist() {
         const realIndex = checklistItems.findIndex(i => i.name === item.name && i.person === item.person);
         const isChecked = item.categories[currentCategory]?.checked;
         const quantity = item.categories[currentCategory]?.quantity || 1;
+
+        // 数量選択肢を生成（1〜50）
+        const quantityOptions = Array.from({length: 50}, (_, i) => i + 1)
+            .map(n => `<option value="${n}" ${n === quantity ? 'selected' : ''}>×${n}</option>`)
+            .join('');
+
         return `
             <div class="checklist-item">
                 <input type="checkbox"
@@ -231,11 +231,9 @@ function renderChecklist() {
                        onchange="toggleChecklistItem(${realIndex})">
                 <label for="all_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
                 ${isChecked ? `
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, -1)">−</button>
-                        <span class="quantity-display">×${quantity}</span>
-                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, 1)">+</button>
-                    </div>
+                    <select class="quantity-select" onchange="setQuantity(${realIndex}, this.value)">
+                        ${quantityOptions}
+                    </select>
                 ` : ''}
                 <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
             </div>
@@ -284,13 +282,12 @@ async function togglePackedStatus(index) {
     }
 }
 
-// 数量を変更
-async function changeQuantity(index, delta) {
+// 数量を設定
+async function setQuantity(index, quantity) {
     const currentState = checklistItems[index].categories[currentCategory];
     if (!currentState?.checked) return;
 
-    const newQuantity = Math.max(1, (currentState.quantity || 1) + delta);
-    checklistItems[index].categories[currentCategory].quantity = newQuantity;
+    checklistItems[index].categories[currentCategory].quantity = parseInt(quantity);
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
@@ -359,6 +356,48 @@ async function addChecklistItem() {
     }
 }
 
+// カテゴリ編集モーダルからアイテムを追加（モーダルを閉じない）
+async function addChecklistItemFromModal() {
+    const input = document.getElementById('checklistItemName');
+    const personSelect = document.getElementById('checklistItemPerson');
+    if (!input || !personSelect) return;
+
+    const name = input.value.trim();
+    const person = personSelect.value;
+
+    if (!name) {
+        alert('アイテム名を入力してください');
+        return;
+    }
+
+    if (checklistItems.some(item => item.name === name && item.person === person)) {
+        alert('このアイテムは既に存在します');
+        return;
+    }
+
+    // すべてのカテゴリに対応
+    const newItemCategories = {};
+    categories.forEach(cat => {
+        newItemCategories[cat.id] = { checked: false, quantity: 1, packed: false };
+    });
+
+    checklistItems.push({
+        name: name,
+        person: person,
+        categories: newItemCategories
+    });
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        input.value = '';
+        personSelect.value = 'me';
+        renderChecklist();
+    } catch (error) {
+        console.error('アイテム追加エラー:', error);
+        alert('追加に失敗しました');
+    }
+}
+
 // カテゴリボタンを描画
 function renderCategoryButtons() {
     const container = document.getElementById('categoryButtonsContainer');
@@ -368,7 +407,7 @@ function renderCategoryButtons() {
         <button class="category-btn ${cat.id === currentCategory ? 'active' : ''}"
                 data-category="${cat.id}"
                 onclick="selectCategory('${cat.id}')">
-            ${cat.icon} ${cat.name}
+            ${cat.icon ? cat.icon + ' ' : ''}${cat.name}
         </button>
     `).join('');
 }
@@ -380,7 +419,7 @@ function renderCategoryEditModal() {
 
     categoryList.innerHTML = categories.map((cat, index) => `
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
-            <span style="font-size: 1.5rem;">${cat.icon}</span>
+            ${cat.icon ? `<span style="font-size: 1.5rem;">${cat.icon}</span>` : ''}
             <span style="flex: 1; font-weight: 500;">${cat.name}</span>
             <button onclick="removeCategory(${index})" class="remove-btn" style="opacity: 1;">🗑️</button>
         </div>
@@ -399,20 +438,25 @@ async function addCategory() {
 
     // 最初の文字が絵文字かチェック（絵文字は複数バイト）
     const firstChar = Array.from(fullText)[0];
-    let icon = '📝';
-    let name = fullText;
+    let icon = '';
+    let name = '';
 
     // 絵文字判定（簡易版：最初の文字が絵文字範囲にあれば分離）
-    if (firstChar && firstChar.length > 1) {
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F910}-\u{1F96B}\u{1F980}-\u{1F9E0}]/u;
+
+    if (firstChar && (firstChar.length > 1 || emojiRegex.test(firstChar))) {
+        // 最初の文字が絵文字
         icon = firstChar;
         name = fullText.slice(firstChar.length).trim();
-    } else if (/[\u{1F300}-\u{1F9FF}]/u.test(firstChar)) {
-        icon = firstChar;
-        name = fullText.slice(1).trim();
+    } else {
+        // 絵文字がない場合は全体をnameとして使用
+        icon = '';
+        name = fullText;
     }
 
-    if (!name) {
-        name = fullText; // 絵文字のみの場合
+    if (!name && icon) {
+        // 絵文字のみの場合は絵文字をnameにも設定
+        name = icon;
     }
 
     // 一意のIDを生成
