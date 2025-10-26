@@ -2,7 +2,7 @@
 // 持ち物チェックリスト機能
 // ==========================================
 
-let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: false, outing: false, nursery: false} }
+let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: {checked: false, quantity: 1}, outing: {...}, nursery: {...}} }
 let currentCategory = 'travel'; // 現在選択中のカテゴリ
 let currentPersonFilter = 'all'; // 現在選択中の人物フィルター
 
@@ -15,14 +15,14 @@ async function loadChecklistItems() {
         } else {
             // デフォルトアイテム
             checklistItems = [
-                { name: '水筒', person: 'common', categories: { travel: false, outing: false, nursery: false } },
-                { name: 'タオル', person: 'common', categories: { travel: false, outing: false, nursery: false } },
-                { name: '帽子', person: 'son', categories: { travel: false, outing: false, nursery: false } },
-                { name: '着替え', person: 'son', categories: { travel: false, outing: false, nursery: false } },
-                { name: 'おむつ', person: 'son', categories: { travel: false, outing: false, nursery: false } },
-                { name: 'おしりふき', person: 'son', categories: { travel: false, outing: false, nursery: false } },
-                { name: 'ビニール袋', person: 'common', categories: { travel: false, outing: false, nursery: false } },
-                { name: '日焼け止め', person: 'common', categories: { travel: false, outing: false, nursery: false } }
+                { name: '水筒', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: 'タオル', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: '帽子', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: '着替え', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: 'おむつ', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: 'おしりふき', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: 'ビニール袋', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
+                { name: '日焼け止め', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } }
             ];
             await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
         }
@@ -78,7 +78,7 @@ function renderChecklist() {
     if (!packingList || !allItemsList) return;
 
     // 現在のカテゴリでチェックされているアイテム
-    const checkedItems = checklistItems.filter(item => item.categories[currentCategory]);
+    const checkedItems = checklistItems.filter(item => item.categories[currentCategory]?.checked);
 
     // 人物フィルターでフィルタリングされたアイテム
     let filteredItems = checklistItems;
@@ -94,6 +94,7 @@ function renderChecklist() {
         if (emptyMessage) emptyMessage.style.display = 'none';
         packingList.innerHTML = checkedItems.map((item) => {
             const realIndex = checklistItems.findIndex(i => i.name === item.name && i.person === item.person);
+            const quantity = item.categories[currentCategory]?.quantity || 1;
             return `
                 <div class="checklist-item">
                     <input type="checkbox"
@@ -101,6 +102,11 @@ function renderChecklist() {
                            checked
                            onchange="toggleChecklistItem(${realIndex})">
                     <label for="packing_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, -1)">−</button>
+                        <span class="quantity-display">×${quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, 1)">+</button>
+                    </div>
                     <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
                 </div>
             `;
@@ -110,13 +116,22 @@ function renderChecklist() {
     // 全アイテムリスト（人物フィルター適用）
     allItemsList.innerHTML = filteredItems.map((item) => {
         const realIndex = checklistItems.findIndex(i => i.name === item.name && i.person === item.person);
+        const isChecked = item.categories[currentCategory]?.checked;
+        const quantity = item.categories[currentCategory]?.quantity || 1;
         return `
             <div class="checklist-item">
                 <input type="checkbox"
                        id="all_${realIndex}"
-                       ${item.categories[currentCategory] ? 'checked' : ''}
+                       ${isChecked ? 'checked' : ''}
                        onchange="toggleChecklistItem(${realIndex})">
                 <label for="all_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
+                ${isChecked ? `
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, -1)">−</button>
+                        <span class="quantity-display">×${quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${realIndex}, 1)">+</button>
+                    </div>
+                ` : ''}
                 <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
             </div>
         `;
@@ -125,13 +140,38 @@ function renderChecklist() {
 
 // チェック状態を切り替え
 async function toggleChecklistItem(index) {
-    checklistItems[index].categories[currentCategory] = !checklistItems[index].categories[currentCategory];
+    const currentState = checklistItems[index].categories[currentCategory];
+
+    if (currentState?.checked) {
+        // チェックを外す
+        checklistItems[index].categories[currentCategory] = { checked: false, quantity: 1 };
+    } else {
+        // チェックを入れる
+        checklistItems[index].categories[currentCategory] = { checked: true, quantity: currentState?.quantity || 1 };
+    }
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
         renderChecklist();
     } catch (error) {
         console.error('チェック状態保存エラー:', error);
+        alert('保存に失敗しました');
+    }
+}
+
+// 数量を変更
+async function changeQuantity(index, delta) {
+    const currentState = checklistItems[index].categories[currentCategory];
+    if (!currentState?.checked) return;
+
+    const newQuantity = Math.max(1, (currentState.quantity || 1) + delta);
+    checklistItems[index].categories[currentCategory].quantity = newQuantity;
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        renderChecklist();
+    } catch (error) {
+        console.error('数量変更エラー:', error);
         alert('保存に失敗しました');
     }
 }
@@ -173,7 +213,11 @@ async function addChecklistItem() {
     checklistItems.push({
         name: name,
         person: person,
-        categories: { travel: false, outing: false, nursery: false }
+        categories: {
+            travel: { checked: false, quantity: 1 },
+            outing: { checked: false, quantity: 1 },
+            nursery: { checked: false, quantity: 1 }
+        }
     });
 
     try {
