@@ -73,7 +73,7 @@ function renderChecklist() {
                    ${item.checked ? 'checked' : ''}
                    onchange="toggleChecklistItem(${index})">
             <label for="all_${index}">${item.name}</label>
-            <button class="remove-btn" onclick="removeChecklistItem(${index})">削除</button>
+            <button class="remove-btn" onclick="removeChecklistItem(${index})">🗑️</button>
         </div>
     `).join('');
 }
