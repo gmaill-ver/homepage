@@ -186,18 +186,18 @@
                 </div>
                 <div class="card-content">
                     <!-- カテゴリ選択 -->
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 0.75rem;">
                         <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                             <!-- カテゴリボタンは動的に生成 -->
                         </div>
                     </div>
 
                     <!-- 持っていくものリスト -->
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: #EF4444; margin-bottom: 1rem;">🎒 持っていくもの</h3>
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: #EF4444; margin-bottom: 0.5rem;">🎒 持っていくもの</h3>
 
                         <!-- 持っていくもの用の人物タブ -->
-                        <div style="margin-bottom: 1rem;">
+                        <div style="margin-bottom: 0.5rem;">
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                 <button class="packing-person-tab active" data-person="all" onclick="selectPackingPersonTab('all')">👨‍👩‍👦 全</button>
                                 <button class="packing-person-tab" data-person="me" onclick="selectPackingPersonTab('me')">👨 英</button>
@@ -214,13 +214,13 @@
 
                     <!-- アイテム一覧 -->
                     <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                             <h3 style="color: #6B7280; margin: 0;">📦 アイテム一覧</h3>
                             <button id="toggleReorderMode" class="btn-icon-simple" onclick="toggleReorderMode()" title="並び替え">⇅</button>
                         </div>
 
                         <!-- アイテム一覧用の人物フィルター -->
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
                             <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">👨‍👩‍👦 全</button>
                             <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 英</button>
                             <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 歩</button>
