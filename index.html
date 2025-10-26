@@ -47,7 +47,6 @@
             <section class="card weather-card" id="weatherCard">
                 <div class="card-header" onclick="toggleCard('weatherCard')">
                     <h2>🌤️ 天気</h2>
-                    <span class="card-toggle">▼</span>
                 </div>
                 <div class="card-content">
                     <div id="weatherInfo" class="weather-info"></div>
@@ -63,7 +62,6 @@
                             ➕
                             <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
                         </label>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -80,7 +78,6 @@
             <section class="card" id="calendarCard">
                 <div class="card-header" onclick="toggleCard('calendarCard')">
                     <h2>📅 予定</h2>
-                    <span class="card-toggle">▼</span>
                 </div>
                 <div class="card-content">
                     <div class="calendar-tabs">
@@ -98,7 +95,6 @@
                     <h2>🔔 保育園のお知らせ</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="addNoticeBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -113,7 +109,6 @@
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="editContactsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️</button>
                         <button id="addContactBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -187,7 +182,6 @@
                     <h2>📋 持ち物チェックリスト</h2>
                     <div style="display: flex; align-items: center; gap: 0.25rem;">
                         <button class="btn-icon-simple" onclick="openModal('categoryEditModal'); event.stopPropagation();" title="カテゴリを編集">✏️</button>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -241,7 +235,6 @@
                     <h2>🏥 保険加入状況</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="addInsuranceBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -255,7 +248,6 @@
                     <h2>💰 月次費用</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="manageExpenseItemsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️</button>
-                        <span class="card-toggle">▼</span>
                     </div>
                 </div>
                 <div class="card-content">
@@ -314,7 +306,6 @@
                         <div class="card-header" onclick="toggleDetailChart('incomeDetail')" style="cursor: pointer; padding: 1rem; background: #F0FDF4; border-radius: 0.5rem; margin-bottom: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4 style="color: #10B981; margin: 0;">💵 収入項目の詳細</h4>
-                                <span class="card-toggle" id="incomeDetailToggle">▼</span>
                             </div>
                         </div>
                         <div id="incomeDetailChart" style="display: none;">
@@ -327,7 +318,6 @@
                         <div class="card-header" onclick="toggleDetailChart('expenseDetail')" style="cursor: pointer; padding: 1rem; background: #FEF2F2; border-radius: 0.5rem; margin-bottom: 1rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <h4 style="color: #EF4444; margin: 0;">💸 支出項目の詳細</h4>
-                                <span class="card-toggle" id="expenseDetailToggle">▼</span>
                             </div>
                         </div>
                         <div id="expenseDetailChart" style="display: none;">
