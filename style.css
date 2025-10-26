@@ -1565,3 +1565,24 @@ body {
     opacity: 1;
     transform: scale(1.15);
 }
+
+/* 並び替えボタン */
+.reorder-btn {
+    background: #E5E7EB;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    color: #374151;
+    transition: all 0.2s;
+    min-width: 1.5rem;
+}
+
+.reorder-btn:hover:not(:disabled) {
+    background: #D1D5DB;
+    transform: scale(1.1);
+}
+
+.reorder-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}

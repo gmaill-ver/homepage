@@ -6,6 +6,7 @@ let checklistItems = []; // 全アイテムリスト { name, person, categories:
 let currentCategory = 'travel'; // 現在選択中のカテゴリ
 let currentPersonFilter = 'all'; // 現在選択中の人物フィルター（アイテム一覧用）
 let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っていくものリスト用）
+let isReorderMode = false; // 並び替えモード
 
 // カテゴリの定義
 let categories = [
@@ -213,7 +214,7 @@ function renderChecklist() {
     }
 
     // 全アイテムリスト（人物フィルター適用）
-    allItemsList.innerHTML = filteredItems.map((item) => {
+    allItemsList.innerHTML = filteredItems.map((item, filterIndex) => {
         const realIndex = checklistItems.findIndex(i => i.name === item.name && i.person === item.person);
         const isChecked = item.categories[currentCategory]?.checked;
         const quantity = item.categories[currentCategory]?.quantity || 1;
@@ -223,21 +224,35 @@ function renderChecklist() {
             .map(n => `<option value="${n}" ${n === quantity ? 'selected' : ''}>×${n}</option>`)
             .join('');
 
-        return `
-            <div class="checklist-item">
-                <input type="checkbox"
-                       id="all_${realIndex}"
-                       ${isChecked ? 'checked' : ''}
-                       onchange="toggleChecklistItem(${realIndex})">
-                <label for="all_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
-                ${isChecked ? `
-                    <select class="quantity-select" onchange="setQuantity(${realIndex}, this.value)">
-                        ${quantityOptions}
-                    </select>
-                ` : ''}
-                <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
-            </div>
-        `;
+        if (isReorderMode) {
+            // 並び替えモード
+            return `
+                <div class="checklist-item" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <button class="reorder-btn" onclick="moveItemUp(${realIndex})" ${filterIndex === 0 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▲</button>
+                        <button class="reorder-btn" onclick="moveItemDown(${realIndex})" ${filterIndex === filteredItems.length - 1 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▼</button>
+                    </div>
+                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name}</span>
+                </div>
+            `;
+        } else {
+            // 通常モード
+            return `
+                <div class="checklist-item">
+                    <input type="checkbox"
+                           id="all_${realIndex}"
+                           ${isChecked ? 'checked' : ''}
+                           onchange="toggleChecklistItem(${realIndex})">
+                    <label for="all_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
+                    ${isChecked ? `
+                        <select class="quantity-select" onchange="setQuantity(${realIndex}, this.value)">
+                            ${quantityOptions}
+                        </select>
+                    ` : ''}
+                    <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
+                </div>
+            `;
+        }
     }).join('');
 }
 
@@ -517,6 +532,53 @@ async function removeCategory(index) {
     } catch (error) {
         console.error('カテゴリ削除エラー:', error);
         alert('削除に失敗しました');
+    }
+}
+
+// 並び替えモードの切り替え
+function toggleReorderMode() {
+    isReorderMode = !isReorderMode;
+    const btn = document.getElementById('toggleReorderMode');
+    if (btn) {
+        btn.style.opacity = isReorderMode ? '1' : '0.7';
+        btn.style.background = isReorderMode ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
+    }
+    renderChecklist();
+}
+
+// アイテムを上に移動
+async function moveItemUp(index) {
+    if (index <= 0) return;
+
+    // 配列内で入れ替え
+    const temp = checklistItems[index];
+    checklistItems[index] = checklistItems[index - 1];
+    checklistItems[index - 1] = temp;
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        renderChecklist();
+    } catch (error) {
+        console.error('並び替えエラー:', error);
+        alert('並び替えに失敗しました');
+    }
+}
+
+// アイテムを下に移動
+async function moveItemDown(index) {
+    if (index >= checklistItems.length - 1) return;
+
+    // 配列内で入れ替え
+    const temp = checklistItems[index];
+    checklistItems[index] = checklistItems[index + 1];
+    checklistItems[index + 1] = temp;
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        renderChecklist();
+    } catch (error) {
+        console.error('並び替えエラー:', error);
+        alert('並び替えに失敗しました');
     }
 }
 

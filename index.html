@@ -214,7 +214,10 @@
 
                     <!-- アイテム一覧 -->
                     <div>
-                        <h3 style="color: #6B7280; margin-bottom: 1rem;">📦 アイテム一覧</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="color: #6B7280; margin: 0;">📦 アイテム一覧</h3>
+                            <button id="toggleReorderMode" class="btn-icon-simple" onclick="toggleReorderMode()" title="並び替え">⇅</button>
+                        </div>
 
                         <!-- アイテム一覧用の人物フィルター -->
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
