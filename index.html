@@ -293,10 +293,11 @@
                 <div class="card-content">
                     <!-- カテゴリ選択 -->
                     <div style="margin-bottom: 1.5rem;">
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button class="category-btn active" data-category="travel" onclick="selectCategory('travel')">✈️ 旅行</button>
-                            <button class="category-btn" data-category="outing" onclick="selectCategory('outing')">🚶 通常外出</button>
-                            <button class="category-btn" data-category="nursery" onclick="selectCategory('nursery')">🏫 保育園</button>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                            <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap; flex: 1;">
+                                <!-- カテゴリボタンは動的に生成 -->
+                            </div>
+                            <button class="btn-icon" onclick="openModal('categoryEditModal')" title="カテゴリを編集">✏️</button>
                         </div>
                     </div>
 
@@ -339,6 +340,27 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- カテゴリ編集モーダル -->
+    <div id="categoryEditModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>カテゴリを編集</h3>
+
+            <div id="categoryList" style="margin-bottom: 1rem;">
+                <!-- カテゴリ一覧は動的に生成 -->
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input type="text" id="newCategoryIcon" placeholder="📝" style="width: 60px; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; text-align: center; font-size: 1.5rem;">
+                <input type="text" id="newCategoryName" placeholder="新しいカテゴリ名" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+                <button onclick="addCategory()" class="btn-primary" style="padding: 0.5rem 1rem;">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="closeModal('categoryEditModal')" class="btn-secondary">閉じる</button>
+            </div>
+        </div>
     </div>
 
     <!-- アイテム追加モーダル -->
@@ -507,7 +529,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script src="game.js?v=2025102601"></script>
-    <script src="checklist.js?v=2025102609"></script>
-    <script src="script.js?v=2025102603"></script>
+    <script src="checklist.js?v=2025102610"></script>
+    <script src="script.js?v=2025102604"></script>
 </body>
 </html>

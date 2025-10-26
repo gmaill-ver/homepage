@@ -7,6 +7,13 @@ let currentCategory = 'travel'; // 現在選択中のカテゴリ
 let currentPersonFilter = 'all'; // 現在選択中の人物フィルター（アイテム一覧用）
 let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っていくものリスト用）
 
+// カテゴリの定義
+let categories = [
+    { id: 'travel', icon: '✈️', name: '旅行' },
+    { id: 'outing', icon: '🚶', name: '通常外出' },
+    { id: 'nursery', icon: '🏫', name: '保育園' }
+];
+
 // 人物名のマッピング
 const personNames = {
     'me': 'しでき',
@@ -15,9 +22,24 @@ const personNames = {
     'common': '共通'
 };
 
+// カテゴリを読み込み
+async function loadCategories() {
+    try {
+        const doc = await db.collection('settings').doc('checklistCategories').get();
+        if (doc.exists) {
+            categories = doc.data().categories || categories;
+        }
+    } catch (error) {
+        console.error('カテゴリ読み込みエラー:', error);
+    }
+}
+
 // アイテムを読み込み
 async function loadChecklistItems() {
     try {
+        // カテゴリを先に読み込み
+        await loadCategories();
+
         const doc = await db.collection('settings').doc('checklistItems').get();
         if (doc.exists) {
             checklistItems = doc.data().items || [];
@@ -31,28 +53,28 @@ async function loadChecklistItems() {
                     needsMigration = true;
                 }
 
-                // すべての必須カテゴリ（travel, outing, nursery）を確保
-                const requiredCategories = ['travel', 'outing', 'nursery'];
-                const categories = {};
+                // すべてのカテゴリを確保
+                const itemCategories = {};
 
-                for (const category of requiredCategories) {
-                    const value = item.categories[category];
+                for (const category of categories) {
+                    const catId = category.id;
+                    const value = item.categories[catId];
 
                     if (typeof value === 'boolean') {
                         // 旧形式: boolean → 新形式: {checked, quantity}
-                        categories[category] = { checked: value, quantity: 1 };
+                        itemCategories[catId] = { checked: value, quantity: 1 };
                         needsMigration = true;
                     } else if (value && typeof value === 'object' && 'checked' in value) {
                         // 新形式: そのまま使用
-                        categories[category] = { checked: value.checked, quantity: value.quantity || 1 };
+                        itemCategories[catId] = { checked: value.checked, quantity: value.quantity || 1 };
                     } else {
                         // 不正なデータまたは存在しない: 初期化
-                        categories[category] = { checked: false, quantity: 1 };
+                        itemCategories[catId] = { checked: false, quantity: 1 };
                         needsMigration = true;
                     }
                 }
 
-                item.categories = categories;
+                item.categories = itemCategories;
 
                 // personが存在しない場合はデフォルト値を設定
                 if (!item.person) {
@@ -68,16 +90,21 @@ async function loadChecklistItems() {
                 await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
             }
         } else {
-            // デフォルトアイテム
+            // デフォルトアイテム（すべてのカテゴリに対応）
+            const defaultCats = {};
+            categories.forEach(cat => {
+                defaultCats[cat.id] = { checked: false, quantity: 1 };
+            });
+
             checklistItems = [
-                { name: '水筒', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: 'タオル', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: '帽子', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: '着替え', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: 'おむつ', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: 'おしりふき', person: 'son', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: 'ビニール袋', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } },
-                { name: '日焼け止め', person: 'common', categories: { travel: {checked: false, quantity: 1}, outing: {checked: false, quantity: 1}, nursery: {checked: false, quantity: 1} } }
+                { name: '水筒', person: 'common', categories: {...defaultCats} },
+                { name: 'タオル', person: 'common', categories: {...defaultCats} },
+                { name: '帽子', person: 'son', categories: {...defaultCats} },
+                { name: '着替え', person: 'son', categories: {...defaultCats} },
+                { name: 'おむつ', person: 'son', categories: {...defaultCats} },
+                { name: 'おしりふき', person: 'son', categories: {...defaultCats} },
+                { name: 'ビニール袋', person: 'common', categories: {...defaultCats} },
+                { name: '日焼け止め', person: 'common', categories: {...defaultCats} }
             ];
             await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
         }
@@ -305,8 +332,121 @@ async function addChecklistItem() {
     }
 }
 
+// カテゴリボタンを描画
+function renderCategoryButtons() {
+    const container = document.getElementById('categoryButtonsContainer');
+    if (!container) return;
+
+    container.innerHTML = categories.map(cat => `
+        <button class="category-btn ${cat.id === currentCategory ? 'active' : ''}"
+                data-category="${cat.id}"
+                onclick="selectCategory('${cat.id}')">
+            ${cat.icon} ${cat.name}
+        </button>
+    `).join('');
+}
+
+// カテゴリ編集モーダルを描画
+function renderCategoryEditModal() {
+    const categoryList = document.getElementById('categoryList');
+    if (!categoryList) return;
+
+    categoryList.innerHTML = categories.map((cat, index) => `
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
+            <span style="font-size: 1.5rem;">${cat.icon}</span>
+            <span style="flex: 1; font-weight: 500;">${cat.name}</span>
+            <button onclick="removeCategory(${index})" class="remove-btn" style="opacity: 1;">🗑️</button>
+        </div>
+    `).join('');
+}
+
+// カテゴリを追加
+async function addCategory() {
+    const iconInput = document.getElementById('newCategoryIcon');
+    const nameInput = document.getElementById('newCategoryName');
+
+    const icon = iconInput.value.trim() || '📝';
+    const name = nameInput.value.trim();
+
+    if (!name) {
+        alert('カテゴリ名を入力してください');
+        return;
+    }
+
+    // 一意のIDを生成
+    const id = 'cat_' + Date.now();
+
+    categories.push({ id, icon, name });
+
+    // すべてのアイテムに新しいカテゴリを追加
+    checklistItems.forEach(item => {
+        if (!item.categories[id]) {
+            item.categories[id] = { checked: false, quantity: 1 };
+        }
+    });
+
+    try {
+        await db.collection('settings').doc('checklistCategories').set({ categories });
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+
+        iconInput.value = '';
+        nameInput.value = '';
+
+        renderCategoryButtons();
+        renderCategoryEditModal();
+        renderChecklist();
+    } catch (error) {
+        console.error('カテゴリ追加エラー:', error);
+        alert('追加に失敗しました');
+    }
+}
+
+// カテゴリを削除
+async function removeCategory(index) {
+    const cat = categories[index];
+
+    if (!confirm(`「${cat.name}」カテゴリを削除しますか？\nこのカテゴリのチェック情報も削除されます。`)) {
+        return;
+    }
+
+    const catId = cat.id;
+    categories.splice(index, 1);
+
+    // すべてのアイテムからこのカテゴリを削除
+    checklistItems.forEach(item => {
+        delete item.categories[catId];
+    });
+
+    // 削除したカテゴリが選択中だった場合は最初のカテゴリに切り替え
+    if (currentCategory === catId && categories.length > 0) {
+        currentCategory = categories[0].id;
+    }
+
+    try {
+        await db.collection('settings').doc('checklistCategories').set({ categories });
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+
+        renderCategoryButtons();
+        renderCategoryEditModal();
+        renderChecklist();
+    } catch (error) {
+        console.error('カテゴリ削除エラー:', error);
+        alert('削除に失敗しました');
+    }
+}
+
 // チェックリスト機能の初期化
 async function initializeChecklist() {
     await loadChecklistItems();
+    renderCategoryButtons();
     renderChecklist();
+
+    // モーダルを開いた時にカテゴリ一覧を更新
+    const categoryEditModal = document.getElementById('categoryEditModal');
+    if (categoryEditModal) {
+        categoryEditModal.addEventListener('click', (e) => {
+            if (e.target === categoryEditModal) return;
+            renderCategoryEditModal();
+        });
+    }
 }

@@ -338,6 +338,11 @@ function showMainApp() {
 // モーダルを開く
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
+
+    // カテゴリ編集モーダルを開く時は一覧を更新
+    if (modalId === 'categoryEditModal' && typeof renderCategoryEditModal === 'function') {
+        renderCategoryEditModal();
+    }
 }
 
 // モーダルを閉じる
