@@ -4,7 +4,16 @@
 
 let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: {checked: false, quantity: 1}, outing: {...}, nursery: {...}} }
 let currentCategory = 'travel'; // 現在選択中のカテゴリ
-let currentPersonFilter = 'all'; // 現在選択中の人物フィルター
+let currentPersonFilter = 'all'; // 現在選択中の人物フィルター（アイテム一覧用）
+let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っていくものリスト用）
+
+// 人物名のマッピング
+const personNames = {
+    'me': 'しでき',
+    'wife': 'あゆ',
+    'son': '翔真実',
+    'common': '共通'
+};
 
 // アイテムを読み込み
 async function loadChecklistItems() {
@@ -115,6 +124,19 @@ function getPersonLabel(person) {
     return labels[person] || '';
 }
 
+// 持っていくものリストの人物タブを切り替え
+function selectPackingPersonTab(person) {
+    currentPackingPersonTab = person;
+
+    // ボタンのアクティブ状態を更新
+    document.querySelectorAll('.packing-person-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`.packing-person-tab[data-person="${person}"]`)?.classList.add('active');
+
+    renderChecklist();
+}
+
 // チェックリストを表示
 function renderChecklist() {
     const packingList = document.getElementById('packingList');
@@ -124,9 +146,14 @@ function renderChecklist() {
     if (!packingList || !allItemsList) return;
 
     // 現在のカテゴリでチェックされているアイテム
-    const checkedItems = checklistItems.filter(item => item.categories[currentCategory]?.checked);
+    let checkedItems = checklistItems.filter(item => item.categories[currentCategory]?.checked);
 
-    // 人物フィルターでフィルタリングされたアイテム
+    // 持っていくものリストを人物タブでフィルタリング
+    if (currentPackingPersonTab !== 'all') {
+        checkedItems = checkedItems.filter(item => item.person === currentPackingPersonTab);
+    }
+
+    // 人物フィルターでフィルタリングされたアイテム（アイテム一覧用）
     let filteredItems = checklistItems;
     if (currentPersonFilter !== 'all') {
         filteredItems = checklistItems.filter(item => item.person === currentPersonFilter);

@@ -1468,6 +1468,31 @@ body {
     font-weight: 600;
 }
 
+/* 持っていくものリスト用の人物タブ */
+.packing-person-tab {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.packing-person-tab:hover {
+    border-color: #EF4444;
+    background: #FEF2F2;
+}
+
+.packing-person-tab.active {
+    background: #EF4444;
+    border-color: #EF4444;
+    color: white;
+    font-weight: 600;
+}
+
 /* 数量コントロール */
 .quantity-controls {
     display: flex;
