@@ -291,6 +291,15 @@
                     </div>
                 </div>
                 <div class="card-content">
+                    <!-- カテゴリ選択 -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="category-btn active" data-category="travel" onclick="selectCategory('travel')">✈️ 旅行</button>
+                            <button class="category-btn" data-category="outing" onclick="selectCategory('outing')">🚶 通常外出</button>
+                            <button class="category-btn" data-category="nursery" onclick="selectCategory('nursery')">🏫 保育園</button>
+                        </div>
+                    </div>
+
                     <!-- 持っていくものリスト -->
                     <div style="margin-bottom: 2rem;">
                         <h3 style="color: #EF4444; margin-bottom: 1rem;">🎒 持っていくもの</h3>
@@ -298,6 +307,17 @@
                         <p id="packingEmptyMessage" class="empty-message" style="display: none;">
                             下の一覧からアイテムをチェックすると、ここに追加されます
                         </p>
+                    </div>
+
+                    <!-- 人物フィルター -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">👨‍👩‍👦 全員</button>
+                            <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 私</button>
+                            <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 妻</button>
+                            <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 息子</button>
+                            <button class="person-filter-btn" data-person="common" onclick="filterByPerson('common')">🔗 共通</button>
+                        </div>
                     </div>
 
                     <!-- アイテム一覧 -->
@@ -314,7 +334,16 @@
     <div id="checklistItemModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
             <h3>アイテムを追加</h3>
-            <input type="text" id="checklistItemName" placeholder="例: 水筒">
+            <input type="text" id="checklistItemName" placeholder="例: 水筒" style="margin-bottom: 1rem;">
+
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">誰のアイテム？</label>
+            <select id="checklistItemPerson" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; margin-bottom: 1rem;">
+                <option value="me">👨 私</option>
+                <option value="wife">👩 妻</option>
+                <option value="son">👶 息子</option>
+                <option value="common">🔗 共通</option>
+            </select>
+
             <div class="modal-actions">
                 <button id="saveChecklistItemBtn" class="btn-primary">追加</button>
                 <button id="closeChecklistItemBtn" class="btn-secondary">キャンセル</button>
@@ -467,7 +496,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script src="game.js?v=2025102601"></script>
-    <script src="checklist.js?v=2025102603"></script>
+    <script src="checklist.js?v=2025102604"></script>
     <script src="script.js?v=2025102603"></script>
 </body>
 </html>
