@@ -121,6 +121,120 @@
                 </div>
             </section>
 
+        </main>
+
+        <!-- チャットページ -->
+        <main class="main-content page-content" id="chatPage" style="display: none;">
+            <section class="card chat-card">
+                <div class="card-header">
+                    <h2>💬 Claude AI チャット</h2>
+                </div>
+                <div class="card-content">
+                    <div class="chat-container">
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <textarea id="chatInput" class="chat-input" placeholder="メッセージを入力..." rows="3"></textarea>
+                            <button id="sendChatBtn" class="btn-send">送信</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- オセロゲームページ -->
+        <main class="main-content page-content" id="gamePage" style="display: none;">
+            <section class="card">
+                <div class="card-header">
+                    <h2>⚫⚪ オセロ</h2>
+                </div>
+                <div class="card-content">
+                    <div class="game-container">
+                        <div class="game-stats">
+                            <div class="stat-box" style="background: #1F2937;">
+                                <div class="stat-label" style="color: #E5E7EB;">⚫ 黒</div>
+                                <div class="stat-value" id="blackScore" style="color: white;">2</div>
+                            </div>
+                            <div class="stat-box" style="background: #F3F4F6;">
+                                <div class="stat-label">⚪ 白</div>
+                                <div class="stat-value" id="whiteScore">2</div>
+                            </div>
+                        </div>
+
+                        <div id="gameStatus" style="text-align: center; margin-bottom: 1rem; font-weight: bold; color: #1F2937; font-size: 1.125rem;">
+                            ⚫ 黒の番です
+                        </div>
+
+                        <canvas id="gameCanvas"></canvas>
+
+                        <div class="game-controls">
+                            <p>盤面をクリックして石を置いてください</p>
+                        </div>
+
+                        <div class="game-buttons">
+                            <button class="btn-primary" id="gameResetBtn">ゲームリセット</button>
+                            <button class="btn-secondary" id="passBtn" style="display: none;">パス</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- その他ページ -->
+        <main class="main-content page-content" id="otherPage" style="display: none;">
+            <!-- 持ち物チェックリスト -->
+            <section class="card" id="checklistCard">
+                <div class="card-header" onclick="toggleCard('checklistCard')">
+                    <h2>📋 持ち物チェックリスト</h2>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                        <button class="btn-icon-simple" onclick="openModal('categoryEditModal'); event.stopPropagation();" title="カテゴリを編集">✏️</button>
+                        <span class="card-toggle">▼</span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- カテゴリ選択 -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <!-- カテゴリボタンは動的に生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 持っていくものリスト -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: #EF4444; margin-bottom: 1rem;">🎒 持っていくもの</h3>
+
+                        <!-- 持っていくもの用の人物タブ -->
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="packing-person-tab active" data-person="all" onclick="selectPackingPersonTab('all')">👨‍👩‍👦 全</button>
+                                <button class="packing-person-tab" data-person="me" onclick="selectPackingPersonTab('me')">👨 英</button>
+                                <button class="packing-person-tab" data-person="wife" onclick="selectPackingPersonTab('wife')">👩 歩</button>
+                                <button class="packing-person-tab" data-person="son" onclick="selectPackingPersonTab('son')">👶 翔</button>
+                            </div>
+                        </div>
+
+                        <div id="packingList" class="checklist-container"></div>
+                        <p id="packingEmptyMessage" class="empty-message" style="display: none;">
+                            下の一覧からアイテムをチェックすると、ここに追加されます
+                        </p>
+                    </div>
+
+                    <!-- アイテム一覧 -->
+                    <div>
+                        <h3 style="color: #6B7280; margin-bottom: 1rem;">📦 アイテム一覧</h3>
+
+                        <!-- アイテム一覧用の人物フィルター -->
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">👨‍👩‍👦 全</button>
+                            <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 英</button>
+                            <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 歩</button>
+                            <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 翔</button>
+                        </div>
+
+                        <div id="allItemsList" class="checklist-container"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 保険加入状況 -->
             <section class="card" id="insuranceCard">
                 <div class="card-header" onclick="toggleCard('insuranceCard')">
@@ -219,117 +333,6 @@
                         <div id="expenseDetailChart" style="display: none;">
                             <canvas id="expenseChart" style="max-height: 300px;"></canvas>
                         </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- チャットページ -->
-        <main class="main-content page-content" id="chatPage" style="display: none;">
-            <section class="card chat-card">
-                <div class="card-header">
-                    <h2>💬 Claude AI チャット</h2>
-                </div>
-                <div class="card-content">
-                    <div class="chat-container">
-                        <div id="chatMessages" class="chat-messages"></div>
-                        <div class="chat-input-container">
-                            <textarea id="chatInput" class="chat-input" placeholder="メッセージを入力..." rows="3"></textarea>
-                            <button id="sendChatBtn" class="btn-send">送信</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- オセロゲームページ -->
-        <main class="main-content page-content" id="gamePage" style="display: none;">
-            <section class="card">
-                <div class="card-header">
-                    <h2>⚫⚪ オセロ</h2>
-                </div>
-                <div class="card-content">
-                    <div class="game-container">
-                        <div class="game-stats">
-                            <div class="stat-box" style="background: #1F2937;">
-                                <div class="stat-label" style="color: #E5E7EB;">⚫ 黒</div>
-                                <div class="stat-value" id="blackScore" style="color: white;">2</div>
-                            </div>
-                            <div class="stat-box" style="background: #F3F4F6;">
-                                <div class="stat-label">⚪ 白</div>
-                                <div class="stat-value" id="whiteScore">2</div>
-                            </div>
-                        </div>
-
-                        <div id="gameStatus" style="text-align: center; margin-bottom: 1rem; font-weight: bold; color: #1F2937; font-size: 1.125rem;">
-                            ⚫ 黒の番です
-                        </div>
-
-                        <canvas id="gameCanvas"></canvas>
-
-                        <div class="game-controls">
-                            <p>盤面をクリックして石を置いてください</p>
-                        </div>
-
-                        <div class="game-buttons">
-                            <button class="btn-primary" id="gameResetBtn">ゲームリセット</button>
-                            <button class="btn-secondary" id="passBtn" style="display: none;">パス</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- その他ページ -->
-        <main class="main-content page-content" id="otherPage" style="display: none;">
-            <section class="card">
-                <div class="card-header">
-                    <h2>📋 持ち物チェックリスト</h2>
-                    <div style="display: flex; align-items: center; gap: 0.25rem;">
-                        <button class="btn-icon-simple" onclick="openModal('categoryEditModal')" title="カテゴリを編集">✏️</button>
-                    </div>
-                </div>
-                <div class="card-content">
-                    <!-- カテゴリ選択 -->
-                    <div style="margin-bottom: 1.5rem;">
-                        <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <!-- カテゴリボタンは動的に生成 -->
-                        </div>
-                    </div>
-
-                    <!-- 持っていくものリスト -->
-                    <div style="margin-bottom: 2rem;">
-                        <h3 style="color: #EF4444; margin-bottom: 1rem;">🎒 持っていくもの</h3>
-
-                        <!-- 持っていくもの用の人物タブ -->
-                        <div style="margin-bottom: 1rem;">
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button class="packing-person-tab active" data-person="all" onclick="selectPackingPersonTab('all')">👨‍👩‍👦 全</button>
-                                <button class="packing-person-tab" data-person="me" onclick="selectPackingPersonTab('me')">👨 英</button>
-                                <button class="packing-person-tab" data-person="wife" onclick="selectPackingPersonTab('wife')">👩 歩</button>
-                                <button class="packing-person-tab" data-person="son" onclick="selectPackingPersonTab('son')">👶 翔</button>
-                            </div>
-                        </div>
-
-                        <div id="packingList" class="checklist-container"></div>
-                        <p id="packingEmptyMessage" class="empty-message" style="display: none;">
-                            下の一覧からアイテムをチェックすると、ここに追加されます
-                        </p>
-                    </div>
-
-                    <!-- アイテム一覧 -->
-                    <div>
-                        <h3 style="color: #6B7280; margin-bottom: 1rem;">📦 アイテム一覧</h3>
-
-                        <!-- アイテム一覧用の人物フィルター -->
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">👨‍👩‍👦 全</button>
-                            <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 英</button>
-                            <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 歩</button>
-                            <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 翔</button>
-                        </div>
-
-                        <div id="allItemsList" class="checklist-container"></div>
                     </div>
                 </div>
             </section>
