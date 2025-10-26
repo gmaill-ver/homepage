@@ -1324,13 +1324,15 @@ body {
 
 #gameCanvas {
     width: 100%;
-    height: 350px;
-    background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-    border-radius: 0.75rem;
-    border: 3px solid #60A5FA;
+    aspect-ratio: 1 / 1;
+    max-width: 500px;
+    margin: 0 auto 1.5rem;
+    background: #10B981;
+    border-radius: 0.5rem;
+    border: 3px solid #047857;
     display: block;
-    margin-bottom: 1.5rem;
     cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .game-controls {

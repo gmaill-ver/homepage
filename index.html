@@ -37,7 +37,7 @@
             <div class="header-tabs">
                 <button class="header-tab active" data-page="home">ホーム</button>
                 <button class="header-tab" data-page="chat">チャット</button>
-                <button class="header-tab" data-page="game">🚴 チャリ走</button>
+                <button class="header-tab" data-page="game">⚫⚪ オセロ</button>
             </div>
         </header>
 
@@ -242,34 +242,38 @@
             </section>
         </main>
 
-        <!-- チャリ走ゲームページ -->
+        <!-- オセロゲームページ -->
         <main class="main-content page-content" id="gamePage" style="display: none;">
             <section class="card">
                 <div class="card-header">
-                    <h2>🚴 チャリ走</h2>
+                    <h2>⚫⚪ オセロ</h2>
                 </div>
                 <div class="card-content">
                     <div class="game-container">
                         <div class="game-stats">
-                            <div class="stat-box">
-                                <div class="stat-label">スコア</div>
-                                <div class="stat-value" id="gameScoreDisplay">0</div>
+                            <div class="stat-box" style="background: #1F2937;">
+                                <div class="stat-label" style="color: #E5E7EB;">⚫ 黒</div>
+                                <div class="stat-value" id="blackScore" style="color: white;">2</div>
                             </div>
-                            <div class="stat-box">
-                                <div class="stat-label">距離</div>
-                                <div class="stat-value" id="gameDistanceDisplay">0m</div>
+                            <div class="stat-box" style="background: #F3F4F6;">
+                                <div class="stat-label">⚪ 白</div>
+                                <div class="stat-value" id="whiteScore">2</div>
                             </div>
+                        </div>
+
+                        <div id="gameStatus" style="text-align: center; margin-bottom: 1rem; font-weight: bold; color: #1F2937; font-size: 1.125rem;">
+                            ⚫ 黒の番です
                         </div>
 
                         <canvas id="gameCanvas"></canvas>
 
                         <div class="game-controls">
-                            <p>スペースキー or ↑キー でジャンプ<br>タップ or クリック でもOK</p>
+                            <p>盤面をクリックして石を置いてください</p>
                         </div>
 
                         <div class="game-buttons">
-                            <button class="btn-primary" id="gameStartBtn">ゲーム開始</button>
-                            <button class="btn-secondary" id="gameResetBtn">リセット</button>
+                            <button class="btn-primary" id="gameResetBtn">ゲームリセット</button>
+                            <button class="btn-secondary" id="passBtn" style="display: none;">パス</button>
                         </div>
                     </div>
                 </div>
@@ -277,11 +281,11 @@
         </main>
     </div>
 
-    <!-- ゲームオーバーモーダル -->
+    <!-- ゲーム終了モーダル -->
     <div id="gameOverModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
-            <h3>ゲームオーバー!</h3>
-            <div id="gameResultText" style="background: #FEF3C7; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; font-weight: bold; color: #D97706;"></div>
+            <h3>ゲーム終了!</h3>
+            <div id="gameResultText" style="background: #F3F4F6; padding: 1.5rem; border-radius: 0.5rem; margin: 1rem 0; font-weight: bold; color: #1F2937; text-align: center; font-size: 1.125rem;"></div>
             <div class="modal-actions">
                 <button id="gameRetryBtn" class="btn-primary" style="width: 100%;">もう一度プレイ</button>
             </div>
@@ -421,7 +425,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="game.js"></script>
-    <script src="script.js?v=2025102518"></script>
+    <script src="game.js?v=2025102601"></script>
+    <script src="script.js?v=2025102601"></script>
 </body>
 </html>
