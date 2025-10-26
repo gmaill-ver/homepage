@@ -389,15 +389,30 @@ function renderCategoryEditModal() {
 
 // カテゴリを追加
 async function addCategory() {
-    const iconInput = document.getElementById('newCategoryIcon');
-    const nameInput = document.getElementById('newCategoryName');
+    const input = document.getElementById('newCategoryInput');
+    const fullText = input.value.trim();
 
-    const icon = iconInput.value.trim() || '📝';
-    const name = nameInput.value.trim();
-
-    if (!name) {
+    if (!fullText) {
         alert('カテゴリ名を入力してください');
         return;
+    }
+
+    // 最初の文字が絵文字かチェック（絵文字は複数バイト）
+    const firstChar = Array.from(fullText)[0];
+    let icon = '📝';
+    let name = fullText;
+
+    // 絵文字判定（簡易版：最初の文字が絵文字範囲にあれば分離）
+    if (firstChar && firstChar.length > 1) {
+        icon = firstChar;
+        name = fullText.slice(firstChar.length).trim();
+    } else if (/[\u{1F300}-\u{1F9FF}]/u.test(firstChar)) {
+        icon = firstChar;
+        name = fullText.slice(1).trim();
+    }
+
+    if (!name) {
+        name = fullText; // 絵文字のみの場合
     }
 
     // 一意のIDを生成
@@ -416,8 +431,7 @@ async function addCategory() {
         await db.collection('settings').doc('checklistCategories').set({ categories });
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
 
-        iconInput.value = '';
-        nameInput.value = '';
+        input.value = '';
 
         renderCategoryButtons();
         renderCategoryEditModal();

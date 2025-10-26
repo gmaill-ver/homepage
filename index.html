@@ -286,18 +286,16 @@
             <section class="card">
                 <div class="card-header">
                     <h2>📋 持ち物チェックリスト</h2>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="addChecklistItemBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
+                    <div style="display: flex; align-items: center; gap: 0.25rem;">
+                        <button class="btn-icon-simple" onclick="openModal('categoryEditModal')" title="カテゴリを編集">✏️</button>
+                        <button id="addChecklistItemBtn" class="btn-add-simple" onclick="event.stopPropagation()">➕</button>
                     </div>
                 </div>
                 <div class="card-content">
                     <!-- カテゴリ選択 -->
                     <div style="margin-bottom: 1.5rem;">
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-                            <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap; flex: 1;">
-                                <!-- カテゴリボタンは動的に生成 -->
-                            </div>
-                            <button class="btn-icon" onclick="openModal('categoryEditModal')" title="カテゴリを編集">✏️</button>
+                        <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <!-- カテゴリボタンは動的に生成 -->
                         </div>
                     </div>
 
@@ -312,7 +310,6 @@
                                 <button class="packing-person-tab" data-person="me" onclick="selectPackingPersonTab('me')">👨 しでき</button>
                                 <button class="packing-person-tab" data-person="wife" onclick="selectPackingPersonTab('wife')">👩 あゆ</button>
                                 <button class="packing-person-tab" data-person="son" onclick="selectPackingPersonTab('son')">👶 翔真</button>
-                                <button class="packing-person-tab" data-person="common" onclick="selectPackingPersonTab('common')">🔗 共通</button>
                             </div>
                         </div>
 
@@ -332,7 +329,6 @@
                             <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 しでき</button>
                             <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 あゆ</button>
                             <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 翔真</button>
-                            <button class="person-filter-btn" data-person="common" onclick="filterByPerson('common')">🔗 共通</button>
                         </div>
 
                         <div id="allItemsList" class="checklist-container"></div>
@@ -347,14 +343,14 @@
         <div class="modal-content modal-small">
             <h3>カテゴリを編集</h3>
 
-            <div id="categoryList" style="margin-bottom: 1rem;">
+            <div id="categoryList" style="margin-bottom: 1.5rem;">
                 <!-- カテゴリ一覧は動的に生成 -->
             </div>
 
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <input type="text" id="newCategoryIcon" placeholder="📝" style="width: 60px; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; text-align: center; font-size: 1.5rem;">
-                <input type="text" id="newCategoryName" placeholder="新しいカテゴリ名" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
-                <button onclick="addCategory()" class="btn-primary" style="padding: 0.5rem 1rem;">追加</button>
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">新しいカテゴリを追加</label>
+            <div style="margin-bottom: 1rem;">
+                <input type="text" id="newCategoryInput" placeholder="📝 カテゴリ名（絵文字 + 名前）" style="width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 1rem; margin-bottom: 0.5rem;">
+                <button onclick="addCategory()" class="btn-primary" style="width: 100%; padding: 0.75rem;">追加</button>
             </div>
 
             <div class="modal-actions">
@@ -374,7 +370,6 @@
                 <option value="me">👨 しでき</option>
                 <option value="wife">👩 あゆ</option>
                 <option value="son">👶 翔真</option>
-                <option value="common">🔗 共通</option>
             </select>
 
             <div class="modal-actions">
@@ -529,7 +524,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script src="game.js?v=2025102601"></script>
-    <script src="checklist.js?v=2025102611"></script>
+    <script src="checklist.js?v=2025102612"></script>
     <script src="script.js?v=2025102604"></script>
 </body>
 </html>
