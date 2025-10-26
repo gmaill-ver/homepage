@@ -16,25 +16,41 @@ async function loadChecklistItems() {
             // 旧データ形式から新データ形式へのマイグレーション
             let needsMigration = false;
             checklistItems = checklistItems.map(item => {
-                if (item.categories) {
-                    // 各カテゴリをチェック
-                    const categories = {};
-                    for (const [category, value] of Object.entries(item.categories)) {
-                        if (typeof value === 'boolean') {
-                            // 旧形式: boolean → 新形式: {checked, quantity}
-                            categories[category] = { checked: value, quantity: 1 };
-                            needsMigration = true;
-                        } else if (value && typeof value === 'object' && 'checked' in value) {
-                            // 新形式: そのまま使用
-                            categories[category] = { checked: value.checked, quantity: value.quantity || 1 };
-                        } else {
-                            // 不正なデータ: 初期化
-                            categories[category] = { checked: false, quantity: 1 };
-                            needsMigration = true;
-                        }
-                    }
-                    item.categories = categories;
+                // categoriesが存在しない場合は初期化
+                if (!item.categories) {
+                    item.categories = {};
+                    needsMigration = true;
                 }
+
+                // すべての必須カテゴリ（travel, outing, nursery）を確保
+                const requiredCategories = ['travel', 'outing', 'nursery'];
+                const categories = {};
+
+                for (const category of requiredCategories) {
+                    const value = item.categories[category];
+
+                    if (typeof value === 'boolean') {
+                        // 旧形式: boolean → 新形式: {checked, quantity}
+                        categories[category] = { checked: value, quantity: 1 };
+                        needsMigration = true;
+                    } else if (value && typeof value === 'object' && 'checked' in value) {
+                        // 新形式: そのまま使用
+                        categories[category] = { checked: value.checked, quantity: value.quantity || 1 };
+                    } else {
+                        // 不正なデータまたは存在しない: 初期化
+                        categories[category] = { checked: false, quantity: 1 };
+                        needsMigration = true;
+                    }
+                }
+
+                item.categories = categories;
+
+                // personが存在しない場合はデフォルト値を設定
+                if (!item.person) {
+                    item.person = 'common';
+                    needsMigration = true;
+                }
+
                 return item;
             });
 
