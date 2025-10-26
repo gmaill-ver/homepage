@@ -1354,3 +1354,72 @@ body {
 .game-buttons button {
     flex: 1;
 }
+
+/* チェックリスト */
+.checklist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.checklist-item:hover {
+    border-color: #60A5FA;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.checklist-item.checked {
+    background: #F0FDF4;
+    border-color: #10B981;
+}
+
+.checklist-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.checklist-item label {
+    flex: 1;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checklist-item.checked label {
+    color: #10B981;
+    font-weight: 600;
+}
+
+.checklist-item .remove-btn {
+    padding: 0.25rem 0.5rem;
+    background: #EF4444;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: background 0.2s;
+}
+
+.checklist-item .remove-btn:hover {
+    background: #DC2626;
+}
+
+.empty-message {
+    text-align: center;
+    color: #9CA3AF;
+    font-size: 0.875rem;
+    padding: 2rem;
+    background: #F9FAFB;
+    border-radius: 0.5rem;
+}

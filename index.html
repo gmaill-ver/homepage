@@ -38,6 +38,7 @@
                 <button class="header-tab active" data-page="home">ホーム</button>
                 <button class="header-tab" data-page="chat">チャット</button>
                 <button class="header-tab" data-page="game">⚫⚪ オセロ</button>
+                <button class="header-tab" data-page="other">その他</button>
             </div>
         </header>
 
@@ -279,6 +280,46 @@
                 </div>
             </section>
         </main>
+
+        <!-- その他ページ -->
+        <main class="main-content page-content" id="otherPage" style="display: none;">
+            <section class="card">
+                <div class="card-header">
+                    <h2>📋 持ち物チェックリスト</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addChecklistItemBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- 持っていくものリスト -->
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="color: #EF4444; margin-bottom: 1rem;">🎒 持っていくもの</h3>
+                        <div id="packingList" class="checklist-container"></div>
+                        <p id="packingEmptyMessage" class="empty-message" style="display: none;">
+                            下の一覧からアイテムをチェックすると、ここに追加されます
+                        </p>
+                    </div>
+
+                    <!-- アイテム一覧 -->
+                    <div>
+                        <h3 style="color: #6B7280; margin-bottom: 1rem;">📦 アイテム一覧</h3>
+                        <div id="allItemsList" class="checklist-container"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- アイテム追加モーダル -->
+    <div id="checklistItemModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>アイテムを追加</h3>
+            <input type="text" id="checklistItemName" placeholder="例: 水筒">
+            <div class="modal-actions">
+                <button id="saveChecklistItemBtn" class="btn-primary">追加</button>
+                <button id="closeChecklistItemBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
     </div>
 
     <!-- ゲーム終了モーダル -->
@@ -426,6 +467,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script src="game.js?v=2025102601"></script>
-    <script src="script.js?v=2025102601"></script>
+    <script src="checklist.js"></script>
+    <script src="script.js?v=2025102602"></script>
 </body>
 </html>

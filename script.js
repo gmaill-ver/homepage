@@ -1079,6 +1079,11 @@ function switchPage(pageName) {
         setTimeout(() => initCharisoGame(), 100);
     }
 
+    // その他ページに切り替えた時はチェックリスト初期化
+    if (pageName === 'other') {
+        setTimeout(() => initializeChecklist(), 100);
+    }
+
     // タブのアクティブ状態を更新
     document.querySelectorAll('.header-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -2188,6 +2193,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ゲーム機能
     initGameEventListeners();
+
+    // チェックリスト機能
+    document.getElementById('addChecklistItemBtn')?.addEventListener('click', () => {
+        openModal('checklistItemModal');
+    });
+    document.getElementById('saveChecklistItemBtn')?.addEventListener('click', addChecklistItem);
+    document.getElementById('closeChecklistItemBtn')?.addEventListener('click', () => {
+        closeModal('checklistItemModal');
+    });
+    document.getElementById('checklistItemName')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addChecklistItem();
+    });
 });
 
 /*
