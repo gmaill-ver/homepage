@@ -11,7 +11,7 @@ let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っ�
 const personNames = {
     'me': 'しでき',
     'wife': 'あゆ',
-    'son': '翔真実',
+    'son': '翔真',
     'common': '共通'
 };
 
