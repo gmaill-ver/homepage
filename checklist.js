@@ -186,8 +186,9 @@ function renderChecklist() {
     }
 
     // 人物フィルターでフィルタリングされたアイテム（アイテム一覧用）
+    // 並び替えモード時は全アイテムを表示
     let filteredItems = checklistItems;
-    if (currentPersonFilter !== 'all') {
+    if (!isReorderMode && currentPersonFilter !== 'all') {
         filteredItems = checklistItems.filter(item => item.person === currentPersonFilter);
     }
 
@@ -543,17 +544,29 @@ function toggleReorderMode() {
         btn.style.opacity = isReorderMode ? '1' : '0.7';
         btn.style.background = isReorderMode ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
     }
+
+    // 人物フィルターボタンを無効化/有効化
+    const filterBtns = document.querySelectorAll('.person-filter-btn');
+    filterBtns.forEach(btn => {
+        btn.disabled = isReorderMode;
+        btn.style.opacity = isReorderMode ? '0.5' : '1';
+    });
+
     renderChecklist();
 }
 
 // アイテムを上に移動
 async function moveItemUp(index) {
+    // 全体の配列内で上の要素を探す
     if (index <= 0) return;
 
-    // 配列内で入れ替え
+    // 現在のアイテムより前にある最初の要素を見つける
+    let targetIndex = index - 1;
+
+    // 入れ替え
     const temp = checklistItems[index];
-    checklistItems[index] = checklistItems[index - 1];
-    checklistItems[index - 1] = temp;
+    checklistItems[index] = checklistItems[targetIndex];
+    checklistItems[targetIndex] = temp;
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
@@ -566,12 +579,16 @@ async function moveItemUp(index) {
 
 // アイテムを下に移動
 async function moveItemDown(index) {
+    // 全体の配列内で下の要素を探す
     if (index >= checklistItems.length - 1) return;
 
-    // 配列内で入れ替え
+    // 現在のアイテムより後にある最初の要素を見つける
+    let targetIndex = index + 1;
+
+    // 入れ替え
     const temp = checklistItems[index];
-    checklistItems[index] = checklistItems[index + 1];
-    checklistItems[index + 1] = temp;
+    checklistItems[index] = checklistItems[targetIndex];
+    checklistItems[targetIndex] = temp;
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
