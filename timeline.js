@@ -195,7 +195,7 @@ function renderTimelineEntries() {
 
     const timelineHTML = trip.entries.map(entry => `
         <div style="position: relative; margin-bottom: 0.75rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
-            <button onclick="deleteTimelineEntry('${entry.id}')" style="position: absolute; top: 0.5rem; right: 0.5rem; background: #EF4444; color: white; border: none; border-radius: 0.25rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; cursor: pointer;">削除</button>
+            <button onclick="deleteTimelineEntry('${entry.id}')" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; color: #EF4444; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
             <div style="font-weight: bold; color: #667eea; font-size: 1rem; margin-bottom: 0.25rem;">${entry.time}</div>
             <div style="font-size: 1.125rem; font-weight: 600; color: #212529; margin-bottom: 0.25rem;">${entry.location}</div>
             ${entry.memo ? `<div style="color: #6B7280; font-size: 0.875rem; line-height: 1.5;">${entry.memo}</div>` : ''}
@@ -214,6 +214,31 @@ async function deleteTimelineEntry(entryId) {
 
     trip.entries = trip.entries.filter(e => e.id != entryId);
     await saveTimelineData();
+    renderTimelineEntries();
+}
+
+// 訪問先を削除
+async function deleteTimelineTrip() {
+    if (!currentTimelineTripId) {
+        alert('削除する訪問先を選択してください');
+        return;
+    }
+
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    if (!confirm(`「${trip.name}」を削除しますか？\nすべてのログも削除されます。`)) return;
+
+    timelineTrips = timelineTrips.filter(t => t.id !== currentTimelineTripId);
+    currentTimelineTripId = timelineTrips.length > 0 ? timelineTrips[0].id : null;
+
+    await saveTimelineData();
+    loadTimelineTrips();
+
+    const select = document.getElementById('timelineTripSelect');
+    if (select && currentTimelineTripId) {
+        select.value = currentTimelineTripId;
+    }
     renderTimelineEntries();
 }
 
