@@ -178,7 +178,8 @@ function renderTimelineEntries() {
     if (!trip || trip.entries.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 1rem; color: #999; font-size: 0.875rem;">まだログがありません</div>';
         headerContainer.innerHTML = `
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+            <div style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                <button onclick="deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
                 <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
                 <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date}</p>
             </div>
@@ -187,7 +188,8 @@ function renderTimelineEntries() {
     }
 
     headerContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+        <div style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+            <button onclick="deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
             <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
             <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date} - ${trip.entries.length}件のログ</p>
         </div>
@@ -195,7 +197,7 @@ function renderTimelineEntries() {
 
     const timelineHTML = trip.entries.map(entry => `
         <div style="position: relative; margin-bottom: 0.75rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
-            <button onclick="deleteTimelineEntry('${entry.id}')" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; color: #EF4444; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
+            <button onclick="deleteTimelineEntry('${entry.id}')" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
             <div style="font-weight: bold; color: #667eea; font-size: 1rem; margin-bottom: 0.25rem;">${entry.time}</div>
             <div style="font-size: 1.125rem; font-weight: 600; color: #212529; margin-bottom: 0.25rem;">${entry.location}</div>
             ${entry.memo ? `<div style="color: #6B7280; font-size: 0.875rem; line-height: 1.5;">${entry.memo}</div>` : ''}
