@@ -161,6 +161,14 @@ async function addTimelineEntry() {
     setCurrentTimelineTime();
 }
 
+// タイムラインヘッダーの折りたたみ
+function toggleTimelineHeader() {
+    const container = document.getElementById('timelineEntriesContainer');
+    if (container) {
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
 // タイムラインを表示
 function renderTimelineEntries() {
     const container = document.getElementById('timelineEntriesContainer');
@@ -178,8 +186,8 @@ function renderTimelineEntries() {
     if (!trip || trip.entries.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 1rem; color: #999; font-size: 0.875rem;">まだログがありません</div>';
         headerContainer.innerHTML = `
-            <div style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                <button onclick="deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
+            <div onclick="toggleTimelineHeader()" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+                <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
                 <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
                 <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date}</p>
             </div>
@@ -188,8 +196,8 @@ function renderTimelineEntries() {
     }
 
     headerContainer.innerHTML = `
-        <div style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-            <button onclick="deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
+        <div onclick="toggleTimelineHeader()" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+            <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
             <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
             <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date} - ${trip.entries.length}件のログ</p>
         </div>
