@@ -329,6 +329,51 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 割り勘 -->
+            <section class="card" id="splitBillCard">
+                <div class="card-header" onclick="toggleCard('splitBillCard')">
+                    <h2>💰 割り勘</h2>
+                </div>
+                <div class="card-content">
+                    <!-- 支払い追加 -->
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">💳 支払いを追加</h3>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="splitPayerName" placeholder="支払った人の名前" list="splitNameList" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <datalist id="splitNameList"></datalist>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="text" id="splitExpenseName" placeholder="内容（例：ランチ）" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <input type="number" id="splitAmount" placeholder="金額" min="0" style="width: 120px; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                        </div>
+                        <button onclick="addSplitExpense()" class="btn-primary" style="width: 100%; padding: 0.5rem;">追加</button>
+                    </div>
+
+                    <!-- 今回の支払い -->
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">📝 今回の支払い</h3>
+                        <div id="splitExpenseList"></div>
+                    </div>
+
+                    <!-- 精算結果 -->
+                    <div>
+                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">🧮 精算結果</h3>
+                        <div id="splitResultList" style="margin-bottom: 0.5rem;"></div>
+                        <div style="background: #FFF3E0; padding: 0.75rem; border-radius: 0.5rem; text-align: center; margin-bottom: 0.5rem;">
+                            <div style="font-size: 0.875rem; color: #666;">今回の合計</div>
+                            <div id="splitTotalAmount" style="font-size: 1.5rem; font-weight: bold; color: #FF9800; margin-top: 0.25rem;">¥0</div>
+                        </div>
+                        <button onclick="doSplitSettlement()" class="btn-primary" style="width: 100%; padding: 0.5rem; background: #4CAF50;">✅ 精算完了（履歴に記録）</button>
+                    </div>
+
+                    <!-- 精算履歴 -->
+                    <div id="splitHistorySection" style="display: none; margin-top: 1rem;">
+                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">📜 精算履歴</h3>
+                        <div id="splitHistoryList"></div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -533,6 +578,7 @@
 
     <script src="game.js?v=2025102601"></script>
     <script src="checklist.js?v=2025102612"></script>
+    <script src="splitbill.js?v=2025102801"></script>
     <script src="script.js?v=2025102604"></script>
 </body>
 </html>

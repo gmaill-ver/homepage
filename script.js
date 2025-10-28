@@ -1084,9 +1084,12 @@ function switchPage(pageName) {
         setTimeout(() => initCharisoGame(), 100);
     }
 
-    // その他ページに切り替えた時はチェックリスト初期化
+    // その他ページに切り替えた時はチェックリストと割り勘を初期化
     if (pageName === 'other') {
-        setTimeout(() => initializeChecklist(), 100);
+        setTimeout(() => {
+            initializeChecklist();
+            initializeSplitBill();
+        }, 100);
     }
 
     // タブのアクティブ状態を更新
