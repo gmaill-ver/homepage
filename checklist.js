@@ -202,12 +202,8 @@ function renderChecklist() {
             const quantity = item.categories[currentCategory]?.quantity || 1;
             const packed = item.categories[currentCategory]?.packed || false;
             return `
-                <div class="checklist-item">
-                    <input type="checkbox"
-                           id="packing_${realIndex}"
-                           ${packed ? 'checked' : ''}
-                           onchange="togglePackedStatus(${realIndex})">
-                    <label for="packing_${realIndex}">${getPersonLabel(item.person)} ${item.name} ${quantity > 1 ? `×${quantity}` : ''}</label>
+                <div class="checklist-item ${packed ? 'checked' : ''}" onclick="togglePackedStatus(${realIndex})">
+                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name} ${quantity > 1 ? `×${quantity}` : ''}</span>
                 </div>
             `;
         }).join('');
@@ -227,7 +223,7 @@ function renderChecklist() {
         if (isReorderMode) {
             // 並び替えモード
             return `
-                <div class="checklist-item" style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="checklist-item" style="display: flex; align-items: center; gap: 0.5rem; cursor: default;">
                     <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <button class="reorder-btn" onclick="moveItemUp(${realIndex})" ${filterIndex === 0 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▲</button>
                         <button class="reorder-btn" onclick="moveItemDown(${realIndex})" ${filterIndex === filteredItems.length - 1 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▼</button>
@@ -238,18 +234,14 @@ function renderChecklist() {
         } else {
             // 通常モード
             return `
-                <div class="checklist-item">
-                    <input type="checkbox"
-                           id="all_${realIndex}"
-                           ${isChecked ? 'checked' : ''}
-                           onchange="toggleChecklistItem(${realIndex})">
-                    <label for="all_${realIndex}">${getPersonLabel(item.person)} ${item.name}</label>
+                <div class="checklist-item ${isChecked ? 'checked' : ''}" onclick="toggleChecklistItem(${realIndex})">
+                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name}</span>
                     ${isChecked ? `
-                        <select class="quantity-select" onchange="setQuantity(${realIndex}, this.value)">
+                        <select class="quantity-select" onclick="event.stopPropagation()" onchange="setQuantity(${realIndex}, this.value)">
                             ${quantityOptions}
                         </select>
                     ` : ''}
-                    <button class="remove-btn" onclick="removeChecklistItem(${realIndex})">🗑️</button>
+                    <button class="remove-btn" onclick="event.stopPropagation(); removeChecklistItem(${realIndex})">🗑️</button>
                 </div>
             `;
         }
