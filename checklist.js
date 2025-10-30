@@ -4,9 +4,10 @@
 
 let checklistItems = []; // 全アイテムリスト { name, person, categories: {travel: {checked: false, quantity: 1, packed: false}, outing: {...}, nursery: {...}} }
 let currentCategory = 'travel'; // 現在選択中のカテゴリ
-let currentPersonFilter = 'all'; // 現在選択中の人物フィルター（アイテム一覧用）
-let currentPackingPersonTab = 'all'; // 現在選択中の人物タブ（持っていくものリスト用）
+let currentPersonFilter = 'common'; // 現在選択中の人物フィルター（アイテム一覧用）
+let currentPackingPersonTab = 'common'; // 現在選択中の人物タブ（持っていくものリスト用）
 let isReorderMode = false; // 並び替えモード
+let isEditMode = false; // 編集モード
 
 // カテゴリの定義
 let categories = [
@@ -17,6 +18,7 @@ let categories = [
 
 // 人物名のマッピング
 const personNames = {
+    'common': '共',
     'me': '英',
     'wife': '歩',
     'son': '翔'
@@ -178,18 +180,13 @@ function renderChecklist() {
     if (!packingList || !allItemsList) return;
 
     // 現在のカテゴリでチェックされているアイテム
-    let checkedItems = checklistItems.filter(item => item.categories[currentCategory]?.checked);
-
-    // 持っていくものリストを人物タブでフィルタリング
-    if (currentPackingPersonTab !== 'all') {
-        checkedItems = checkedItems.filter(item => item.person === currentPackingPersonTab);
-    }
+    let checkedItems = checklistItems.filter(item =>
+        item.categories[currentCategory]?.checked &&
+        item.person === currentPackingPersonTab
+    );
 
     // 人物フィルターでフィルタリングされたアイテム（アイテム一覧用）
-    let filteredItems = checklistItems;
-    if (currentPersonFilter !== 'all') {
-        filteredItems = checklistItems.filter(item => item.person === currentPersonFilter);
-    }
+    let filteredItems = checklistItems.filter(item => item.person === currentPersonFilter);
 
     // 持っていくものリスト
     if (checkedItems.length === 0) {
@@ -229,6 +226,13 @@ function renderChecklist() {
                         <button class="reorder-btn" onclick="moveItemDown(${realIndex})" ${filterIndex === filteredItems.length - 1 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▼</button>
                     </div>
                     <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name}</span>
+                </div>
+            `;
+        } else if (isEditMode) {
+            // 編集モード
+            return `
+                <div class="checklist-item" style="cursor: default;">
+                    <input type="text" value="${item.name}" onchange="updateItemName(${realIndex}, this.value)" style="flex: 1; padding: 0.25rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem;">
                 </div>
             `;
         } else {
@@ -530,12 +534,54 @@ async function removeCategory(index) {
 // 並び替えモードの切り替え
 function toggleReorderMode() {
     isReorderMode = !isReorderMode;
+    if (isReorderMode) isEditMode = false; // 編集モードを解除
     const btn = document.getElementById('toggleReorderMode');
     if (btn) {
         btn.style.opacity = isReorderMode ? '1' : '0.7';
         btn.style.background = isReorderMode ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
     }
+    const editBtn = document.getElementById('toggleEditMode');
+    if (editBtn) {
+        editBtn.style.opacity = '0.7';
+        editBtn.style.background = 'transparent';
+    }
     renderChecklist();
+}
+
+// 編集モードの切り替え
+function toggleEditMode() {
+    isEditMode = !isEditMode;
+    if (isEditMode) isReorderMode = false; // 並び替えモードを解除
+    const btn = document.getElementById('toggleEditMode');
+    if (btn) {
+        btn.style.opacity = isEditMode ? '1' : '0.7';
+        btn.style.background = isEditMode ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
+    }
+    const reorderBtn = document.getElementById('toggleReorderMode');
+    if (reorderBtn) {
+        reorderBtn.style.opacity = '0.7';
+        reorderBtn.style.background = 'transparent';
+    }
+    renderChecklist();
+}
+
+// アイテム名を更新
+async function updateItemName(index, newName) {
+    if (!newName || newName.trim() === '') {
+        alert('アイテム名を入力してください');
+        renderChecklist();
+        return;
+    }
+
+    checklistItems[index].name = newName.trim();
+
+    try {
+        await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        renderChecklist();
+    } catch (error) {
+        console.error('アイテム名更新エラー:', error);
+        alert('更新に失敗しました');
+    }
 }
 
 // アイテムを上に移動
@@ -545,31 +591,23 @@ async function moveItemUp(index) {
     // 現在のアイテムを取得
     const currentItem = checklistItems[index];
 
-    // フィルターされている場合、同じ人物のアイテムの中で上に移動
-    if (currentPersonFilter !== 'all') {
-        // 同じ人物のアイテムを全て取得
-        const samePersonItems = checklistItems
-            .map((item, idx) => ({ item, idx }))
-            .filter(({ item }) => item.person === currentPersonFilter);
+    // 同じ人物のアイテムの中で上に移動
+    const samePersonItems = checklistItems
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => item.person === currentPersonFilter);
 
-        // 現在のアイテムの位置を見つける
-        const currentPositionInFiltered = samePersonItems.findIndex(({ idx }) => idx === index);
+    // 現在のアイテムの位置を見つける
+    const currentPositionInFiltered = samePersonItems.findIndex(({ idx }) => idx === index);
 
-        if (currentPositionInFiltered <= 0) return; // 既に一番上
+    if (currentPositionInFiltered <= 0) return; // 既に一番上
 
-        // 入れ替える対象のインデックス
-        const targetIndex = samePersonItems[currentPositionInFiltered - 1].idx;
+    // 入れ替える対象のインデックス
+    const targetIndex = samePersonItems[currentPositionInFiltered - 1].idx;
 
-        // 入れ替え
-        const temp = checklistItems[index];
-        checklistItems[index] = checklistItems[targetIndex];
-        checklistItems[targetIndex] = temp;
-    } else {
-        // フィルターなしの場合は単純に入れ替え
-        const temp = checklistItems[index];
-        checklistItems[index] = checklistItems[index - 1];
-        checklistItems[index - 1] = temp;
-    }
+    // 入れ替え
+    const temp = checklistItems[index];
+    checklistItems[index] = checklistItems[targetIndex];
+    checklistItems[targetIndex] = temp;
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
@@ -587,31 +625,23 @@ async function moveItemDown(index) {
     // 現在のアイテムを取得
     const currentItem = checklistItems[index];
 
-    // フィルターされている場合、同じ人物のアイテムの中で下に移動
-    if (currentPersonFilter !== 'all') {
-        // 同じ人物のアイテムを全て取得
-        const samePersonItems = checklistItems
-            .map((item, idx) => ({ item, idx }))
-            .filter(({ item }) => item.person === currentPersonFilter);
+    // 同じ人物のアイテムの中で下に移動
+    const samePersonItems = checklistItems
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => item.person === currentPersonFilter);
 
-        // 現在のアイテムの位置を見つける
-        const currentPositionInFiltered = samePersonItems.findIndex(({ idx }) => idx === index);
+    // 現在のアイテムの位置を見つける
+    const currentPositionInFiltered = samePersonItems.findIndex(({ idx }) => idx === index);
 
-        if (currentPositionInFiltered >= samePersonItems.length - 1) return; // 既に一番下
+    if (currentPositionInFiltered >= samePersonItems.length - 1) return; // 既に一番下
 
-        // 入れ替える対象のインデックス
-        const targetIndex = samePersonItems[currentPositionInFiltered + 1].idx;
+    // 入れ替える対象のインデックス
+    const targetIndex = samePersonItems[currentPositionInFiltered + 1].idx;
 
-        // 入れ替え
-        const temp = checklistItems[index];
-        checklistItems[index] = checklistItems[targetIndex];
-        checklistItems[targetIndex] = temp;
-    } else {
-        // フィルターなしの場合は単純に入れ替え
-        const temp = checklistItems[index];
-        checklistItems[index] = checklistItems[index + 1];
-        checklistItems[index + 1] = temp;
-    }
+    // 入れ替え
+    const temp = checklistItems[index];
+    checklistItems[index] = checklistItems[targetIndex];
+    checklistItems[targetIndex] = temp;
 
     try {
         await db.collection('settings').doc('checklistItems').set({ items: checklistItems });

@@ -160,7 +160,7 @@
                         <!-- 持っていくもの用の人物タブ -->
                         <div style="margin-bottom: 0.5rem;">
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button class="packing-person-tab active" data-person="all" onclick="selectPackingPersonTab('all')">👨‍👩‍👦 全</button>
+                                <button class="packing-person-tab active" data-person="common" onclick="selectPackingPersonTab('common')">📦 共</button>
                                 <button class="packing-person-tab" data-person="me" onclick="selectPackingPersonTab('me')">👨 英</button>
                                 <button class="packing-person-tab" data-person="wife" onclick="selectPackingPersonTab('wife')">👩 歩</button>
                                 <button class="packing-person-tab" data-person="son" onclick="selectPackingPersonTab('son')">👶 翔</button>
@@ -177,12 +177,15 @@
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                             <h3 style="color: #6B7280; margin: 0;">📦 アイテム一覧</h3>
-                            <button id="toggleReorderMode" class="btn-icon-simple" onclick="toggleReorderMode()" title="並び替え">⇅</button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button id="toggleEditMode" class="btn-icon-simple" onclick="toggleEditMode()" title="編集">✏️</button>
+                                <button id="toggleReorderMode" class="btn-icon-simple" onclick="toggleReorderMode()" title="並び替え">⇅</button>
+                            </div>
                         </div>
 
                         <!-- アイテム一覧用の人物フィルター -->
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">📦 共通</button>
+                            <button class="person-filter-btn active" data-person="common" onclick="filterByPerson('common')">📦 共</button>
                             <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 英</button>
                             <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 歩</button>
                             <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 翔</button>
