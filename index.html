@@ -36,7 +36,6 @@
             <div class="header-tabs">
                 <button class="header-tab active" data-page="home">ホーム</button>
                 <button class="header-tab" data-page="chat">チャット</button>
-                <button class="header-tab" data-page="game">⚫⚪ オセロ</button>
                 <button class="header-tab" data-page="other">その他</button>
             </div>
         </header>
@@ -136,44 +135,6 @@
             </section>
         </main>
 
-        <!-- オセロゲームページ -->
-        <main class="main-content page-content" id="gamePage" style="display: none;">
-            <section class="card">
-                <div class="card-header">
-                    <h2>⚫⚪ オセロ</h2>
-                </div>
-                <div class="card-content">
-                    <div class="game-container">
-                        <div class="game-stats">
-                            <div class="stat-box" style="background: #1F2937;">
-                                <div class="stat-label" style="color: #E5E7EB;">⚫ 黒</div>
-                                <div class="stat-value" id="blackScore" style="color: white;">2</div>
-                            </div>
-                            <div class="stat-box" style="background: #F3F4F6;">
-                                <div class="stat-label">⚪ 白</div>
-                                <div class="stat-value" id="whiteScore">2</div>
-                            </div>
-                        </div>
-
-                        <div id="gameStatus" style="text-align: center; margin-bottom: 1rem; font-weight: bold; color: #1F2937; font-size: 1.125rem;">
-                            ⚫ 黒の番です
-                        </div>
-
-                        <canvas id="gameCanvas"></canvas>
-
-                        <div class="game-controls">
-                            <p>盤面をクリックして石を置いてください</p>
-                        </div>
-
-                        <div class="game-buttons">
-                            <button class="btn-primary" id="gameResetBtn">ゲームリセット</button>
-                            <button class="btn-secondary" id="passBtn" style="display: none;">パス</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
         <!-- その他ページ -->
         <main class="main-content page-content" id="otherPage" style="display: none;">
             <!-- 持ち物チェックリスト -->
@@ -221,7 +182,7 @@
 
                         <!-- アイテム一覧用の人物フィルター -->
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">👨‍👩‍👦 全</button>
+                            <button class="person-filter-btn active" data-person="all" onclick="filterByPerson('all')">📦 共通</button>
                             <button class="person-filter-btn" data-person="me" onclick="filterByPerson('me')">👨 英</button>
                             <button class="person-filter-btn" data-person="wife" onclick="filterByPerson('wife')">👩 歩</button>
                             <button class="person-filter-btn" data-person="son" onclick="filterByPerson('son')">👶 翔</button>
@@ -643,7 +604,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-    <script src="game.js?v=2025102601"></script>
     <script src="checklist.js?v=2025102612"></script>
     <script src="splitbill.js?v=2025102801"></script>
     <script src="timeline.js?v=2025102801"></script>

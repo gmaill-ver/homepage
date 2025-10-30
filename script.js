@@ -1079,11 +1079,6 @@ function switchPage(pageName) {
         loadChatHistory();
     }
 
-    // ゲームページに切り替えた時は初期化
-    if (pageName === 'game') {
-        setTimeout(() => initCharisoGame(), 100);
-    }
-
     // その他ページに切り替えた時はチェックリストと割り勘と時系列を初期化
     if (pageName === 'other') {
         setTimeout(() => {
@@ -2199,9 +2194,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // チャット機能
     document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
     document.getElementById('chatInput').addEventListener('keypress', handleChatKeyPress);
-
-    // ゲーム機能
-    initGameEventListeners();
 
     // チェックリスト機能
     document.getElementById('addChecklistItemBtn')?.addEventListener('click', () => {
