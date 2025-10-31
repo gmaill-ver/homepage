@@ -200,7 +200,7 @@ function renderChecklist() {
             const packed = item.categories[currentCategory]?.packed || false;
             return `
                 <div class="checklist-item ${packed ? 'checked' : ''}" onclick="togglePackedStatus(${realIndex})">
-                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name} ${quantity > 1 ? `×${quantity}` : ''}</span>
+                    <span style="flex: 1;">${item.name} ${quantity > 1 ? `×${quantity}` : ''}</span>
                 </div>
             `;
         }).join('');
@@ -231,21 +231,21 @@ function renderChecklist() {
         } else if (isEditMode) {
             // 編集モード
             return `
-                <div class="checklist-item" style="cursor: default;">
-                    <input type="text" value="${item.name}" onchange="updateItemName(${realIndex}, this.value)" style="flex: 1; padding: 0.25rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem;">
+                <div class="checklist-item" style="cursor: default; border: none; background: transparent; padding: 0;">
+                    <input type="text" value="${item.name}" onchange="updateItemName(${realIndex}, this.value)" style="flex: 1; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                    <button class="remove-btn" onclick="removeChecklistItem(${realIndex})" style="margin-left: 0.5rem;">🗑️</button>
                 </div>
             `;
         } else {
             // 通常モード
             return `
                 <div class="checklist-item ${isChecked ? 'checked' : ''}" onclick="toggleChecklistItem(${realIndex})">
-                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name}</span>
+                    <span style="flex: 1;">${item.name}</span>
                     ${isChecked ? `
                         <select class="quantity-select" onclick="event.stopPropagation()" onchange="setQuantity(${realIndex}, this.value)">
                             ${quantityOptions}
                         </select>
                     ` : ''}
-                    <button class="remove-btn" onclick="event.stopPropagation(); removeChecklistItem(${realIndex})">🗑️</button>
                 </div>
             `;
         }
