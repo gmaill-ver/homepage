@@ -225,7 +225,7 @@ function renderChecklist() {
                         <button class="reorder-btn" onclick="moveItemUp(${realIndex})" ${filterIndex === 0 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▲</button>
                         <button class="reorder-btn" onclick="moveItemDown(${realIndex})" ${filterIndex === filteredItems.length - 1 ? 'disabled' : ''} style="font-size: 0.75rem; padding: 0.1rem 0.3rem;">▼</button>
                     </div>
-                    <span style="flex: 1;">${getPersonLabel(item.person)} ${item.name}</span>
+                    <span style="flex: 1; font-size: 0.75rem;">${item.name}</span>
                 </div>
             `;
         } else if (isEditMode) {
