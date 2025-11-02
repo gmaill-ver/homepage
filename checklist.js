@@ -428,13 +428,15 @@ function renderCategoryEditModal() {
     const categoryList = document.getElementById('categoryList');
     if (!categoryList) return;
 
-    categoryList.innerHTML = categories.map((cat, index) => `
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
-            <input type="text" value="${cat.icon || ''}" onchange="updateCategoryIcon(${index}, this.value)" placeholder="📝" style="width: 2.5rem; text-align: center; font-size: 1.5rem; padding: 0.25rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; background: white;">
-            <input type="text" value="${cat.name}" onchange="updateCategoryName(${index}, this.value)" style="flex: 1; font-weight: 500; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem; background: white;">
-            <button onclick="removeCategory(${index})" style="background: transparent; border: none; font-size: 1.25rem; padding: 0; cursor: pointer; opacity: 0.6;">🗑️</button>
-        </div>
-    `).join('');
+    categoryList.innerHTML = categories.map((cat, index) => {
+        const displayValue = (cat.icon ? cat.icon + ' ' : '') + cat.name;
+        return `
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
+                <input type="text" value="${displayValue}" onchange="updateCategoryDisplay(${index}, this.value)" placeholder="📝 カテゴリ名" style="flex: 1; font-weight: 500; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem; background: white;">
+                <button onclick="removeCategory(${index})" style="background: transparent; border: none; font-size: 1.25rem; padding: 0; cursor: pointer; opacity: 0.6;">🗑️</button>
+            </div>
+        `;
+    }).join('');
 }
 
 // カテゴリを追加
@@ -497,36 +499,37 @@ async function addCategory() {
     }
 }
 
-// カテゴリアイコンを更新
-async function updateCategoryIcon(index, newIcon) {
-    categories[index].icon = newIcon.trim();
-
-    try {
-        await db.collection('settings').doc('checklistCategories').set({ categories });
-        renderCategoryButtons();
-        renderCategoryEditModal();
-    } catch (error) {
-        console.error('カテゴリアイコン更新エラー:', error);
-        alert('更新に失敗しました');
-    }
-}
-
-// カテゴリ名を更新
-async function updateCategoryName(index, newName) {
-    if (!newName || newName.trim() === '') {
+// カテゴリ表示（アイコン+名前）を更新
+async function updateCategoryDisplay(index, value) {
+    if (!value || value.trim() === '') {
         alert('カテゴリ名を入力してください');
         renderCategoryEditModal();
         return;
     }
 
-    categories[index].name = newName.trim();
+    const trimmed = value.trim();
+    const parts = trimmed.split(' ');
+
+    // 最初の文字が絵文字かどうかチェック（簡易判定）
+    const firstPart = parts[0];
+    const isEmoji = firstPart.length <= 2 && /[\u{1F300}-\u{1F9FF}]/u.test(firstPart);
+
+    if (isEmoji && parts.length > 1) {
+        // 絵文字がある場合
+        categories[index].icon = firstPart;
+        categories[index].name = parts.slice(1).join(' ');
+    } else {
+        // 絵文字がない場合
+        categories[index].icon = '';
+        categories[index].name = trimmed;
+    }
 
     try {
         await db.collection('settings').doc('checklistCategories').set({ categories });
         renderCategoryButtons();
         renderCategoryEditModal();
     } catch (error) {
-        console.error('カテゴリ名更新エラー:', error);
+        console.error('カテゴリ更新エラー:', error);
         alert('更新に失敗しました');
     }
 }
