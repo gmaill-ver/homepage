@@ -431,7 +431,7 @@ function renderCategoryEditModal() {
     categoryList.innerHTML = categories.map((cat, index) => `
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
             ${cat.icon ? `<span style="font-size: 1.5rem;">${cat.icon}</span>` : ''}
-            <span style="flex: 1; font-weight: 500;">${cat.name}</span>
+            <input type="text" value="${cat.name}" onchange="updateCategoryName(${index}, this.value)" style="flex: 1; font-weight: 500; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem; background: white;">
             <button onclick="removeCategory(${index})" class="remove-btn" style="opacity: 1;">🗑️</button>
         </div>
     `).join('');
@@ -494,6 +494,26 @@ async function addCategory() {
     } catch (error) {
         console.error('カテゴリ追加エラー:', error);
         alert('追加に失敗しました');
+    }
+}
+
+// カテゴリ名を更新
+async function updateCategoryName(index, newName) {
+    if (!newName || newName.trim() === '') {
+        alert('カテゴリ名を入力してください');
+        renderCategoryEditModal();
+        return;
+    }
+
+    categories[index].name = newName.trim();
+
+    try {
+        await db.collection('settings').doc('checklistCategories').set({ categories });
+        renderCategoryButtons();
+        renderCategoryEditModal();
+    } catch (error) {
+        console.error('カテゴリ名更新エラー:', error);
+        alert('更新に失敗しました');
     }
 }
 
