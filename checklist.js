@@ -431,7 +431,7 @@ function renderCategoryEditModal() {
     categoryList.innerHTML = categories.map((cat, index) => {
         const displayValue = (cat.icon ? cat.icon + ' ' : '') + cat.name;
         return `
-            <div style="display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; padding: 0.4rem; background: #F9FAFB; border-radius: 0.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.25rem; margin-bottom: 0.25rem; padding: 0.4rem;">
                 <input type="text" value="${displayValue}" onchange="updateCategoryDisplay(${index}, this.value)" placeholder="📝 カテゴリ名" style="flex: 1; font-weight: 500; padding: 0.4rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.8rem; background: white;">
                 <button onclick="removeCategory(${index})" style="background: transparent; border: none; font-size: 1.1rem; padding: 0; cursor: pointer; opacity: 0.6;">🗑️</button>
             </div>
