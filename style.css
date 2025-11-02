@@ -1370,8 +1370,10 @@ body {
     background: white;
     border: 1px solid #E5E7EB;
     border-radius: 0.25rem;
-    transition: all 0.2s;
+    transition: text-decoration 0s, opacity 0s;
     cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .checklist-item.checked {
@@ -1380,8 +1382,17 @@ body {
 }
 
 .checklist-item:hover {
-    border-color: #60A5FA;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-color: #E5E7EB;
+}
+
+.checklist-item:focus {
+    outline: none;
+    border-color: #E5E7EB;
+}
+
+.checklist-item:active {
+    outline: none;
+    border-color: #E5E7EB;
 }
 
 /* 緑の塗りつぶしを削除 */
