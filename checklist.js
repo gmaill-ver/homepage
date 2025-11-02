@@ -430,9 +430,9 @@ function renderCategoryEditModal() {
 
     categoryList.innerHTML = categories.map((cat, index) => `
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem;">
-            ${cat.icon ? `<span style="font-size: 1.5rem;">${cat.icon}</span>` : ''}
+            <input type="text" value="${cat.icon || ''}" onchange="updateCategoryIcon(${index}, this.value)" placeholder="📝" style="width: 2.5rem; text-align: center; font-size: 1.5rem; padding: 0.25rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; background: white;">
             <input type="text" value="${cat.name}" onchange="updateCategoryName(${index}, this.value)" style="flex: 1; font-weight: 500; padding: 0.5rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.875rem; background: white;">
-            <button onclick="removeCategory(${index})" class="remove-btn" style="opacity: 1;">🗑️</button>
+            <button onclick="removeCategory(${index})" style="background: transparent; border: none; font-size: 1.25rem; padding: 0; cursor: pointer; opacity: 0.6;">🗑️</button>
         </div>
     `).join('');
 }
@@ -494,6 +494,20 @@ async function addCategory() {
     } catch (error) {
         console.error('カテゴリ追加エラー:', error);
         alert('追加に失敗しました');
+    }
+}
+
+// カテゴリアイコンを更新
+async function updateCategoryIcon(index, newIcon) {
+    categories[index].icon = newIcon.trim();
+
+    try {
+        await db.collection('settings').doc('checklistCategories').set({ categories });
+        renderCategoryButtons();
+        renderCategoryEditModal();
+    } catch (error) {
+        console.error('カテゴリアイコン更新エラー:', error);
+        alert('更新に失敗しました');
     }
 }
 
