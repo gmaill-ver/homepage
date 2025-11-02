@@ -231,9 +231,9 @@ function renderChecklist() {
         } else if (isEditMode) {
             // 編集モード
             return `
-                <div style="display: flex; align-items: center; gap: 0.2rem; padding: 0.4rem; background: white; border: 1px solid #E5E7EB; border-radius: 0.25rem;">
-                    <input type="text" value="${item.name}" onchange="updateItemName(${realIndex}, this.value)" style="flex: 1; padding: 0.3rem; border: none; outline: none; font-size: 0.7rem; min-width: 0;">
-                    <button onclick="event.stopPropagation(); removeChecklistItem(${realIndex})" style="background: transparent; border: none; font-size: 1rem; padding: 0; cursor: pointer; line-height: 1; flex-shrink: 0;">🗑️</button>
+                <div style="display: flex; align-items: center; gap: 0.2rem; padding: 0.35rem; background: white; border: 1px solid #E5E7EB; border-radius: 0.25rem; min-width: 0; overflow: hidden;">
+                    <input type="text" value="${item.name}" onchange="updateItemName(${realIndex}, this.value)" style="flex: 1; padding: 0.25rem; border: none; outline: none; font-size: 0.7rem; min-width: 0;">
+                    <button onclick="event.stopPropagation(); removeChecklistItem(${realIndex})" style="background: transparent; border: none; font-size: 0.95rem; padding: 0; cursor: pointer; line-height: 1; flex-shrink: 0;">🗑️</button>
                 </div>
             `;
         } else {
