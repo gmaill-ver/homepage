@@ -89,6 +89,12 @@ async function loadChecklistItems() {
                     needsMigration = true;
                 }
 
+                // 旧「全体」を「common」に置き換え
+                if (item.person === 'all' || item.person === '全体') {
+                    item.person = 'common';
+                    needsMigration = true;
+                }
+
                 return item;
             });
 
