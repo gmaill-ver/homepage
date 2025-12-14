@@ -222,6 +222,91 @@
                 </div>
             </section>
 
+            <!-- 月次費用 -->
+            <section class="card" id="monthlyExpensesCard">
+                <div class="card-header" onclick="toggleCard('monthlyExpensesCard')">
+                    <h2>💰 月次費用</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="manageExpenseItemsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <!-- 年月選択 -->
+                    <div class="expense-month-selector">
+                        <button id="prevExpenseMonth" class="month-btn">◀</button>
+                        <div id="currentExpenseMonth" class="month-display"></div>
+                        <button id="nextExpenseMonth" class="month-btn">▶</button>
+                    </div>
+
+                    <!-- 収入セクション -->
+                    <div class="income-section">
+                        <h3>💵 収入</h3>
+                        <div id="incomeInputs" class="expenses-grid"></div>
+                        <div class="expenses-total income-total">
+                            <span>収入合計</span>
+                            <span id="totalIncome" class="total-amount">0 円</span>
+                        </div>
+                    </div>
+
+                    <!-- 支出セクション -->
+                    <div class="expense-section">
+                        <h3>💸 支出</h3>
+                        <div id="expenseInputs" class="expenses-grid"></div>
+                        <div class="expenses-total expense-total">
+                            <span>支出合計</span>
+                            <span id="totalExpenses" class="total-amount">0 円</span>
+                        </div>
+                    </div>
+
+                    <!-- 収支 -->
+                    <div class="balance-section">
+                        <div class="balance-total">
+                            <span>収支</span>
+                            <span id="totalBalance" class="balance-amount">0 円</span>
+                        </div>
+                    </div>
+
+                    <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月のデータを保存</button>
+
+                    <!-- 折れ線グラフ -->
+                    <div class="expense-chart-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; margin-bottom: 1rem;">
+                            <h3>📊 収支推移</h3>
+                            <div class="expense-month-selector">
+                                <button id="prevChartYear" class="month-btn">◀</button>
+                                <div id="currentChartYear" class="month-display"></div>
+                                <button id="nextChartYear" class="month-btn">▶</button>
+                            </div>
+                        </div>
+                        <canvas id="expenseSummaryChart" style="max-height: 300px;"></canvas>
+                    </div>
+
+                    <!-- 収入詳細グラフ（折りたたみ） -->
+                    <div class="expense-chart-container" style="margin-top: 2rem;">
+                        <div class="card-header" onclick="toggleDetailChart('incomeDetail')" style="cursor: pointer; padding: 1rem; background: #F0FDF4; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="color: #10B981; margin: 0;">💵 収入項目の詳細</h4>
+                            </div>
+                        </div>
+                        <div id="incomeDetailChart" style="display: none;">
+                            <canvas id="incomeChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 支出詳細グラフ（折りたたみ） -->
+                    <div class="expense-chart-container" style="margin-top: 1rem;">
+                        <div class="card-header" onclick="toggleDetailChart('expenseDetail')" style="cursor: pointer; padding: 1rem; background: #FEF2F2; border-radius: 0.5rem; margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="color: #EF4444; margin: 0;">💸 支出項目の詳細</h4>
+                            </div>
+                        </div>
+                        <div id="expenseDetailChart" style="display: none;">
+                            <canvas id="expenseChart" style="max-height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 割り勘 -->
             <section class="card" id="splitBillCard">
                 <div class="card-header" onclick="toggleCard('splitBillCard')">

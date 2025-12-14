@@ -332,6 +332,7 @@ function showMainApp() {
     renderContacts();
     renderInsurances();
     renderMemos();
+    initializeMonthlyExpenses();
     updateMonthDisplay();
 }
 
