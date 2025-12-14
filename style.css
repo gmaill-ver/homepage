@@ -1071,6 +1071,73 @@ body {
     cursor: pointer;
 }
 
+/* メモ */
+.memo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.memo-item {
+    border: 2px solid #DBEAFE;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: #EFF6FF;
+}
+
+.memo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 0.5rem;
+}
+
+.memo-title {
+    font-weight: bold;
+    color: #1F2937;
+    flex: 1;
+    font-size: 1rem;
+}
+
+.memo-date {
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+.memo-content {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.memo-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.memo-edit {
+    background: #60A5FA;
+    color: white;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.memo-delete {
+    background: #E5E7EB;
+    color: #6B7280;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
 /* モーダル */
 .modal {
     position: fixed;

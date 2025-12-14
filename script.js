@@ -331,7 +331,7 @@ function showMainApp() {
     renderNotices();
     renderContacts();
     renderInsurances();
-    initializeMonthlyExpenses();
+    renderMemos();
     updateMonthDisplay();
 }
 
@@ -1451,6 +1451,128 @@ async function deleteInsurance(id) {
 }
 
 // ==========================================
+// 家族のメモ機能
+// ==========================================
+
+// メモ一覧を表示
+async function renderMemos() {
+    const memoList = document.getElementById('memoList');
+
+    try {
+        const snapshot = await db.collection('memos').orderBy('createdAt', 'desc').get();
+
+        const memos = [];
+        snapshot.forEach(doc => {
+            memos.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (memos.length === 0) {
+            memoList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <p>メモを追加してください</p>
+                </div>
+            `;
+            return;
+        }
+
+        memoList.innerHTML = memos.map(memo => `
+            <div class="memo-item">
+                <div class="memo-header">
+                    <div class="memo-title">${memo.title || '無題'}</div>
+                    <div class="memo-date">${memo.createdAt ? new Date(memo.createdAt.seconds * 1000).toLocaleDateString('ja-JP') : ''}</div>
+                </div>
+                <div class="memo-content">${memo.content ? memo.content.replace(/\n/g, '<br>') : ''}</div>
+                <div class="memo-actions">
+                    <button class="memo-edit" onclick="editMemo('${memo.id}')">編集</button>
+                    <button class="memo-delete" onclick="deleteMemo('${memo.id}')">削除</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('メモ読み込みエラー:', error);
+        memoList.innerHTML = `
+            <div class="empty-state">
+                <p>メモの読み込みに失敗しました</p>
+            </div>
+        `;
+    }
+}
+
+// メモを追加/編集
+async function saveMemo() {
+    const id = document.getElementById('memoId').value;
+    const title = document.getElementById('memoTitle').value;
+    const content = document.getElementById('memoContent').value;
+
+    if (!title && !content) {
+        alert('タイトルまたは内容を入力してください');
+        return;
+    }
+
+    try {
+        const data = {
+            title: title || '無題',
+            content: content || '',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        if (id) {
+            // 編集
+            await db.collection('memos').doc(id).update(data);
+        } else {
+            // 新規追加
+            data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+            await db.collection('memos').add(data);
+        }
+
+        // フォームをリセット
+        document.getElementById('memoId').value = '';
+        document.getElementById('memoTitle').value = '';
+        document.getElementById('memoContent').value = '';
+
+        closeModal('memoModal');
+        renderMemos();
+    } catch (error) {
+        console.error('メモ保存エラー:', error);
+        alert('メモの保存に失敗しました');
+    }
+}
+
+// メモを編集
+async function editMemo(id) {
+    try {
+        const doc = await db.collection('memos').doc(id).get();
+        if (!doc.exists) return;
+
+        const memo = doc.data();
+
+        document.getElementById('memoModalTitle').textContent = 'メモを編集';
+        document.getElementById('memoId').value = id;
+        document.getElementById('memoTitle').value = memo.title || '';
+        document.getElementById('memoContent').value = memo.content || '';
+
+        openModal('memoModal');
+    } catch (error) {
+        console.error('メモ読み込みエラー:', error);
+        alert('メモの読み込みに失敗しました');
+    }
+}
+
+// メモを削除
+async function deleteMemo(id) {
+    if (!confirm('このメモを削除しますか？')) return;
+
+    try {
+        await db.collection('memos').doc(id).delete();
+        renderMemos();
+    } catch (error) {
+        console.error('メモ削除エラー:', error);
+        alert('メモの削除に失敗しました');
+    }
+}
+
+// ==========================================
 // 月次費用管理機能
 // ==========================================
 
@@ -2157,6 +2279,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('saveInsuranceBtn').addEventListener('click', saveInsurance);
     document.getElementById('closeInsuranceBtn').addEventListener('click', () => closeModal('insuranceModal'));
+
+    // メモ
+    document.getElementById('addMemoBtn').addEventListener('click', () => {
+        document.getElementById('memoModalTitle').textContent = 'メモを追加';
+        document.getElementById('memoId').value = '';
+        document.getElementById('memoTitle').value = '';
+        document.getElementById('memoContent').value = '';
+        openModal('memoModal');
+    });
+    document.getElementById('saveMemoBtn').addEventListener('click', saveMemo);
+    document.getElementById('closeMemoBtn').addEventListener('click', () => closeModal('memoModal'));
 
     // 月次費用
     document.getElementById('saveExpensesBtn').addEventListener('click', saveMonthlyExpenses);
