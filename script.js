@@ -1051,11 +1051,17 @@ async function deleteContactFromEdit(id) {
 // ==========================================
 function toggleCard(cardId) {
     const card = document.getElementById(cardId);
+    if (!card) return;
+
     const content = card.querySelector('.card-content');
     const toggle = card.querySelector('.card-toggle');
 
-    content.classList.toggle('collapsed');
-    toggle.classList.toggle('collapsed');
+    if (content) {
+        content.classList.toggle('collapsed');
+    }
+    if (toggle) {
+        toggle.classList.toggle('collapsed');
+    }
 }
 
 // ==========================================
