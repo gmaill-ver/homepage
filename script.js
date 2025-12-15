@@ -2203,11 +2203,11 @@ function nextChartYear() {
 // 詳細グラフの折りたたみ
 function toggleDetailChart(type) {
     const chartDiv = document.getElementById(`${type}Chart`);
-    const toggle = document.getElementById(`${type}Toggle`);
 
-    if (chartDiv.style.display === 'none') {
+    if (!chartDiv) return;
+
+    if (chartDiv.style.display === 'none' || chartDiv.style.display === '') {
         chartDiv.style.display = 'block';
-        toggle.textContent = '▲';
 
         // グラフを描画
         if (type === 'incomeDetail') {
@@ -2217,7 +2217,6 @@ function toggleDetailChart(type) {
         }
     } else {
         chartDiv.style.display = 'none';
-        toggle.textContent = '▼';
     }
 }
 
