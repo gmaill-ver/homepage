@@ -325,14 +325,12 @@ function showMainApp() {
     // ホームページを表示
     switchPage('home');
 
+    // ホームページのデータのみ読み込み（その他ページは遅延読み込み）
     renderWeather();
     renderPhotos();
     renderCalendar();
     renderNotices();
     renderContacts();
-    renderInsurances();
-    renderMemos();
-    initializeMonthlyExpenses();
     updateMonthDisplay();
 }
 
@@ -1086,13 +1084,9 @@ function switchPage(pageName) {
         loadChatHistory();
     }
 
-    // その他ページに切り替えた時はチェックリストと割り勘と時系列を初期化
+    // その他ページに切り替えた時はカードグリッドを表示
     if (pageName === 'other') {
-        setTimeout(() => {
-            initializeChecklist();
-            initializeSplitBill();
-            initializeTimeline();
-        }, 100);
+        showCardGrid();
     }
 
     // タブのアクティブ状態を更新
@@ -1102,6 +1096,71 @@ function switchPage(pageName) {
     const activeTab = document.querySelector(`[data-page="${pageName}"]`);
     if (activeTab) {
         activeTab.classList.add('active');
+    }
+}
+
+// ==========================================
+// 機能カード表示管理
+// ==========================================
+
+// カードグリッドを表示
+function showCardGrid() {
+    // すべての機能ページを非表示
+    document.querySelectorAll('.feature-page').forEach(page => {
+        page.style.display = 'none';
+    });
+
+    // カードグリッドを表示
+    const cardGrid = document.getElementById('featureCardGrid');
+    if (cardGrid) {
+        cardGrid.style.display = 'grid';
+    }
+}
+
+// 機能ページを表示（遅延読み込み付き）
+function showFeature(featureName) {
+    // カードグリッドを非表示
+    const cardGrid = document.getElementById('featureCardGrid');
+    if (cardGrid) {
+        cardGrid.style.display = 'none';
+    }
+
+    // すべての機能ページを非表示
+    document.querySelectorAll('.feature-page').forEach(page => {
+        page.style.display = 'none';
+    });
+
+    // 選択された機能ページを表示
+    const featurePage = document.getElementById(`${featureName}FeaturePage`);
+    if (featurePage) {
+        featurePage.style.display = 'block';
+    }
+
+    // 機能ごとにデータを読み込む（遅延読み込み）
+    loadFeatureData(featureName);
+}
+
+// 機能データの遅延読み込み
+function loadFeatureData(featureName) {
+    switch(featureName) {
+        case 'checklist':
+            initializeChecklist();
+            break;
+        case 'memo':
+            renderMemos();
+            break;
+        case 'insurance':
+            renderInsurances();
+            break;
+        case 'expenses':
+            initializeMonthlyExpenses();
+            break;
+        case 'splitbill':
+            initializeSplitBill();
+            break;
+        case 'timeline':
+            initializeTimeline();
+            break;
     }
 }
 

@@ -1673,3 +1673,101 @@ body {
     opacity: 0.3;
     cursor: not-allowed;
 }
+
+/* ==========================================
+   機能カードグリッド
+   ========================================== */
+
+.feature-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    .feature-card-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.feature-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid transparent;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: #3B82F6;
+}
+
+.feature-card:active {
+    transform: translateY(-2px);
+}
+
+.feature-card-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature-card-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #1F2937;
+    margin-bottom: 0.25rem;
+}
+
+.feature-card-description {
+    font-size: 0.75rem;
+    color: #6B7280;
+}
+
+/* 機能ページ */
+.feature-page {
+    padding: 0;
+}
+
+.feature-page-header {
+    background: white;
+    padding: 1rem;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.back-btn {
+    background: #F3F4F6;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: #E5E7EB;
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.feature-page-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    color: #1F2937;
+}

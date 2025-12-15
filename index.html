@@ -137,7 +137,52 @@
 
         <!-- その他ページ -->
         <main class="main-content page-content" id="otherPage" style="display: none;">
-            <!-- 持ち物チェックリスト -->
+            <!-- カード一覧 -->
+            <div id="featureCardGrid" class="feature-card-grid">
+                <div class="feature-card" onclick="showFeature('checklist')">
+                    <div class="feature-card-icon">📋</div>
+                    <div class="feature-card-title">持ち物チェックリスト</div>
+                    <div class="feature-card-description">旅行や外出の準備</div>
+                </div>
+
+                <div class="feature-card" onclick="showFeature('memo')">
+                    <div class="feature-card-icon">📝</div>
+                    <div class="feature-card-title">家族のメモ</div>
+                    <div class="feature-card-description">家族で共有するメモ</div>
+                </div>
+
+                <div class="feature-card" onclick="showFeature('insurance')">
+                    <div class="feature-card-icon">🏥</div>
+                    <div class="feature-card-title">保険加入状況</div>
+                    <div class="feature-card-description">保険情報の管理</div>
+                </div>
+
+                <div class="feature-card" onclick="showFeature('expenses')">
+                    <div class="feature-card-icon">💰</div>
+                    <div class="feature-card-title">月次費用</div>
+                    <div class="feature-card-description">収支管理とグラフ</div>
+                </div>
+
+                <div class="feature-card" onclick="showFeature('splitbill')">
+                    <div class="feature-card-icon">💸</div>
+                    <div class="feature-card-title">割り勘</div>
+                    <div class="feature-card-description">グループでの精算</div>
+                </div>
+
+                <div class="feature-card" onclick="showFeature('timeline')">
+                    <div class="feature-card-icon">📍</div>
+                    <div class="feature-card-title">時系列ログ</div>
+                    <div class="feature-card-description">訪問先の記録</div>
+                </div>
+            </div>
+
+            <!-- チェックリスト機能ページ -->
+            <div id="checklistFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>📋 持ち物チェックリスト</h2>
+                </div>
+                <!-- 持ち物チェックリスト -->
             <section class="card" id="checklistCard">
                 <div class="card-header" onclick="toggleCard('checklistCard')">
                     <h2>📋 持ち物チェックリスト</h2>
@@ -195,8 +240,15 @@
                     </div>
                 </div>
             </section>
+            </div>
 
-            <!-- 家族のメモ -->
+            <!-- メモ機能ページ -->
+            <div id="memoFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>📝 家族のメモ</h2>
+                </div>
+                <!-- 家族のメモ -->
             <section class="card" id="familyMemoCard">
                 <div class="card-header" onclick="toggleCard('familyMemoCard')">
                     <h2>📝 家族のメモ</h2>
@@ -208,8 +260,15 @@
                     <div id="memoList" class="memo-list"></div>
                 </div>
             </section>
+            </div>
 
-            <!-- 保険加入状況 -->
+            <!-- 保険機能ページ -->
+            <div id="insuranceFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>🏥 保険加入状況</h2>
+                </div>
+                <!-- 保険加入状況 -->
             <section class="card" id="insuranceCard">
                 <div class="card-header" onclick="toggleCard('insuranceCard')">
                     <h2>🏥 保険加入状況</h2>
@@ -221,8 +280,15 @@
                     <div id="insuranceList" class="insurance-list"></div>
                 </div>
             </section>
+            </div>
 
-            <!-- 月次費用 -->
+            <!-- 月次費用機能ページ -->
+            <div id="expensesFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>💰 月次費用</h2>
+                </div>
+                <!-- 月次費用 -->
             <section class="card" id="monthlyExpensesCard">
                 <div class="card-header" onclick="toggleCard('monthlyExpensesCard')">
                     <h2>💰 月次費用</h2>
@@ -306,8 +372,15 @@
                     </div>
                 </div>
             </section>
+            </div>
 
-            <!-- 割り勘 -->
+            <!-- 割り勘機能ページ -->
+            <div id="splitbillFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>💸 割り勘</h2>
+                </div>
+                <!-- 割り勘 -->
             <section class="card" id="splitBillCard">
                 <div class="card-header" onclick="toggleCard('splitBillCard')">
                     <h2>💰 割り勘</h2>
@@ -351,8 +424,15 @@
                     </div>
                 </div>
             </section>
+            </div>
 
-            <!-- 時系列ログ -->
+            <!-- 時系列ログ機能ページ -->
+            <div id="timelineFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>📍 時系列ログ</h2>
+                </div>
+                <!-- 時系列ログ -->
             <section class="card" id="timelineCard">
                 <div class="card-header" onclick="toggleCard('timelineCard')">
                     <h2>📍 時系列ログ</h2>
@@ -399,6 +479,7 @@
                     </div>
                 </div>
             </section>
+            </div>
         </main>
     </div>
 
