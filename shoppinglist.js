@@ -43,21 +43,16 @@ function renderShoppingList() {
         return;
     }
 
-    const html = shoppingItems.map(item => `
-        <div class="shopping-item ${item.purchased ? 'purchased' : ''}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: ${item.purchased ? '#F3F4F6' : 'white'}; border-radius: 0.5rem; border-left: 4px solid ${item.purchased ? '#9CA3AF' : '#3B82F6'}; margin-bottom: 0.5rem; transition: all 0.2s;">
-            <button onclick="togglePurchased('${item.id}')" style="flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 2px solid ${item.purchased ? '#10B981' : '#D1D5DB'}; background: ${item.purchased ? '#10B981' : 'white'}; color: white; font-size: 1.2rem; cursor: pointer; transition: all 0.2s;">
-                ${item.purchased ? '✓' : ''}
-            </button>
-            <div style="flex: 1; ${item.purchased ? 'text-decoration: line-through; opacity: 0.6;' : ''}">
-                <div style="font-weight: 600; font-size: 1rem; color: #1F2937; margin-bottom: 0.25rem;">${item.name}</div>
-                <div style="font-size: 0.85rem; color: #6B7280;">数量: ${item.quantity} ${item.unit || '個'}</div>
-            </div>
-            <div style="display: flex; gap: 0.25rem;">
-                <button onclick="editShoppingItem('${item.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="編集">✏️</button>
-                <button onclick="deleteShoppingItem('${item.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
-            </div>
+    const html = `
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+            ${shoppingItems.map(item => `
+                <div onclick="togglePurchased('${item.id}')" class="shopping-item" style="padding: 0.75rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.5rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center;">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: ${item.purchased ? 'white' : '#1F2937'}; margin-bottom: 0.25rem; ${item.purchased ? 'text-decoration: line-through;' : ''}">${item.name}</div>
+                    <div style="font-size: 0.75rem; color: ${item.purchased ? 'rgba(255,255,255,0.8)' : '#6B7280'};">${item.quantity} ${item.unit || '個'}</div>
+                </div>
+            `).join('')}
         </div>
-    `).join('');
+    `;
 
     container.innerHTML = html;
 }
