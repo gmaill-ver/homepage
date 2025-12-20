@@ -325,13 +325,17 @@ function showMainApp() {
     // ホームページを表示
     switchPage('home');
 
-    // ホームページのデータのみ読み込み（その他ページは遅延読み込み）
+    // 最小限の初期化のみ実行（高速化）
     renderWeather();
-    renderPhotos();
-    renderCalendar();
-    renderNotices();
-    renderContacts();
-    updateMonthDisplay();
+
+    // その他は少し遅延させて読み込み（ログイン体感速度向上）
+    setTimeout(() => {
+        renderPhotos();
+        renderCalendar();
+        renderNotices();
+        renderContacts();
+        updateMonthDisplay();
+    }, 100);
 }
 
 // モーダルを開く
