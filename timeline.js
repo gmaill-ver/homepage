@@ -300,10 +300,10 @@ function renderTimelineEntries() {
             <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
             <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date} - ${trip.entries.length}件のログ</p>
         </div>
-        <div id="editModeActions" style="display: none; margin-bottom: 0.5rem; padding: 0.5rem; background: #FFF7ED; border-radius: 0.5rem; border: 2px solid #F97316;">
+        <div id="editModeActions" style="display: none; margin-bottom: 0.5rem; padding: 0.5rem; background: #F3F4F6; border-radius: 0.5rem;">
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                <button onclick="cancelTimelineEditMode()" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;">キャンセル</button>
-                <button onclick="saveTimelineEditMode()" class="btn-primary" style="padding: 0.4rem 1rem; font-size: 0.8rem; background: #667eea;">💾 保存</button>
+                <button onclick="cancelTimelineEditMode()" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">キャンセル</button>
+                <button onclick="saveTimelineEditMode()" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #667eea;">💾 保存</button>
             </div>
         </div>
     `;
@@ -371,8 +371,8 @@ function enterTimelineEditMode() {
         if (editDiv) editDiv.style.display = 'block';
 
         // エントリーのスタイルを編集モード用に変更
-        item.style.background = '#FFF7ED';
-        item.style.borderLeftColor = '#F97316';
+        item.style.background = '#F9FAFB';
+        item.style.borderLeftColor = '#9CA3AF';
     });
 }
 
