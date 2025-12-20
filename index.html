@@ -451,7 +451,7 @@
                     <div style="margin-bottom: 1rem;">
                         <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
                             <span>📝 ログを追加</span>
-                            <button onclick="addTimelineInputRow()" style="background: #10B981; color: white; border: none; border-radius: 50%; width: 1.75rem; height: 1.75rem; cursor: pointer; font-size: 0.875rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="行を追加">➕</button>
+                            <button onclick="addTimelineInputRow()" style="background: transparent; color: #10B981; border: none; cursor: pointer; font-size: 1.5rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'" title="行を追加">➕</button>
                         </h3>
                         <div style="background: #F9FAFB; border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem;">
                             <div style="display: grid; grid-template-columns: 80px 1fr 30px; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; color: #666; font-weight: 600; padding: 0 0.25rem;">
@@ -463,7 +463,7 @@
                                 <!-- 動的に追加される行 -->
                             </div>
                         </div>
-                        <button onclick="addAllTimelineEntries()" class="btn-primary" style="width: 100%; padding: 0.5rem;">💾 すべて保存</button>
+                        <button onclick="addAllTimelineEntries()" style="width: 100%; padding: 0.5rem; background: transparent; border: 2px solid #667eea; color: #667eea; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#667eea'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#667eea';">💾 すべて保存</button>
                     </div>
 
                     <!-- タイムライン表示 -->

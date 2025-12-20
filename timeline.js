@@ -282,28 +282,31 @@ function renderTimelineEntries() {
     if (!trip || trip.entries.length === 0) {
         container.innerHTML = '<div style="text-align: center; padding: 1rem; color: #999; font-size: 0.875rem;">まだログがありません</div>';
         headerContainer.innerHTML = `
-            <div onclick="toggleTimelineHeader()" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-                <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
-                <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
-                <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date}</p>
+            <div onclick="toggleTimelineHeader()" style="position: relative; background: #E5E7EB; color: #374151; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+                <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
+                    <button id="toggleEditModeBtn" onclick="event.stopPropagation(); toggleTimelineEditMode()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="編集モード">✏️</button>
+                    <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
+                </div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem; font-weight: 600;">${trip.name}</h3>
+                <p style="font-size: 0.875rem; opacity: 0.7;">${trip.date}</p>
             </div>
         `;
         return;
     }
 
     headerContainer.innerHTML = `
-        <div onclick="toggleTimelineHeader()" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
+        <div onclick="toggleTimelineHeader()" style="position: relative; background: #E5E7EB; color: #374151; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
             <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
                 <button id="toggleEditModeBtn" onclick="event.stopPropagation(); toggleTimelineEditMode()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="編集モード">✏️</button>
                 <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
             </div>
-            <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
-            <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date} - ${trip.entries.length}件のログ</p>
+            <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem; font-weight: 600;">${trip.name}</h3>
+            <p style="font-size: 0.875rem; opacity: 0.7;">${trip.date} - ${trip.entries.length}件のログ</p>
         </div>
         <div id="editModeActions" style="display: none; margin-bottom: 0.5rem; padding: 0.5rem; background: #F3F4F6; border-radius: 0.5rem;">
             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                <button onclick="cancelTimelineEditMode()" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">キャンセル</button>
-                <button onclick="saveTimelineEditMode()" class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #667eea;">💾 保存</button>
+                <button onclick="cancelTimelineEditMode()" class="btn-secondary" style="padding: 0.25rem 0.8rem; font-size: 0.8rem;">キャンセル</button>
+                <button onclick="saveTimelineEditMode()" class="btn-primary" style="padding: 0.25rem 0.8rem; font-size: 0.8rem; background: #667eea;">💾 保存</button>
             </div>
         </div>
     `;
