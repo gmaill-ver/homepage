@@ -521,10 +521,15 @@ function cancelLongPressForQuantity() {
 
 // 数量変更モーダルを表示
 function showQuantityChangeModal(itemId) {
+    console.log('showQuantityChangeModal called with itemId:', itemId);
     const item = shoppingItems.find(i => i.id === itemId);
-    if (!item) return;
+    if (!item) {
+        console.error('Item not found for id:', itemId);
+        return;
+    }
 
     longPressItemId = itemId;
+    console.log('longPressItemId set to:', longPressItemId);
 
     // 商品名を表示
     document.getElementById('quantityChangeItemName').textContent = item.name;
@@ -556,10 +561,18 @@ function closeQuantityChangeModal() {
 
 // 数量変更を保存
 async function saveQuantityChange() {
-    if (!longPressItemId) return;
+    console.log('saveQuantityChange called, longPressItemId:', longPressItemId);
+
+    if (!longPressItemId) {
+        console.error('longPressItemId is null!');
+        alert('エラー: アイテムIDが見つかりません');
+        return;
+    }
 
     const quantity = parseInt(document.getElementById('quantitySelect').value);
     const item = shoppingItems.find(i => i.id === longPressItemId);
+
+    console.log('Saving quantity:', quantity, 'for item:', item);
 
     if (item) {
         // ローカルの数量を更新
@@ -570,12 +583,13 @@ async function saveQuantityChange() {
         await db.collection('shoppingList').doc(longPressItemId).update({
             quantity: quantity
         });
+        console.log('Firebase update successful');
         closeQuantityChangeModal();
         // 再描画して数量を表示
         renderShoppingList();
     } catch (error) {
         console.error('数量変更エラー:', error);
-        alert('数量変更に失敗しました');
+        alert('数量変更に失敗しました: ' + error.message);
     }
 }
 
