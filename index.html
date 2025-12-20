@@ -574,6 +574,32 @@
         </div>
     </div>
 
+    <!-- 買い物リスト数量変更モーダル -->
+    <div id="quantityChangeModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>数量を変更</h3>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;" id="quantityChangeItemName"></label>
+                <select id="quantitySelect" style="width: 100%; padding: 0.75rem; border: 2px solid #E5E7EB; border-radius: 0.5rem; font-size: 1rem;">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeQuantityChangeModal()" class="btn-secondary">キャンセル</button>
+                <button onclick="saveQuantityChange()" class="btn-primary" style="background: #3B82F6;">保存</button>
+            </div>
+        </div>
+    </div>
+
     <!-- カテゴリ編集モーダル -->
     <div id="categoryEditModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">

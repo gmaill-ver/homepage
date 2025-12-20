@@ -10,6 +10,10 @@ let isShoppingEditMode = false;
 let isShoppingDeleteMode = false;
 let isShoppingReorderMode = false;
 
+// 長押し検知用
+let longPressTimer = null;
+let longPressItemId = null;
+
 // データをリアルタイムで読み込み
 function loadShoppingList() {
     try {
@@ -64,13 +68,49 @@ function renderShoppingList() {
         const html = `
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map(item => `
-                    <div onclick="togglePurchased('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center;">
+                    <div
+                        data-item-id="${item.id}"
+                        class="shopping-item"
+                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;">
                         <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} <span style="font-size: 0.7rem;">×${item.quantity || 1}</span></div>
                     </div>
                 `).join('')}
             </div>
         `;
         container.innerHTML = html;
+
+        // 長押しとクリックのイベントリスナーを追加
+        document.querySelectorAll('.shopping-item').forEach(element => {
+            const itemId = element.getAttribute('data-item-id');
+
+            // タッチデバイス用
+            element.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startLongPress(itemId);
+            });
+
+            element.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                endLongPress(itemId);
+            });
+
+            element.addEventListener('touchmove', () => {
+                cancelLongPress();
+            });
+
+            // マウス用
+            element.addEventListener('mousedown', () => {
+                startLongPress(itemId);
+            });
+
+            element.addEventListener('mouseup', () => {
+                endLongPress(itemId);
+            });
+
+            element.addEventListener('mouseleave', () => {
+                cancelLongPress();
+            });
+        });
     }
     // 編集モード
     else if (isShoppingEditMode) {
@@ -290,6 +330,90 @@ async function moveShoppingItem(itemId, direction) {
     } catch (error) {
         console.error('並び替えエラー:', error);
         alert('並び替えに失敗しました');
+    }
+}
+
+// 長押し開始
+function startLongPress(itemId) {
+    longPressItemId = itemId;
+    longPressTimer = setTimeout(() => {
+        // 3秒後に数量変更モーダルを表示
+        showQuantityChangeModal(itemId);
+    }, 3000);
+}
+
+// 長押し終了
+function endLongPress(itemId) {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+
+        // 3秒経過していない場合は通常のクリック（購入済みトグル）
+        if (longPressItemId === itemId) {
+            togglePurchased(itemId);
+        }
+    }
+    longPressItemId = null;
+}
+
+// 長押しキャンセル
+function cancelLongPress() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+    longPressItemId = null;
+}
+
+// 数量変更モーダルを表示
+function showQuantityChangeModal(itemId) {
+    const item = shoppingItems.find(i => i.id === itemId);
+    if (!item) return;
+
+    longPressItemId = itemId;
+
+    // 商品名を表示
+    document.getElementById('quantityChangeItemName').textContent = item.name;
+
+    // 現在の数量を選択
+    document.getElementById('quantitySelect').value = item.quantity || 1;
+
+    // モーダルを表示
+    const modal = document.getElementById('quantityChangeModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+
+    // タイマーをクリア
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+}
+
+// 数量変更モーダルを閉じる
+function closeQuantityChangeModal() {
+    const modal = document.getElementById('quantityChangeModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    longPressItemId = null;
+}
+
+// 数量変更を保存
+async function saveQuantityChange() {
+    if (!longPressItemId) return;
+
+    const quantity = parseInt(document.getElementById('quantitySelect').value);
+
+    try {
+        await db.collection('shoppingList').doc(longPressItemId).update({
+            quantity: quantity
+        });
+        closeQuantityChangeModal();
+    } catch (error) {
+        console.error('数量変更エラー:', error);
+        alert('数量変更に失敗しました');
     }
 }
 
