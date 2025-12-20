@@ -154,22 +154,26 @@ function renderShoppingList() {
         `;
         container.innerHTML = html;
     }
-    // 並び替えモード
+    // 並び替えモード（ドラッグ&ドロップ）
     else if (isShoppingReorderMode) {
         const html = `
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+            <div id="reorderContainer" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map((item, index) => `
-                    <div class="shopping-item" style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
+                    <div
+                        class="shopping-item reorder-item"
+                        data-item-id="${item.id}"
+                        data-index="${index}"
+                        draggable="true"
+                        style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; text-align: center; cursor: move; user-select: none; touch-action: none;">
                         <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
-                        <div style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.125rem;">
-                            ${index > 0 ? `<button onclick="moveShoppingItem('${item.id}', 'up')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 1.25rem; height: 1rem; cursor: pointer; font-size: 0.625rem; line-height: 1;">▲</button>` : '<div style="width: 1.25rem; height: 1rem;"></div>'}
-                            ${index < shoppingItems.length - 1 ? `<button onclick="moveShoppingItem('${item.id}', 'down')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 1.25rem; height: 1rem; cursor: pointer; font-size: 0.625rem; line-height: 1;">▼</button>` : '<div style="width: 1.25rem; height: 1rem;"></div>'}
-                        </div>
                     </div>
                 `).join('')}
             </div>
         `;
         container.innerHTML = html;
+
+        // ドラッグ&ドロップイベントを設定
+        setupDragAndDrop();
     }
 }
 
@@ -355,34 +359,169 @@ async function moveShoppingItem(itemId, direction) {
     }
 }
 
-// 長押し開始
+// ドラッグ&ドロップのセットアップ
+let draggedElement = null;
+let draggedItemId = null;
+let touchDragStartY = 0;
+let touchDragStartX = 0;
+
+function setupDragAndDrop() {
+    const items = document.querySelectorAll('.reorder-item');
+
+    items.forEach(item => {
+        // デスクトップ: ドラッグイベント
+        item.addEventListener('dragstart', (e) => {
+            draggedElement = e.target;
+            draggedItemId = e.target.getAttribute('data-item-id');
+            e.target.style.opacity = '0.5';
+        });
+
+        item.addEventListener('dragend', (e) => {
+            e.target.style.opacity = '1';
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        item.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedElement && draggedElement !== e.target) {
+                swapItems(draggedItemId, e.target.getAttribute('data-item-id'));
+            }
+        });
+
+        // モバイル: タッチイベント
+        item.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            touchDragStartX = touch.clientX;
+            touchDragStartY = touch.clientY;
+            draggedElement = e.target.closest('.reorder-item');
+            draggedItemId = draggedElement.getAttribute('data-item-id');
+            draggedElement.style.opacity = '0.5';
+            draggedElement.style.transform = 'scale(1.05)';
+        });
+
+        item.addEventListener('touchmove', (e) => {
+            if (!draggedElement) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = elementBelow?.closest('.reorder-item');
+
+            if (targetItem && targetItem !== draggedElement) {
+                // 視覚的なフィードバック
+                targetItem.style.background = '#DBEAFE';
+            }
+        });
+
+        item.addEventListener('touchend', (e) => {
+            if (!draggedElement) return;
+
+            const touch = e.changedTouches[0];
+            const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetItem = elementBelow?.closest('.reorder-item');
+
+            if (targetItem && targetItem !== draggedElement) {
+                const targetItemId = targetItem.getAttribute('data-item-id');
+                swapItems(draggedItemId, targetItemId);
+            }
+
+            draggedElement.style.opacity = '1';
+            draggedElement.style.transform = 'scale(1)';
+            draggedElement = null;
+            draggedItemId = null;
+        });
+    });
+}
+
+// アイテムの順序を入れ替え
+async function swapItems(itemId1, itemId2) {
+    const index1 = shoppingItems.findIndex(i => i.id === itemId1);
+    const index2 = shoppingItems.findIndex(i => i.id === itemId2);
+
+    if (index1 === -1 || index2 === -1) return;
+
+    const item1 = shoppingItems[index1];
+    const item2 = shoppingItems[index2];
+
+    try {
+        const batch = db.batch();
+
+        const order1 = item1.order || index1;
+        const order2 = item2.order || index2;
+
+        batch.update(db.collection('shoppingList').doc(item1.id), { order: order2 });
+        batch.update(db.collection('shoppingList').doc(item2.id), { order: order1 });
+
+        await batch.commit();
+    } catch (error) {
+        console.error('並び替えエラー:', error);
+    }
+}
+
+// 長押し開始（タップした瞬間に色を変更）
 function startLongPress(itemId) {
     longPressItemId = itemId;
+
+    // 即座にトグル（瞬時の視覚的フィードバック）
+    const item = shoppingItems.find(i => i.id === itemId);
+    if (item) {
+        item.purchased = !item.purchased;
+        renderShoppingList();
+    }
+
+    // 2秒長押しで数量変更モーダル
     longPressTimer = setTimeout(() => {
-        // 2秒後に数量変更モーダルを表示
+        // 長押しされたので状態を元に戻してモーダル表示
+        if (item) {
+            item.purchased = !item.purchased;
+            renderShoppingList();
+        }
         showQuantityChangeModal(itemId);
     }, 2000);
 }
 
-// 長押し終了
+// 長押し終了（2秒以内に離したらFirebaseに保存）
 function endLongPress(itemId) {
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
 
-        // 3秒経過していない場合は通常のクリック（購入済みトグル）
+        // 2秒以内に離した場合はFirebaseに保存
         if (longPressItemId === itemId) {
-            togglePurchased(itemId);
+            const item = shoppingItems.find(i => i.id === itemId);
+            if (item) {
+                // Firestoreに保存
+                db.collection('shoppingList').doc(itemId).update({
+                    purchased: item.purchased
+                }).catch(error => {
+                    console.error('更新エラー:', error);
+                    // エラー時は元に戻す
+                    item.purchased = !item.purchased;
+                    renderShoppingList();
+                });
+            }
         }
     }
     longPressItemId = null;
 }
 
-// 長押しキャンセル
+// 長押しキャンセル（スクロール時など）
 function cancelLongPress() {
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
+
+        // スクロールでキャンセルされたので状態を元に戻す
+        if (longPressItemId) {
+            const item = shoppingItems.find(i => i.id === longPressItemId);
+            if (item) {
+                item.purchased = !item.purchased;
+                renderShoppingList();
+            }
+        }
     }
     longPressItemId = null;
 }
