@@ -91,8 +91,16 @@ function renderShoppingList() {
                 }
             }, { passive: true });
 
-            containerElement.addEventListener('touchend', () => {
-                cancelLongPressForQuantity();
+            containerElement.addEventListener('touchend', (e) => {
+                const wasLongPress = cancelLongPressForQuantity();
+                // 長押しでなければタップとして処理
+                if (!wasLongPress) {
+                    const itemElement = e.target.closest('.shopping-item');
+                    if (itemElement) {
+                        const itemId = itemElement.getAttribute('data-item-id');
+                        togglePurchased(itemId);
+                    }
+                }
             }, { passive: true });
 
             containerElement.addEventListener('touchmove', () => {
@@ -107,8 +115,9 @@ function renderShoppingList() {
                 }
             });
 
-            containerElement.addEventListener('mouseup', () => {
-                cancelLongPressForQuantity();
+            containerElement.addEventListener('mouseup', (e) => {
+                const wasLongPress = cancelLongPressForQuantity();
+                // PCではonclickがあるので何もしない
             });
 
             containerElement.addEventListener('mouseleave', () => {
@@ -460,13 +469,15 @@ function startLongPressForQuantity(itemId) {
     }, 2000);
 }
 
-// 長押しキャンセル
+// 長押しキャンセル（長押しだったかどうかを返す）
 function cancelLongPressForQuantity() {
+    const wasLongPress = !longPressTimer; // タイマーがnullなら長押しが完了していた
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
     }
     longPressItemId = null;
+    return wasLongPress;
 }
 
 // 数量変更モーダルを表示
