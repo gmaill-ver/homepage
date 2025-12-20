@@ -4,18 +4,31 @@
 
 let timelineTrips = [];
 let currentTimelineTripId = null;
+let timelineUnsubscribe = null;
 
-// データを読み込み
-async function loadTimelineData() {
+// データをリアルタイムで読み込み
+function loadTimelineData() {
     try {
-        const doc = await db.collection('settings').doc('timelineLog').get();
-        if (doc.exists) {
-            const data = doc.data();
-            timelineTrips = data.trips || [];
-            currentTimelineTripId = data.currentTripId || null;
-            loadTimelineTrips();
-            renderTimelineEntries();
+        // 既存のリスナーがあれば解除
+        if (timelineUnsubscribe) {
+            timelineUnsubscribe();
         }
+
+        // リアルタイム更新を監視
+        timelineUnsubscribe = db.collection('settings').doc('timelineLog').onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                timelineTrips = data.trips || [];
+                // currentTripIdは自分が選択したものを保持（他のユーザーの選択に影響されない）
+                if (!currentTimelineTripId && data.currentTripId) {
+                    currentTimelineTripId = data.currentTripId;
+                }
+                loadTimelineTrips();
+                renderTimelineEntries();
+            }
+        }, (error) => {
+            console.error('時系列データ読み込みエラー:', error);
+        });
     } catch (error) {
         console.error('時系列データ読み込みエラー:', error);
     }
@@ -24,10 +37,11 @@ async function loadTimelineData() {
 // データを保存
 async function saveTimelineData() {
     try {
+        // tripsのみを更新（各ユーザーの選択には影響しない）
         await db.collection('settings').doc('timelineLog').set({
             trips: timelineTrips,
-            currentTripId: currentTimelineTripId
-        });
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
     } catch (error) {
         console.error('時系列データ保存エラー:', error);
         alert('保存に失敗しました');
@@ -54,7 +68,6 @@ function loadTimelineTrips() {
 
     select.addEventListener('change', (e) => {
         currentTimelineTripId = e.target.value || null;
-        saveTimelineData();
         renderTimelineEntries();
     });
 }
