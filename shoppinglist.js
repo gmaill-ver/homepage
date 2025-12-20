@@ -502,7 +502,7 @@ function startLongPressForQuantity(itemId) {
         // 2秒長押しされたので状態を元に戻してモーダル表示
         togglePurchased(itemId);
         showQuantityChangeModal(itemId);
-        longPressItemId = null;
+        // longPressItemIdはsaveQuantityChangeで使うのでnullにしない
         longPressTimer = null;
     }, 2000);
 }
@@ -559,12 +559,20 @@ async function saveQuantityChange() {
     if (!longPressItemId) return;
 
     const quantity = parseInt(document.getElementById('quantitySelect').value);
+    const item = shoppingItems.find(i => i.id === longPressItemId);
+
+    if (item) {
+        // ローカルの数量を更新
+        item.quantity = quantity;
+    }
 
     try {
         await db.collection('shoppingList').doc(longPressItemId).update({
             quantity: quantity
         });
         closeQuantityChangeModal();
+        // 再描画して数量を表示
+        renderShoppingList();
     } catch (error) {
         console.error('数量変更エラー:', error);
         alert('数量変更に失敗しました');
