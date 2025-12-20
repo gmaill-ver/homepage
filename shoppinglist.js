@@ -65,8 +65,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
                 ${shoppingItems.map(item => `
                     <div onclick="togglePurchased('${item.id}')" class="shopping-item" style="padding: 0.75rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.5rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.9rem; color: ${item.purchased ? 'white' : '#1F2937'}; margin-bottom: 0.25rem; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}</div>
-                        <div style="font-size: 0.75rem; color: ${item.purchased ? 'rgba(255,255,255,0.8)' : '#6B7280'};">${item.quantity || 1} ${item.unit || '個'}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} ✖️${item.quantity || 1}${item.unit || '個'}</div>
                     </div>
                 `).join('')}
             </div>
@@ -79,8 +78,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
                 ${shoppingItems.map(item => `
                     <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.75rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.5rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.9rem; color: #1F2937; margin-bottom: 0.25rem; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}</div>
-                        <div style="font-size: 0.75rem; color: #6B7280;">${item.quantity || 1} ${item.unit || '個'}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} ✖️${item.quantity || 1}${item.unit || '個'}</div>
                     </div>
                 `).join('')}
             </div>
@@ -93,8 +91,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
                 ${shoppingItems.map(item => `
                     <div class="shopping-item" style="padding: 0.75rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.5rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.9rem; color: #1F2937; margin-bottom: 0.25rem; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}</div>
-                        <div style="font-size: 0.75rem; color: #6B7280;">${item.quantity || 1} ${item.unit || '個'}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}; padding-right: 2rem;">${item.name} ✖️${item.quantity || 1}${item.unit || '個'}</div>
                         <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.5rem; transform: translateY(-50%); background: #EF4444; color: white; border: none; border-radius: 0.25rem; width: 1.5rem; height: 1.5rem; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#DC2626'" onmouseout="this.style.background='#EF4444'">🗑️</button>
                     </div>
                 `).join('')}
@@ -109,8 +106,7 @@ function renderShoppingList() {
                 ${shoppingItems.map((item, index) => `
                     <div class="shopping-item" style="padding: 0.75rem; background: #F3F4F6; border-radius: 0.5rem; border: 2px solid #9CA3AF; display: flex; justify-content: space-between; align-items: center;">
                         <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}</div>
-                            <div style="font-size: 0.75rem; color: #6B7280;">${item.quantity || 1} ${item.unit || '個'}</div>
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} ✖️${item.quantity || 1}${item.unit || '個'}</div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             ${index > 0 ? `<button onclick="moveShoppingItem('${item.id}', 'up')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 2rem; height: 1.5rem; cursor: pointer; font-size: 0.875rem;">▲</button>` : '<div style="width: 2rem; height: 1.5rem;"></div>'}
