@@ -509,6 +509,7 @@ function startLongPressForQuantity(itemId) {
 
 // 長押しキャンセル（キャンセルしたかどうかを返す）
 function cancelLongPressForQuantity() {
+    console.log('cancelLongPressForQuantity called, current longPressItemId:', longPressItemId);
     const wasCanceled = longPressTimer !== null;
     if (longPressTimer) {
         clearTimeout(longPressTimer);
@@ -516,6 +517,7 @@ function cancelLongPressForQuantity() {
     }
     const savedItemId = longPressItemId;
     longPressItemId = null;
+    console.log('longPressItemId cleared, returning:', savedItemId);
     return wasCanceled ? savedItemId : null;
 }
 
@@ -552,6 +554,7 @@ function showQuantityChangeModal(itemId) {
 
 // 数量変更モーダルを閉じる
 function closeQuantityChangeModal() {
+    console.log('closeQuantityChangeModal called, clearing longPressItemId');
     const modal = document.getElementById('quantityChangeModal');
     if (modal) {
         modal.style.display = 'none';

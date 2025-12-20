@@ -593,8 +593,8 @@
                 </select>
             </div>
             <div class="modal-actions">
-                <button onclick="closeQuantityChangeModal()" ontouchend="closeQuantityChangeModal(); event.preventDefault();" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 2rem;">キャンセル</button>
-                <button onclick="saveQuantityChange()" ontouchend="saveQuantityChange(); event.preventDefault();" class="btn-primary" style="background: #3B82F6; padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 2rem; touch-action: manipulation;">保存</button>
+                <button onclick="closeQuantityChangeModal()" ontouchend="event.stopPropagation(); event.preventDefault(); closeQuantityChangeModal();" class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 2rem;">キャンセル</button>
+                <button onclick="saveQuantityChange()" ontouchend="event.stopPropagation(); event.preventDefault(); saveQuantityChange();" class="btn-primary" style="background: #3B82F6; padding: 0.4rem 0.8rem; font-size: 0.8rem; min-height: 2rem; touch-action: manipulation;">保存</button>
             </div>
         </div>
     </div>
