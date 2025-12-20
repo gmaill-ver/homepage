@@ -117,22 +117,115 @@ function setCurrentTimelineTime() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    const timeInput = document.getElementById('timelineTime');
-    if (timeInput) {
-        timeInput.value = `${hours}:${minutes}`;
+    return `${hours}:${minutes}`;
+}
+
+// 入力行を追加
+let timelineInputRowCounter = 0;
+function addTimelineInputRow(time = '', location = '', memo = '') {
+    const rowId = `timeline-input-row-${timelineInputRowCounter++}`;
+    const container = document.getElementById('timelineInputRows');
+    if (!container) return;
+
+    const defaultTime = time || setCurrentTimelineTime();
+
+    const rowDiv = document.createElement('div');
+    rowDiv.id = rowId;
+    rowDiv.style.cssText = 'margin-bottom: 0.5rem;';
+    rowDiv.innerHTML = `
+        <div style="display: grid; grid-template-columns: 80px 1fr 30px; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <input type="time" class="timeline-time-input" value="${defaultTime}" style="padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.8rem;">
+            <input type="text" class="timeline-location-input" value="${location}" placeholder="場所を入力" style="padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.8rem;">
+            <button onclick="removeTimelineInputRow('${rowId}')" style="background: transparent; border: none; cursor: pointer; font-size: 1.1rem; color: #EF4444;" title="削除">🗑️</button>
+        </div>
+        <textarea class="timeline-memo-input" placeholder="メモ (任意)" style="width: 100%; padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.75rem; min-height: 40px; resize: vertical; margin-bottom: 0.25rem;">${memo}</textarea>
+    `;
+    container.appendChild(rowDiv);
+}
+
+// 入力行を削除
+function removeTimelineInputRow(rowId) {
+    const row = document.getElementById(rowId);
+    if (row) {
+        row.remove();
     }
 }
 
-// エントリーを追加
+// すべての入力行を保存
+async function addAllTimelineEntries() {
+    if (!currentTimelineTripId) {
+        alert('まず訪問先を選択または作成してください');
+        return;
+    }
+
+    const container = document.getElementById('timelineInputRows');
+    if (!container) return;
+
+    const rows = container.children;
+    if (rows.length === 0) {
+        alert('追加するログがありません。「➕」ボタンで行を追加してください。');
+        return;
+    }
+
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    let hasError = false;
+    const newEntries = [];
+
+    for (let row of rows) {
+        const timeInput = row.querySelector('.timeline-time-input');
+        const locationInput = row.querySelector('.timeline-location-input');
+        const memoInput = row.querySelector('.timeline-memo-input');
+
+        const time = timeInput?.value || '';
+        const location = locationInput?.value.trim() || '';
+        const memo = memoInput?.value.trim() || '';
+
+        if (!time || !location) {
+            hasError = true;
+            if (timeInput) timeInput.style.borderColor = '#EF4444';
+            if (locationInput) locationInput.style.borderColor = '#EF4444';
+            continue;
+        }
+
+        newEntries.push({
+            id: Date.now() + Math.random(),
+            time: time,
+            location: location,
+            memo: memo
+        });
+    }
+
+    if (hasError) {
+        alert('時刻と場所は必須です。赤枠の項目を入力してください。');
+        return;
+    }
+
+    if (newEntries.length > 0) {
+        trip.entries.push(...newEntries);
+        trip.entries.sort((a, b) => a.time.localeCompare(b.time));
+
+        await saveTimelineData();
+        renderTimelineEntries();
+
+        // 入力行をクリア
+        container.innerHTML = '';
+        // 新しい空行を1つ追加
+        addTimelineInputRow();
+    }
+}
+
+// エントリーを追加（レガシー関数として保持）
 async function addTimelineEntry() {
     if (!currentTimelineTripId) {
         alert('まず訪問先を選択または作成してください');
         return;
     }
 
-    const time = document.getElementById('timelineTime').value;
-    const location = document.getElementById('timelineLocation').value.trim();
-    const memo = document.getElementById('timelineMemo').value.trim();
+    const time = document.getElementById('timelineTime')?.value;
+    const location = document.getElementById('timelineLocation')?.value.trim();
+    const memo = document.getElementById('timelineMemo')?.value.trim();
 
     if (!time || !location) {
         alert('時刻と場所を入力してください');
@@ -156,9 +249,12 @@ async function addTimelineEntry() {
     renderTimelineEntries();
 
     // フォームをリセット
-    document.getElementById('timelineLocation').value = '';
-    document.getElementById('timelineMemo').value = '';
-    setCurrentTimelineTime();
+    if (document.getElementById('timelineLocation')) {
+        document.getElementById('timelineLocation').value = '';
+    }
+    if (document.getElementById('timelineMemo')) {
+        document.getElementById('timelineMemo').value = '';
+    }
 }
 
 // タイムラインヘッダーの折りたたみ
@@ -203,16 +299,116 @@ function renderTimelineEntries() {
         </div>
     `;
 
-    const timelineHTML = trip.entries.map(entry => `
-        <div style="position: relative; margin-bottom: 0.75rem; padding: 0.75rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
-            <button onclick="deleteTimelineEntry('${entry.id}')" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
-            <div style="font-weight: bold; color: #667eea; font-size: 1rem; margin-bottom: 0.25rem;">${entry.time}</div>
-            <div style="font-size: 1.125rem; font-weight: 600; color: #212529; margin-bottom: 0.25rem;">${entry.location}</div>
-            ${entry.memo ? `<div style="color: #6B7280; font-size: 0.875rem; line-height: 1.5;">${entry.memo}</div>` : ''}
+    const timelineHTML = trip.entries.map((entry, index) => `
+        ${index > 0 ? `<div style="text-align: center; margin: 0.25rem 0;"><button onclick="insertTimelineEntry(${index})" style="background: #667eea; color: white; border: none; border-radius: 50%; width: 1.75rem; height: 1.75rem; cursor: pointer; font-size: 1rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">➕</button></div>` : ''}
+        <div style="position: relative; margin-bottom: 0.5rem; padding: 0.65rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                    <span style="font-weight: bold; color: #667eea; font-size: 0.8rem;">${entry.time}</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: #212529;">${entry.location}</span>
+                </div>
+                <div style="display: flex; gap: 0.25rem;">
+                    <button onclick="editTimelineEntry('${entry.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="編集">✏️</button>
+                    <button onclick="deleteTimelineEntry('${entry.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
+                </div>
+            </div>
+            ${entry.memo ? `<div style="color: #6B7280; font-size: 0.8rem; line-height: 1.4; padding-left: 0.25rem;">${entry.memo}</div>` : ''}
         </div>
     `).join('');
 
     container.innerHTML = timelineHTML;
+}
+
+// エントリーを編集
+let editingEntryId = null;
+function editTimelineEntry(entryId) {
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    const entry = trip.entries.find(e => e.id == entryId);
+    if (!entry) return;
+
+    editingEntryId = entryId;
+    document.getElementById('editTimelineTime').value = entry.time;
+    document.getElementById('editTimelineLocation').value = entry.location;
+    document.getElementById('editTimelineMemo').value = entry.memo || '';
+
+    const modal = document.getElementById('editTimelineEntryModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeEditTimelineEntryModal() {
+    const modal = document.getElementById('editTimelineEntryModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    editingEntryId = null;
+}
+
+async function saveEditedTimelineEntry() {
+    if (!editingEntryId) return;
+
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    const entry = trip.entries.find(e => e.id == editingEntryId);
+    if (!entry) return;
+
+    const time = document.getElementById('editTimelineTime').value;
+    const location = document.getElementById('editTimelineLocation').value.trim();
+    const memo = document.getElementById('editTimelineMemo').value.trim();
+
+    if (!time || !location) {
+        alert('時刻と場所を入力してください');
+        return;
+    }
+
+    entry.time = time;
+    entry.location = location;
+    entry.memo = memo;
+
+    trip.entries.sort((a, b) => a.time.localeCompare(b.time));
+
+    await saveTimelineData();
+    renderTimelineEntries();
+    closeEditTimelineEntryModal();
+}
+
+// エントリーを挿入
+function insertTimelineEntry(index) {
+    if (!currentTimelineTripId) {
+        alert('まず訪問先を選択または作成してください');
+        return;
+    }
+
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    // 前のエントリーの時間を取得して、それより後の時間をデフォルトにする
+    let defaultTime = setCurrentTimelineTime();
+    if (index > 0 && trip.entries[index - 1]) {
+        const prevTime = trip.entries[index - 1].time;
+        // 前の時間の1分後を設定
+        const [hours, minutes] = prevTime.split(':').map(Number);
+        let newMinutes = minutes + 1;
+        let newHours = hours;
+        if (newMinutes >= 60) {
+            newMinutes = 0;
+            newHours = (hours + 1) % 24;
+        }
+        defaultTime = `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+    }
+
+    // 新しい入力行を追加
+    addTimelineInputRow(defaultTime, '', '');
+
+    // 入力フォームにスクロール
+    const container = document.getElementById('timelineInputRows');
+    if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 }
 
 // エントリーを削除
@@ -285,5 +481,10 @@ function exportTimelineData() {
 // 初期化
 async function initializeTimeline() {
     await loadTimelineData();
-    setCurrentTimelineTime();
+    // 最初の入力行を追加
+    const container = document.getElementById('timelineInputRows');
+    if (container) {
+        container.innerHTML = ''; // クリア
+        addTimelineInputRow(); // 最初の行を追加
+    }
 }

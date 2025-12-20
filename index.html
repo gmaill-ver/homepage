@@ -449,22 +449,21 @@
 
                     <!-- ログ追加 -->
                     <div style="margin-bottom: 1rem;">
-                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">📝 ログを追加</h3>
-                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <div style="flex: 1;">
-                                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.75rem; color: #666;">時刻</label>
-                                <input type="time" id="timelineTime" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                        <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span>📝 ログを追加</span>
+                            <button onclick="addTimelineInputRow()" style="background: #10B981; color: white; border: none; border-radius: 50%; width: 1.75rem; height: 1.75rem; cursor: pointer; font-size: 0.875rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="行を追加">➕</button>
+                        </h3>
+                        <div style="background: #F9FAFB; border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 0.5rem;">
+                            <div style="display: grid; grid-template-columns: 80px 1fr 30px; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 0.75rem; color: #666; font-weight: 600; padding: 0 0.25rem;">
+                                <div>時刻</div>
+                                <div>場所</div>
+                                <div></div>
                             </div>
-                            <div style="flex: 2;">
-                                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.75rem; color: #666;">場所</label>
-                                <input type="text" id="timelineLocation" placeholder="例: スペースマウンテン" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <div id="timelineInputRows">
+                                <!-- 動的に追加される行 -->
                             </div>
                         </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <label style="display: block; margin-bottom: 0.25rem; font-size: 0.75rem; color: #666;">メモ (任意)</label>
-                            <textarea id="timelineMemo" placeholder="待ち時間、感想など..." style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; min-height: 60px; resize: vertical;"></textarea>
-                        </div>
-                        <button onclick="addTimelineEntry()" class="btn-primary" style="width: 100%; padding: 0.5rem;">➕ ログを追加</button>
+                        <button onclick="addAllTimelineEntries()" class="btn-primary" style="width: 100%; padding: 0.5rem;">💾 すべて保存</button>
                     </div>
 
                     <!-- タイムライン表示 -->
@@ -498,6 +497,29 @@
             <div class="modal-actions">
                 <button onclick="closeNewTimelineTripModal()" class="btn-secondary">キャンセル</button>
                 <button onclick="createNewTimelineTrip()" class="btn-primary" style="background: #10B981;">作成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- エントリー編集モーダル -->
+    <div id="editTimelineEntryModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>ログを編集</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">時刻</label>
+                <input type="time" id="editTimelineTime" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">場所</label>
+                <input type="text" id="editTimelineLocation" placeholder="場所を入力" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">メモ (任意)</label>
+                <textarea id="editTimelineMemo" placeholder="メモを入力" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; min-height: 80px; resize: vertical;"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeEditTimelineEntryModal()" class="btn-secondary">キャンセル</button>
+                <button onclick="saveEditedTimelineEntry()" class="btn-primary" style="background: #667eea;">保存</button>
             </div>
         </div>
     </div>
