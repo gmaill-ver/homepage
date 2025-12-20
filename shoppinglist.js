@@ -72,7 +72,7 @@ function renderShoppingList() {
                         data-item-id="${item.id}"
                         class="shopping-item"
                         style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} <span style="font-size: 0.7rem;">×${item.quantity || 1}</span></div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
@@ -85,25 +85,25 @@ function renderShoppingList() {
 
             // タッチデバイス用
             element.addEventListener('touchstart', (e) => {
-                e.preventDefault();
                 startLongPress(itemId);
-            });
+            }, { passive: true });
 
             element.addEventListener('touchend', (e) => {
-                e.preventDefault();
                 endLongPress(itemId);
-            });
+            }, { passive: true });
 
             element.addEventListener('touchmove', () => {
                 cancelLongPress();
-            });
+            }, { passive: true });
 
             // マウス用
-            element.addEventListener('mousedown', () => {
+            element.addEventListener('mousedown', (e) => {
+                e.preventDefault();
                 startLongPress(itemId);
             });
 
-            element.addEventListener('mouseup', () => {
+            element.addEventListener('mouseup', (e) => {
+                e.preventDefault();
                 endLongPress(itemId);
             });
 
@@ -118,7 +118,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map(item => `
                     <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} <span style="font-size: 0.7rem;">×${item.quantity || 1}${item.unit || '個'}</span></div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
@@ -131,7 +131,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map(item => `
                     <div class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}; padding-right: 2rem;">${item.name} <span style="font-size: 0.7rem;">×${item.quantity || 1}</span></div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                         <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
                     </div>
                 `).join('')}
@@ -146,7 +146,7 @@ function renderShoppingList() {
                 ${shoppingItems.map((item, index) => `
                     <div class="shopping-item" style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; display: flex; justify-content: space-between; align-items: center;">
                         <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name} <span style="font-size: 0.7rem;">×${item.quantity || 1}${item.unit || '個'}</span></div>
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
                             ${index > 0 ? `<button onclick="moveShoppingItem('${item.id}', 'up')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 2rem; height: 1.5rem; cursor: pointer; font-size: 0.875rem;">▲</button>` : '<div style="width: 2rem; height: 1.5rem;"></div>'}
