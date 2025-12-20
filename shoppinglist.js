@@ -71,7 +71,7 @@ function renderShoppingList() {
                     <div
                         data-item-id="${item.id}"
                         class="shopping-item"
-                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;">
+                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
                         <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
@@ -82,24 +82,26 @@ function renderShoppingList() {
         // イベントデリゲーションで親要素にリスナーを1つだけ追加
         const containerElement = container.querySelector('div');
         if (containerElement) {
-            // タッチデバイス用
+            // タッチデバイス用（passiveをfalseにして即座の反応を実現）
             containerElement.addEventListener('touchstart', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
+                    e.preventDefault(); // 300ms遅延を防ぐ
                     const itemId = itemElement.getAttribute('data-item-id');
                     startLongPress(itemId);
                 }
-            }, { passive: true });
+            }, { passive: false });
 
             containerElement.addEventListener('touchend', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
+                    e.preventDefault();
                     const itemId = itemElement.getAttribute('data-item-id');
                     endLongPress(itemId);
                 }
-            }, { passive: true });
+            }, { passive: false });
 
-            containerElement.addEventListener('touchmove', () => {
+            containerElement.addEventListener('touchmove', (e) => {
                 cancelLongPress();
             }, { passive: true });
 
