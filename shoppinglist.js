@@ -465,19 +465,43 @@ async function swapItems(itemId1, itemId2) {
 function startLongPress(itemId) {
     longPressItemId = itemId;
 
-    // 即座にトグル（瞬時の視覚的フィードバック）
     const item = shoppingItems.find(i => i.id === itemId);
-    if (item) {
-        item.purchased = !item.purchased;
-        renderShoppingList();
+    if (!item) return;
+
+    // DOM要素を直接取得して即座に色を変更（再描画なし）
+    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (itemElement) {
+        const newPurchased = !item.purchased;
+
+        // 即座に視覚的な変更を適用
+        if (newPurchased) {
+            itemElement.style.background = '#10B981';
+            itemElement.style.borderColor = '#10B981';
+            itemElement.querySelector('div').style.color = 'white';
+        } else {
+            itemElement.style.background = 'white';
+            itemElement.style.borderColor = '#E5E7EB';
+            itemElement.querySelector('div').style.color = '#1F2937';
+        }
+
+        // ローカルの状態を更新
+        item.purchased = newPurchased;
     }
 
     // 2秒長押しで数量変更モーダル
     longPressTimer = setTimeout(() => {
         // 長押しされたので状態を元に戻してモーダル表示
-        if (item) {
+        if (itemElement && item) {
             item.purchased = !item.purchased;
-            renderShoppingList();
+            if (item.purchased) {
+                itemElement.style.background = '#10B981';
+                itemElement.style.borderColor = '#10B981';
+                itemElement.querySelector('div').style.color = 'white';
+            } else {
+                itemElement.style.background = 'white';
+                itemElement.style.borderColor = '#E5E7EB';
+                itemElement.querySelector('div').style.color = '#1F2937';
+            }
         }
         showQuantityChangeModal(itemId);
     }, 2000);
@@ -517,9 +541,22 @@ function cancelLongPress() {
         // スクロールでキャンセルされたので状態を元に戻す
         if (longPressItemId) {
             const item = shoppingItems.find(i => i.id === longPressItemId);
-            if (item) {
+            const itemElement = document.querySelector(`[data-item-id="${longPressItemId}"]`);
+
+            if (item && itemElement) {
+                // 状態を元に戻す
                 item.purchased = !item.purchased;
-                renderShoppingList();
+
+                // DOM要素を直接更新
+                if (item.purchased) {
+                    itemElement.style.background = '#10B981';
+                    itemElement.style.borderColor = '#10B981';
+                    itemElement.querySelector('div').style.color = 'white';
+                } else {
+                    itemElement.style.background = 'white';
+                    itemElement.style.borderColor = '#E5E7EB';
+                    itemElement.querySelector('div').style.color = '#1F2937';
+                }
             }
         }
     }
