@@ -79,38 +79,53 @@ function renderShoppingList() {
         `;
         container.innerHTML = html;
 
-        // 長押しとクリックのイベントリスナーを追加
-        document.querySelectorAll('.shopping-item').forEach(element => {
-            const itemId = element.getAttribute('data-item-id');
-
+        // イベントデリゲーションで親要素にリスナーを1つだけ追加
+        const containerElement = container.querySelector('div');
+        if (containerElement) {
             // タッチデバイス用
-            element.addEventListener('touchstart', (e) => {
-                startLongPress(itemId);
+            containerElement.addEventListener('touchstart', (e) => {
+                const itemElement = e.target.closest('.shopping-item');
+                if (itemElement) {
+                    const itemId = itemElement.getAttribute('data-item-id');
+                    startLongPress(itemId);
+                }
             }, { passive: true });
 
-            element.addEventListener('touchend', (e) => {
-                endLongPress(itemId);
+            containerElement.addEventListener('touchend', (e) => {
+                const itemElement = e.target.closest('.shopping-item');
+                if (itemElement) {
+                    const itemId = itemElement.getAttribute('data-item-id');
+                    endLongPress(itemId);
+                }
             }, { passive: true });
 
-            element.addEventListener('touchmove', () => {
+            containerElement.addEventListener('touchmove', () => {
                 cancelLongPress();
             }, { passive: true });
 
             // マウス用
-            element.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                startLongPress(itemId);
+            containerElement.addEventListener('mousedown', (e) => {
+                const itemElement = e.target.closest('.shopping-item');
+                if (itemElement) {
+                    e.preventDefault();
+                    const itemId = itemElement.getAttribute('data-item-id');
+                    startLongPress(itemId);
+                }
             });
 
-            element.addEventListener('mouseup', (e) => {
-                e.preventDefault();
-                endLongPress(itemId);
+            containerElement.addEventListener('mouseup', (e) => {
+                const itemElement = e.target.closest('.shopping-item');
+                if (itemElement) {
+                    e.preventDefault();
+                    const itemId = itemElement.getAttribute('data-item-id');
+                    endLongPress(itemId);
+                }
             });
 
-            element.addEventListener('mouseleave', () => {
+            containerElement.addEventListener('mouseleave', () => {
                 cancelLongPress();
             });
-        });
+        }
     }
     // 編集モード
     else if (isShoppingEditMode) {
@@ -337,9 +352,9 @@ async function moveShoppingItem(itemId, direction) {
 function startLongPress(itemId) {
     longPressItemId = itemId;
     longPressTimer = setTimeout(() => {
-        // 3秒後に数量変更モーダルを表示
+        // 2秒後に数量変更モーダルを表示
         showQuantityChangeModal(itemId);
-    }, 3000);
+    }, 2000);
 }
 
 // 長押し終了
