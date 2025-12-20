@@ -575,7 +575,7 @@
 
     <!-- 買い物リスト数量変更モーダル -->
     <div id="quantityChangeModal" class="modal" style="display: none;">
-        <div class="modal-content modal-small">
+        <div class="modal-content modal-small" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">
             <h3>数量を変更</h3>
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;" id="quantityChangeItemName"></label>
