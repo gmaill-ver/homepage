@@ -71,8 +71,8 @@ function renderShoppingList() {
                     <div
                         data-item-id="${item.id}"
                         class="shopping-item"
-                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; transition: none;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
@@ -475,6 +475,9 @@ function startLongPress(itemId) {
     if (itemElement) {
         const newPurchased = !item.purchased;
 
+        // トランジション無効化して即座に変更
+        itemElement.style.transition = 'none';
+
         // 即座に視覚的な変更を適用
         if (newPurchased) {
             itemElement.style.background = '#10B981';
@@ -495,6 +498,7 @@ function startLongPress(itemId) {
         // 長押しされたので状態を元に戻してモーダル表示
         if (itemElement && item) {
             item.purchased = !item.purchased;
+            itemElement.style.transition = 'none';
             if (item.purchased) {
                 itemElement.style.background = '#10B981';
                 itemElement.style.borderColor = '#10B981';
@@ -550,6 +554,7 @@ function cancelLongPress() {
                 item.purchased = !item.purchased;
 
                 // DOM要素を直接更新
+                itemElement.style.transition = 'none';
                 if (item.purchased) {
                     itemElement.style.background = '#10B981';
                     itemElement.style.borderColor = '#10B981';
