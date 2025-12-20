@@ -72,7 +72,7 @@ function renderShoppingList() {
                         data-item-id="${item.id}"
                         class="shopping-item"
                         style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
@@ -133,7 +133,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map(item => `
                     <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
@@ -146,7 +146,7 @@ function renderShoppingList() {
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map(item => `
                     <div class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                         <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
                     </div>
                 `).join('')}
@@ -157,15 +157,13 @@ function renderShoppingList() {
     // 並び替えモード
     else if (isShoppingReorderMode) {
         const html = `
-            <div style="display: grid; gap: 0.25rem;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
                 ${shoppingItems.map((item, index) => `
-                    <div class="shopping-item" style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; ${item.purchased ? 'text-decoration: line-through;' : ''}\">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            ${index > 0 ? `<button onclick="moveShoppingItem('${item.id}', 'up')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 2rem; height: 1.5rem; cursor: pointer; font-size: 0.875rem;">▲</button>` : '<div style="width: 2rem; height: 1.5rem;"></div>'}
-                            ${index < shoppingItems.length - 1 ? `<button onclick="moveShoppingItem('${item.id}', 'down')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 2rem; height: 1.5rem; cursor: pointer; font-size: 0.875rem;">▼</button>` : '<div style="width: 2rem; height: 1.5rem;"></div>'}
+                    <div class="shopping-item" style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
+                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        <div style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.125rem;">
+                            ${index > 0 ? `<button onclick="moveShoppingItem('${item.id}', 'up')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 1.25rem; height: 1rem; cursor: pointer; font-size: 0.625rem; line-height: 1;">▲</button>` : '<div style="width: 1.25rem; height: 1rem;"></div>'}
+                            ${index < shoppingItems.length - 1 ? `<button onclick="moveShoppingItem('${item.id}', 'down')" style="background: #3B82F6; color: white; border: none; border-radius: 0.25rem; width: 1.25rem; height: 1rem; cursor: pointer; font-size: 0.625rem; line-height: 1;">▼</button>` : '<div style="width: 1.25rem; height: 1rem;"></div>'}
                         </div>
                     </div>
                 `).join('')}
@@ -244,17 +242,26 @@ async function addShoppingItem() {
     }
 }
 
-// 購入済みトグル
+// 購入済みトグル（楽観的UI更新で即座に反映）
 async function togglePurchased(itemId) {
     const item = shoppingItems.find(i => i.id === itemId);
     if (!item) return;
 
+    // 即座にローカルの状態を更新して再描画
+    const previousState = item.purchased;
+    item.purchased = !item.purchased;
+    renderShoppingList();
+
+    // バックグラウンドでFirestoreを更新
     try {
         await db.collection('shoppingList').doc(itemId).update({
-            purchased: !item.purchased
+            purchased: item.purchased
         });
     } catch (error) {
         console.error('更新エラー:', error);
+        // エラー時は元に戻す
+        item.purchased = previousState;
+        renderShoppingList();
     }
 }
 
