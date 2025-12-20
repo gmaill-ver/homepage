@@ -1991,6 +1991,8 @@ async function renderExpenseChart() {
         const totalIncomeData = [];
         const totalExpenseData = [];
         const balanceData = [];
+        const cumulativeBalanceData = [];
+        let cumulativeBalance = 0;
 
         for (const month of months) {
             const doc = await db.collection('monthlyExpenses').doc(month).get();
@@ -2014,13 +2016,19 @@ async function renderExpenseChart() {
                         .reduce((sum, [, value]) => sum + (typeof value === 'number' ? value : 0), 0);
                 }
 
+                const monthBalance = totalIncome - totalExpense;
                 totalIncomeData.push(totalIncome);
                 totalExpenseData.push(totalExpense);
-                balanceData.push(totalIncome - totalExpense);
+                balanceData.push(monthBalance);
+
+                // 累積収支を計算
+                cumulativeBalance += monthBalance;
+                cumulativeBalanceData.push(cumulativeBalance);
             } else {
                 totalIncomeData.push(0);
                 totalExpenseData.push(0);
                 balanceData.push(0);
+                cumulativeBalanceData.push(cumulativeBalance);
             }
         }
 
@@ -2044,7 +2052,8 @@ async function renderExpenseChart() {
                         borderColor: '#10B981',
                         backgroundColor: '#10B98120',
                         tension: 0.3,
-                        borderWidth: 3
+                        borderWidth: 2,
+                        hidden: true
                     },
                     {
                         label: '支出合計',
@@ -2052,15 +2061,25 @@ async function renderExpenseChart() {
                         borderColor: '#EF4444',
                         backgroundColor: '#EF444420',
                         tension: 0.3,
-                        borderWidth: 3
+                        borderWidth: 2,
+                        hidden: true
                     },
                     {
-                        label: '収支',
+                        label: '月次収支',
                         data: balanceData,
                         borderColor: '#3B82F6',
                         backgroundColor: '#3B82F620',
                         tension: 0.3,
-                        borderWidth: 3
+                        borderWidth: 2
+                    },
+                    {
+                        label: '累積収支',
+                        data: cumulativeBalanceData,
+                        borderColor: '#8B5CF6',
+                        backgroundColor: '#8B5CF620',
+                        tension: 0.3,
+                        borderWidth: 4,
+                        borderDash: []
                     }
                 ]
             },
