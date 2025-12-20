@@ -63,6 +63,12 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // 家族のメモ
+    match /memos/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 買い物リスト
     match /shoppingList/{docId} {
       allow read, write: if isAuthenticated();
     }
