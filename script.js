@@ -2063,14 +2063,6 @@ async function renderExpenseChart() {
                         borderWidth: 3
                     },
                     {
-                        label: '収支',
-                        data: balanceData,
-                        borderColor: '#3B82F6',
-                        backgroundColor: '#3B82F620',
-                        tension: 0.3,
-                        borderWidth: 3
-                    },
-                    {
                         label: '累積収支',
                         data: cumulativeBalanceData,
                         borderColor: '#8B5CF6',
