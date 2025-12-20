@@ -293,33 +293,143 @@ function renderTimelineEntries() {
 
     headerContainer.innerHTML = `
         <div onclick="toggleTimelineHeader()" style="position: relative; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem; cursor: pointer;">
-            <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;">🗑️</button>
+            <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
+                <button id="toggleEditModeBtn" onclick="event.stopPropagation(); toggleTimelineEditMode()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="編集モード">✏️</button>
+                <button onclick="event.stopPropagation(); deleteTimelineTrip()" style="background: transparent; border: none; font-size: 1.25rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
+            </div>
             <h3 style="font-size: 1.125rem; margin-bottom: 0.25rem;">${trip.name}</h3>
             <p style="font-size: 0.875rem; opacity: 0.9;">${trip.date} - ${trip.entries.length}件のログ</p>
+        </div>
+        <div id="editModeActions" style="display: none; margin-bottom: 0.5rem; padding: 0.5rem; background: #FFF7ED; border-radius: 0.5rem; border: 2px solid #F97316;">
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button onclick="cancelTimelineEditMode()" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;">キャンセル</button>
+                <button onclick="saveTimelineEditMode()" class="btn-primary" style="padding: 0.4rem 1rem; font-size: 0.8rem; background: #667eea;">💾 保存</button>
+            </div>
         </div>
     `;
 
     const timelineHTML = trip.entries.map((entry, index) => `
-        ${index > 0 ? `<div style="text-align: center; margin: 0.25rem 0;"><button onclick="insertTimelineEntry(${index})" style="background: #667eea; color: white; border: none; border-radius: 50%; width: 1.75rem; height: 1.75rem; cursor: pointer; font-size: 1rem; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">➕</button></div>` : ''}
-        <div style="position: relative; margin-bottom: 0.5rem; padding: 0.65rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                    <span style="font-weight: bold; color: #667eea; font-size: 0.8rem;">${entry.time}</span>
-                    <span style="font-size: 0.95rem; font-weight: 600; color: #212529;">${entry.location}</span>
+        <div class="timeline-entry-item" data-entry-id="${entry.id}" data-entry-index="${index}" style="position: relative; margin-bottom: 0.5rem; padding: 0.65rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
+            <div class="timeline-entry-view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                        <span style="font-weight: bold; color: #667eea; font-size: 0.8rem;">${entry.time}</span>
+                        <span style="font-size: 0.95rem; font-weight: 600; color: #212529;">${entry.location}</span>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 0.25rem;">
-                    <button onclick="editTimelineEntry('${entry.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="編集">✏️</button>
-                    <button onclick="deleteTimelineEntry('${entry.id}')" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
-                </div>
+                ${entry.memo ? `<div style="color: #6B7280; font-size: 0.8rem; line-height: 1.4; padding-left: 0.25rem;">${entry.memo}</div>` : ''}
             </div>
-            ${entry.memo ? `<div style="color: #6B7280; font-size: 0.8rem; line-height: 1.4; padding-left: 0.25rem;">${entry.memo}</div>` : ''}
+            <div class="timeline-entry-edit" style="display: none;">
+                <div style="display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="time" class="edit-time-input" value="${entry.time}" style="padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.8rem;">
+                    <input type="text" class="edit-location-input" value="${entry.location}" style="padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.8rem;">
+                </div>
+                <textarea class="edit-memo-input" style="width: 100%; padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.75rem; min-height: 40px; resize: vertical;">${entry.memo || ''}</textarea>
+            </div>
+            <div class="timeline-entry-controls" style="display: none; position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
+                <button onclick="moveTimelineEntryUp(${index})" ${index === 0 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.25rem; width: 1.5rem; height: 1.5rem; cursor: pointer; font-size: 0.9rem;" title="上へ">↑</button>
+                <button onclick="moveTimelineEntryDown(${index})" ${index === trip.entries.length - 1 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.25rem; width: 1.5rem; height: 1.5rem; cursor: pointer; font-size: 0.9rem;" title="下へ">↓</button>
+                <button onclick="deleteTimelineEntryInEditMode(${index})" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
+            </div>
         </div>
     `).join('');
 
     container.innerHTML = timelineHTML;
 }
 
-// エントリーを編集
+// 編集モード管理
+let isTimelineEditMode = false;
+let originalTimelineEntries = null;
+
+function toggleTimelineEditMode() {
+    if (isTimelineEditMode) {
+        cancelTimelineEditMode();
+    } else {
+        enterTimelineEditMode();
+    }
+}
+
+function enterTimelineEditMode() {
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    // 元のデータをバックアップ
+    originalTimelineEntries = JSON.parse(JSON.stringify(trip.entries));
+
+    isTimelineEditMode = true;
+
+    // 編集モードUIを表示
+    const editModeActions = document.getElementById('editModeActions');
+    if (editModeActions) {
+        editModeActions.style.display = 'block';
+    }
+
+    // すべてのエントリーを編集モードに
+    document.querySelectorAll('.timeline-entry-item').forEach(item => {
+        const viewDiv = item.querySelector('.timeline-entry-view');
+        const editDiv = item.querySelector('.timeline-entry-edit');
+        const controlsDiv = item.querySelector('.timeline-entry-controls');
+
+        if (viewDiv) viewDiv.style.display = 'none';
+        if (editDiv) editDiv.style.display = 'block';
+        if (controlsDiv) controlsDiv.style.display = 'flex';
+    });
+}
+
+async function saveTimelineEditMode() {
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    // すべての編集内容を取得
+    const items = document.querySelectorAll('.timeline-entry-item');
+    const updatedEntries = [];
+
+    for (let item of items) {
+        const entryId = item.getAttribute('data-entry-id');
+        const timeInput = item.querySelector('.edit-time-input');
+        const locationInput = item.querySelector('.edit-location-input');
+        const memoInput = item.querySelector('.edit-memo-input');
+
+        const time = timeInput?.value || '';
+        const location = locationInput?.value.trim() || '';
+        const memo = memoInput?.value.trim() || '';
+
+        if (!time || !location) {
+            alert('すべての時刻と場所を入力してください');
+            return;
+        }
+
+        updatedEntries.push({
+            id: entryId,
+            time: time,
+            location: location,
+            memo: memo
+        });
+    }
+
+    trip.entries = updatedEntries;
+    await saveTimelineData();
+
+    isTimelineEditMode = false;
+    originalTimelineEntries = null;
+    renderTimelineEntries();
+}
+
+function cancelTimelineEditMode() {
+    const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
+    if (!trip) return;
+
+    // 元のデータを復元
+    if (originalTimelineEntries) {
+        trip.entries = originalTimelineEntries;
+    }
+
+    isTimelineEditMode = false;
+    originalTimelineEntries = null;
+    renderTimelineEntries();
+}
+
+// エントリーを編集（レガシー - モーダル編集）
 let editingEntryId = null;
 function editTimelineEntry(entryId) {
     const trip = timelineTrips.find(t => t.id === currentTimelineTripId);
@@ -411,7 +521,53 @@ function insertTimelineEntry(index) {
     }
 }
 
-// エントリーを削除
+// 編集モードでエントリーを並び替え
+function moveTimelineEntryUp(index) {
+    if (index <= 0) return;
+
+    const container = document.getElementById('timelineEntriesContainer');
+    if (!container) return;
+
+    const items = container.querySelectorAll('.timeline-entry-item');
+    if (index >= items.length) return;
+
+    const currentItem = items[index];
+    const previousItem = items[index - 1];
+
+    container.insertBefore(currentItem, previousItem);
+}
+
+function moveTimelineEntryDown(index) {
+    const container = document.getElementById('timelineEntriesContainer');
+    if (!container) return;
+
+    const items = container.querySelectorAll('.timeline-entry-item');
+    if (index >= items.length - 1) return;
+
+    const currentItem = items[index];
+    const nextItem = items[index + 1];
+
+    if (nextItem.nextSibling) {
+        container.insertBefore(currentItem, nextItem.nextSibling);
+    } else {
+        container.appendChild(currentItem);
+    }
+}
+
+// 編集モードでエントリーを削除
+function deleteTimelineEntryInEditMode(index) {
+    if (!confirm('このログを削除しますか?')) return;
+
+    const container = document.getElementById('timelineEntriesContainer');
+    if (!container) return;
+
+    const items = container.querySelectorAll('.timeline-entry-item');
+    if (index >= items.length) return;
+
+    items[index].remove();
+}
+
+// エントリーを削除（通常モード）
 async function deleteTimelineEntry(entryId) {
     if (!confirm('このログを削除しますか?')) return;
 
