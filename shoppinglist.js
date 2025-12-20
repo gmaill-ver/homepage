@@ -71,7 +71,6 @@ function renderShoppingList() {
                     <div
                         data-item-id="${item.id}"
                         class="shopping-item"
-                        onclick="togglePurchased('${item.id}')"
                         style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
                         <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
@@ -117,7 +116,14 @@ function renderShoppingList() {
 
             containerElement.addEventListener('mouseup', (e) => {
                 const wasLongPress = cancelLongPressForQuantity();
-                // PCではonclickがあるので何もしない
+                // 長押しでなければクリックとして処理
+                if (!wasLongPress) {
+                    const itemElement = e.target.closest('.shopping-item');
+                    if (itemElement) {
+                        const itemId = itemElement.getAttribute('data-item-id');
+                        togglePurchased(itemId);
+                    }
+                }
             });
 
             containerElement.addEventListener('mouseleave', () => {
