@@ -71,61 +71,48 @@ function renderShoppingList() {
                     <div
                         data-item-id="${item.id}"
                         class="shopping-item"
+                        onclick="togglePurchased('${item.id}')"
                         style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'}; transition: none;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
                     </div>
                 `).join('')}
             </div>
         `;
         container.innerHTML = html;
 
-        // イベントデリゲーションで親要素にリスナーを1つだけ追加
+        // 長押しで数量変更モーダルを表示
         const containerElement = container.querySelector('div');
         if (containerElement) {
-            // タッチデバイス用（passiveをfalseにして即座の反応を実現）
             containerElement.addEventListener('touchstart', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
-                    e.preventDefault(); // 300ms遅延を防ぐ
                     const itemId = itemElement.getAttribute('data-item-id');
-                    startLongPress(itemId);
+                    startLongPressForQuantity(itemId);
                 }
-            }, { passive: false });
-
-            containerElement.addEventListener('touchend', (e) => {
-                const itemElement = e.target.closest('.shopping-item');
-                if (itemElement) {
-                    e.preventDefault();
-                    const itemId = itemElement.getAttribute('data-item-id');
-                    endLongPress(itemId);
-                }
-            }, { passive: false });
-
-            containerElement.addEventListener('touchmove', (e) => {
-                cancelLongPress();
             }, { passive: true });
 
-            // マウス用
+            containerElement.addEventListener('touchend', () => {
+                cancelLongPressForQuantity();
+            }, { passive: true });
+
+            containerElement.addEventListener('touchmove', () => {
+                cancelLongPressForQuantity();
+            }, { passive: true });
+
             containerElement.addEventListener('mousedown', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
-                    e.preventDefault();
                     const itemId = itemElement.getAttribute('data-item-id');
-                    startLongPress(itemId);
+                    startLongPressForQuantity(itemId);
                 }
             });
 
-            containerElement.addEventListener('mouseup', (e) => {
-                const itemElement = e.target.closest('.shopping-item');
-                if (itemElement) {
-                    e.preventDefault();
-                    const itemId = itemElement.getAttribute('data-item-id');
-                    endLongPress(itemId);
-                }
+            containerElement.addEventListener('mouseup', () => {
+                cancelLongPressForQuantity();
             });
 
             containerElement.addEventListener('mouseleave', () => {
-                cancelLongPress();
+                cancelLongPressForQuantity();
             });
         }
     }
@@ -248,25 +235,25 @@ async function addShoppingItem() {
     }
 }
 
-// 購入済みトグル（楽観的UI更新で即座に反映）
+// 購入済みトグル（持ち物チェックリストと同じシンプルな仕組み）
 async function togglePurchased(itemId) {
     const item = shoppingItems.find(i => i.id === itemId);
     if (!item) return;
 
-    // 即座にローカルの状態を更新して再描画
-    const previousState = item.purchased;
+    // 状態を切り替え
     item.purchased = !item.purchased;
-    renderShoppingList();
 
-    // バックグラウンドでFirestoreを更新
     try {
+        // Firestoreに保存
         await db.collection('shoppingList').doc(itemId).update({
             purchased: item.purchased
         });
+        // 再描画
+        renderShoppingList();
     } catch (error) {
         console.error('更新エラー:', error);
         // エラー時は元に戻す
-        item.purchased = previousState;
+        item.purchased = !item.purchased;
         renderShoppingList();
     }
 }
@@ -463,109 +450,21 @@ async function swapItems(itemId1, itemId2) {
     }
 }
 
-// 長押し開始（タップした瞬間に色を変更）
-function startLongPress(itemId) {
+// 長押し開始（数量変更モーダル用）
+function startLongPressForQuantity(itemId) {
     longPressItemId = itemId;
-
-    const item = shoppingItems.find(i => i.id === itemId);
-    if (!item) return;
-
-    // DOM要素を直接取得して即座に色を変更（再描画なし）
-    const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
-    if (itemElement) {
-        const newPurchased = !item.purchased;
-
-        // トランジション無効化して即座に変更
-        itemElement.style.transition = 'none';
-
-        // 即座に視覚的な変更を適用
-        if (newPurchased) {
-            itemElement.style.background = '#10B981';
-            itemElement.style.borderColor = '#10B981';
-            itemElement.querySelector('div').style.color = 'white';
-        } else {
-            itemElement.style.background = 'white';
-            itemElement.style.borderColor = '#E5E7EB';
-            itemElement.querySelector('div').style.color = '#1F2937';
-        }
-
-        // ローカルの状態を更新
-        item.purchased = newPurchased;
-    }
-
-    // 2秒長押しで数量変更モーダル
     longPressTimer = setTimeout(() => {
-        // 長押しされたので状態を元に戻してモーダル表示
-        if (itemElement && item) {
-            item.purchased = !item.purchased;
-            itemElement.style.transition = 'none';
-            if (item.purchased) {
-                itemElement.style.background = '#10B981';
-                itemElement.style.borderColor = '#10B981';
-                itemElement.querySelector('div').style.color = 'white';
-            } else {
-                itemElement.style.background = 'white';
-                itemElement.style.borderColor = '#E5E7EB';
-                itemElement.querySelector('div').style.color = '#1F2937';
-            }
-        }
         showQuantityChangeModal(itemId);
+        longPressItemId = null;
+        longPressTimer = null;
     }, 2000);
 }
 
-// 長押し終了（2秒以内に離したらFirebaseに保存）
-function endLongPress(itemId) {
+// 長押しキャンセル
+function cancelLongPressForQuantity() {
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
-
-        // 2秒以内に離した場合はFirebaseに保存
-        if (longPressItemId === itemId) {
-            const item = shoppingItems.find(i => i.id === itemId);
-            if (item) {
-                // Firestoreに保存
-                db.collection('shoppingList').doc(itemId).update({
-                    purchased: item.purchased
-                }).catch(error => {
-                    console.error('更新エラー:', error);
-                    // エラー時は元に戻す
-                    item.purchased = !item.purchased;
-                    renderShoppingList();
-                });
-            }
-        }
-    }
-    longPressItemId = null;
-}
-
-// 長押しキャンセル（スクロール時など）
-function cancelLongPress() {
-    if (longPressTimer) {
-        clearTimeout(longPressTimer);
-        longPressTimer = null;
-
-        // スクロールでキャンセルされたので状態を元に戻す
-        if (longPressItemId) {
-            const item = shoppingItems.find(i => i.id === longPressItemId);
-            const itemElement = document.querySelector(`[data-item-id="${longPressItemId}"]`);
-
-            if (item && itemElement) {
-                // 状態を元に戻す
-                item.purchased = !item.purchased;
-
-                // DOM要素を直接更新
-                itemElement.style.transition = 'none';
-                if (item.purchased) {
-                    itemElement.style.background = '#10B981';
-                    itemElement.style.borderColor = '#10B981';
-                    itemElement.querySelector('div').style.color = 'white';
-                } else {
-                    itemElement.style.background = 'white';
-                    itemElement.style.borderColor = '#E5E7EB';
-                    itemElement.querySelector('div').style.color = '#1F2937';
-                }
-            }
-        }
     }
     longPressItemId = null;
 }
