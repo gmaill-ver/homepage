@@ -86,8 +86,24 @@ function renderShoppingList() {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
                     const itemId = itemElement.getAttribute('data-item-id');
-                    // タップした瞬間に即座にトグル
-                    togglePurchased(itemId);
+                    const item = shoppingItems.find(i => i.id === itemId);
+                    if (item) {
+                        // DOM直接操作で即座に色変更（再描画なし）
+                        const newPurchased = !item.purchased;
+                        if (newPurchased) {
+                            itemElement.style.background = '#10B981';
+                            itemElement.style.borderColor = '#10B981';
+                            const textDiv = itemElement.querySelector('div');
+                            if (textDiv) textDiv.style.color = 'white';
+                        } else {
+                            itemElement.style.background = 'white';
+                            itemElement.style.borderColor = '#E5E7EB';
+                            const textDiv = itemElement.querySelector('div');
+                            if (textDiv) textDiv.style.color = '#1F2937';
+                        }
+                        // バックグラウンドでFirebase保存
+                        togglePurchased(itemId);
+                    }
                     // 長押し判定開始
                     startLongPressForQuantity(itemId);
                 }
@@ -109,8 +125,24 @@ function renderShoppingList() {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
                     const itemId = itemElement.getAttribute('data-item-id');
-                    // クリックした瞬間に即座にトグル
-                    togglePurchased(itemId);
+                    const item = shoppingItems.find(i => i.id === itemId);
+                    if (item) {
+                        // DOM直接操作で即座に色変更（再描画なし）
+                        const newPurchased = !item.purchased;
+                        if (newPurchased) {
+                            itemElement.style.background = '#10B981';
+                            itemElement.style.borderColor = '#10B981';
+                            const textDiv = itemElement.querySelector('div');
+                            if (textDiv) textDiv.style.color = 'white';
+                        } else {
+                            itemElement.style.background = 'white';
+                            itemElement.style.borderColor = '#E5E7EB';
+                            const textDiv = itemElement.querySelector('div');
+                            if (textDiv) textDiv.style.color = '#1F2937';
+                        }
+                        // バックグラウンドでFirebase保存
+                        togglePurchased(itemId);
+                    }
                     // 長押し判定開始
                     startLongPressForQuantity(itemId);
                 }
