@@ -533,6 +533,15 @@ function showQuantityChangeModal(itemId) {
     longPressItemId = itemId;
     console.log('longPressItemId set to:', longPressItemId);
 
+    // モーダルを取得
+    const modal = document.getElementById('quantityChangeModal');
+
+    // モーダルにアイテムIDを保存（グローバル変数が消えても大丈夫なように）
+    if (modal) {
+        modal.setAttribute('data-item-id', itemId);
+        console.log('Modal data-item-id set to:', itemId);
+    }
+
     // 商品名を表示
     document.getElementById('quantityChangeItemName').textContent = item.name;
 
@@ -540,7 +549,6 @@ function showQuantityChangeModal(itemId) {
     document.getElementById('quantitySelect').value = item.quantity || 1;
 
     // モーダルを表示
-    const modal = document.getElementById('quantityChangeModal');
     if (modal) {
         modal.style.display = 'flex';
     }
@@ -566,14 +574,20 @@ function closeQuantityChangeModal() {
 async function saveQuantityChange() {
     console.log('saveQuantityChange called, longPressItemId:', longPressItemId);
 
-    if (!longPressItemId) {
-        console.error('longPressItemId is null!');
+    // モーダルからアイテムIDを取得（グローバル変数の代わり）
+    const modal = document.getElementById('quantityChangeModal');
+    const itemId = modal ? modal.getAttribute('data-item-id') : null;
+
+    console.log('Retrieved itemId from modal:', itemId);
+
+    if (!itemId) {
+        console.error('itemId is null!');
         alert('エラー: アイテムIDが見つかりません');
         return;
     }
 
     const quantity = parseInt(document.getElementById('quantitySelect').value);
-    const item = shoppingItems.find(i => i.id === longPressItemId);
+    const item = shoppingItems.find(i => i.id === itemId);
 
     console.log('Saving quantity:', quantity, 'for item:', item);
 
@@ -583,7 +597,7 @@ async function saveQuantityChange() {
     }
 
     try {
-        await db.collection('shoppingList').doc(longPressItemId).update({
+        await db.collection('shoppingList').doc(itemId).update({
             quantity: quantity
         });
         console.log('Firebase update successful');
