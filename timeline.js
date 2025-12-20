@@ -309,15 +309,13 @@ function renderTimelineEntries() {
     `;
 
     const timelineHTML = trip.entries.map((entry, index) => `
-        <div class="timeline-entry-item" data-entry-id="${entry.id}" data-entry-index="${index}" style="position: relative; margin-bottom: 0.5rem; padding: 0.65rem; background: #F9FAFB; border-radius: 0.5rem; border-left: 4px solid #667eea;">
+        <div class="timeline-entry-item" data-entry-id="${entry.id}" data-entry-index="${index}" style="position: relative; margin-bottom: 0.5rem; padding: 0.75rem 1rem; background: white; border-radius: 0.5rem; border-left: 4px solid #667eea; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: all 0.2s;">
             <div class="timeline-entry-view">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <div style="display: flex; align-items: baseline; gap: 0.5rem;">
-                        <span style="font-weight: bold; color: #667eea; font-size: 0.8rem;">${entry.time}</span>
-                        <span style="font-size: 0.95rem; font-weight: 600; color: #212529;">${entry.location}</span>
-                    </div>
+                <div style="display: flex; align-items: baseline; gap: 0.75rem;">
+                    <span style="font-weight: 700; color: #667eea; font-size: 0.85rem; min-width: 45px;">${entry.time}</span>
+                    <span style="font-size: 1rem; font-weight: 600; color: #1F2937; flex: 1;">${entry.location}</span>
                 </div>
-                ${entry.memo ? `<div style="color: #6B7280; font-size: 0.8rem; line-height: 1.4; padding-left: 0.25rem;">${entry.memo}</div>` : ''}
+                ${entry.memo ? `<div style="color: #6B7280; font-size: 0.85rem; line-height: 1.5; margin-top: 0.5rem; padding-left: 53px;">${entry.memo}</div>` : ''}
             </div>
             <div class="timeline-entry-edit" style="display: none;">
                 <div style="display: grid; grid-template-columns: 80px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
@@ -325,11 +323,11 @@ function renderTimelineEntries() {
                     <input type="text" class="edit-location-input" value="${entry.location}" style="padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.8rem;">
                 </div>
                 <textarea class="edit-memo-input" style="width: 100%; padding: 0.4rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.75rem; min-height: 40px; resize: vertical;">${entry.memo || ''}</textarea>
-            </div>
-            <div class="timeline-entry-controls" style="display: none; position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
-                <button onclick="moveTimelineEntryUp(${index})" ${index === 0 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.25rem; width: 1.5rem; height: 1.5rem; cursor: pointer; font-size: 0.9rem;" title="上へ">↑</button>
-                <button onclick="moveTimelineEntryDown(${index})" ${index === trip.entries.length - 1 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.25rem; width: 1.5rem; height: 1.5rem; cursor: pointer; font-size: 0.9rem;" title="下へ">↓</button>
-                <button onclick="deleteTimelineEntryInEditMode(${index})" style="background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.25rem;" title="削除">🗑️</button>
+                <div class="timeline-entry-controls" style="margin-top: 0.5rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button onclick="moveTimelineEntryUp(${index})" ${index === 0 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.375rem; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.85rem; ${index === 0 ? 'opacity: 0.3; cursor: not-allowed;' : ''}" title="上へ">↑ 上へ</button>
+                    <button onclick="moveTimelineEntryDown(${index})" ${index === trip.entries.length - 1 ? 'disabled' : ''} style="background: #E5E7EB; border: none; border-radius: 0.375rem; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.85rem; ${index === trip.entries.length - 1 ? 'opacity: 0.3; cursor: not-allowed;' : ''}" title="下へ">↓ 下へ</button>
+                    <button onclick="deleteTimelineEntryInEditMode(${index})" style="background: #FEE2E2; color: #991B1B; border: none; border-radius: 0.375rem; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.85rem;" title="削除">🗑️ 削除</button>
+                </div>
             </div>
         </div>
     `).join('');
@@ -368,11 +366,13 @@ function enterTimelineEditMode() {
     document.querySelectorAll('.timeline-entry-item').forEach(item => {
         const viewDiv = item.querySelector('.timeline-entry-view');
         const editDiv = item.querySelector('.timeline-entry-edit');
-        const controlsDiv = item.querySelector('.timeline-entry-controls');
 
         if (viewDiv) viewDiv.style.display = 'none';
         if (editDiv) editDiv.style.display = 'block';
-        if (controlsDiv) controlsDiv.style.display = 'flex';
+
+        // エントリーのスタイルを編集モード用に変更
+        item.style.background = '#FFF7ED';
+        item.style.borderLeftColor = '#F97316';
     });
 }
 
