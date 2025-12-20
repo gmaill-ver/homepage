@@ -79,55 +79,53 @@ function renderShoppingList() {
         `;
         container.innerHTML = html;
 
-        // 長押しで数量変更モーダルを表示
+        // タップで即座にトグル、長押しで数量変更
         const containerElement = container.querySelector('div');
         if (containerElement) {
             containerElement.addEventListener('touchstart', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
                     const itemId = itemElement.getAttribute('data-item-id');
+                    // タップした瞬間に即座にトグル
+                    togglePurchased(itemId);
+                    // 長押し判定開始
                     startLongPressForQuantity(itemId);
                 }
             }, { passive: true });
 
-            containerElement.addEventListener('touchend', (e) => {
-                const wasLongPress = cancelLongPressForQuantity();
-                // 長押しでなければタップとして処理
-                if (!wasLongPress) {
-                    const itemElement = e.target.closest('.shopping-item');
-                    if (itemElement) {
-                        const itemId = itemElement.getAttribute('data-item-id');
-                        togglePurchased(itemId);
-                    }
-                }
+            containerElement.addEventListener('touchend', () => {
+                cancelLongPressForQuantity();
             }, { passive: true });
 
             containerElement.addEventListener('touchmove', () => {
-                cancelLongPressForQuantity();
+                const canceledItemId = cancelLongPressForQuantity();
+                // スクロールでキャンセルされた場合は元に戻す
+                if (canceledItemId) {
+                    togglePurchased(canceledItemId);
+                }
             }, { passive: true });
 
             containerElement.addEventListener('mousedown', (e) => {
                 const itemElement = e.target.closest('.shopping-item');
                 if (itemElement) {
                     const itemId = itemElement.getAttribute('data-item-id');
+                    // クリックした瞬間に即座にトグル
+                    togglePurchased(itemId);
+                    // 長押し判定開始
                     startLongPressForQuantity(itemId);
                 }
             });
 
-            containerElement.addEventListener('mouseup', (e) => {
-                const wasLongPress = cancelLongPressForQuantity();
-                // 長押しでなければクリックとして処理
-                if (!wasLongPress) {
-                    const itemElement = e.target.closest('.shopping-item');
-                    if (itemElement) {
-                        const itemId = itemElement.getAttribute('data-item-id');
-                        togglePurchased(itemId);
-                    }
-                }
+            containerElement.addEventListener('mouseup', () => {
+                cancelLongPressForQuantity();
             });
 
             containerElement.addEventListener('mouseleave', () => {
-                cancelLongPressForQuantity();
+                const canceledItemId = cancelLongPressForQuantity();
+                // マウスが離れてキャンセルされた場合は元に戻す
+                if (canceledItemId) {
+                    togglePurchased(canceledItemId);
+                }
             });
         }
     }
@@ -469,21 +467,24 @@ async function swapItems(itemId1, itemId2) {
 function startLongPressForQuantity(itemId) {
     longPressItemId = itemId;
     longPressTimer = setTimeout(() => {
+        // 2秒長押しされたので状態を元に戻してモーダル表示
+        togglePurchased(itemId);
         showQuantityChangeModal(itemId);
         longPressItemId = null;
         longPressTimer = null;
     }, 2000);
 }
 
-// 長押しキャンセル（長押しだったかどうかを返す）
+// 長押しキャンセル（キャンセルしたかどうかを返す）
 function cancelLongPressForQuantity() {
-    const wasLongPress = !longPressTimer; // タイマーがnullなら長押しが完了していた
+    const wasCanceled = longPressTimer !== null;
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
     }
+    const savedItemId = longPressItemId;
     longPressItemId = null;
-    return wasLongPress;
+    return wasCanceled ? savedItemId : null;
 }
 
 // 数量変更モーダルを表示
