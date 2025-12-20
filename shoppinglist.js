@@ -20,8 +20,6 @@ function loadShoppingList() {
 
         // リアルタイム更新を監視
         shoppingListUnsubscribe = db.collection('shoppingList')
-            .orderBy('order', 'asc')
-            .orderBy('createdAt', 'desc')
             .onSnapshot((snapshot) => {
                 shoppingItems = [];
                 snapshot.forEach((doc) => {
@@ -29,6 +27,18 @@ function loadShoppingList() {
                         id: doc.id,
                         ...doc.data()
                     });
+                });
+                // クライアント側でソート（order優先、なければcreatedAt）
+                shoppingItems.sort((a, b) => {
+                    const orderA = a.order || 999999;
+                    const orderB = b.order || 999999;
+                    if (orderA !== orderB) {
+                        return orderA - orderB;
+                    }
+                    // orderが同じ場合はcreatedAtで降順
+                    const timeA = a.createdAt?.toMillis() || 0;
+                    const timeB = b.createdAt?.toMillis() || 0;
+                    return timeB - timeA;
                 });
                 renderShoppingList();
             }, (error) => {
