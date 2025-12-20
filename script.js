@@ -1161,6 +1161,9 @@ function loadFeatureData(featureName) {
         case 'timeline':
             initializeTimeline();
             break;
+        case 'shopping':
+            initializeShoppingList();
+            break;
     }
 }
 

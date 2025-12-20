@@ -174,6 +174,12 @@
                     <div class="feature-card-title">時系列ログ</div>
                     <div class="feature-card-description">訪問先の記録</div>
                 </div>
+
+                <div class="feature-card" onclick="showFeature('shopping')">
+                    <div class="feature-card-icon">🛒</div>
+                    <div class="feature-card-title">買い物リスト</div>
+                    <div class="feature-card-description">買うものを管理</div>
+                </div>
             </div>
 
             <!-- チェックリスト機能ページ -->
@@ -474,6 +480,41 @@
                 </div>
             </section>
             </div>
+
+            <!-- 買い物リスト機能ページ -->
+            <div id="shoppingFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header">
+                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
+                    <h2>🛒 買い物リスト</h2>
+                </div>
+                <section class="card" id="shoppingListCard">
+                    <div class="card-header" onclick="toggleCard('shoppingListCard')">
+                        <h2>🛒 買い物リスト</h2>
+                    </div>
+                    <div class="card-content">
+                        <!-- アイテム追加 -->
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: #F9FAFB; border-radius: 0.5rem;">
+                            <h3 style="color: #3B82F6; margin-bottom: 0.75rem; font-size: 1rem;">➕ アイテムを追加</h3>
+                            <div style="display: grid; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" id="shoppingItemName" placeholder="商品名（例: 牛乳）" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                    <input type="number" id="shoppingItemQuantity" value="1" min="1" placeholder="数量" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                                    <input type="text" id="shoppingItemUnit" value="個" placeholder="単位" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                                </div>
+                            </div>
+                            <button onclick="addShoppingItem()" class="btn-primary" style="width: 100%; padding: 0.5rem; background: #3B82F6;">追加</button>
+                        </div>
+
+                        <!-- 買い物リスト表示 -->
+                        <div id="shoppingListContainer"></div>
+
+                        <!-- 購入済みアイテムを削除 -->
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+                            <button onclick="clearPurchasedItems()" style="width: 100%; padding: 0.5rem; background: transparent; border: 2px solid #EF4444; color: #EF4444; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#EF4444'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#EF4444';">🗑️ 購入済みを削除</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 
@@ -515,6 +556,31 @@
             <div class="modal-actions">
                 <button onclick="closeEditTimelineEntryModal()" class="btn-secondary">キャンセル</button>
                 <button onclick="saveEditedTimelineEntry()" class="btn-primary" style="background: #667eea;">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 買い物リスト編集モーダル -->
+    <div id="editShoppingItemModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3>アイテムを編集</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">商品名</label>
+                <input type="text" id="editShoppingItemName" placeholder="商品名" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">数量</label>
+                    <input type="number" id="editShoppingItemQuantity" min="1" value="1" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">単位</label>
+                    <input type="text" id="editShoppingItemUnit" placeholder="個" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeEditShoppingItemModal()" class="btn-secondary">キャンセル</button>
+                <button onclick="saveEditedShoppingItem()" class="btn-primary" style="background: #3B82F6;">保存</button>
             </div>
         </div>
     </div>
@@ -736,6 +802,7 @@
     <script src="checklist.js?v=2025102612"></script>
     <script src="splitbill.js?v=2025102801"></script>
     <script src="timeline.js?v=2025102801"></script>
+    <script src="shoppinglist.js"></script>
     <script src="script.js?v=2025102604"></script>
 </body>
 </html>
