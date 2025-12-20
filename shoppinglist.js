@@ -417,6 +417,54 @@ async function saveQuantityChange() {
     }
 }
 
+// 初期アイテムを一括追加（コンソールから実行用）
+async function addInitialItems() {
+    const items = [
+        '砂糖', '塩', '胡椒', '塩胡椒', '醤油', '酢', '酒', 'みりん', '味噌',
+        'サラダ油', 'オリーブオイル', 'ごま油', 'バター', '小麦粉', '片栗粉',
+        '薄力粉', 'パン粉', '鰹節', '昆布つゆ', 'BEL', '顆粒だし', '鶏ガラ',
+        'コンソメ', 'オイスター', '中濃ソース', 'マヨネーズ', 'ケチャップ',
+        'ポン酢', '豆板醤', '甜麵醬', '七味', '焼き肉のタレ', 'レモン汁',
+        'ラー油', '輪切り唐辛子', 'ごま', '乾燥わかめ', '生姜チューブ',
+        '山葵チューブ', 'にんにくチューブ', '辛子チューブ', 'サランラップ',
+        'アルミホイル', 'クッキングシート', 'ごみ袋', 'キッチンペーパー',
+        'ネット (丸・浅型)', 'スポンジ', '食器用洗剤', 'シンク用洗剤',
+        '食洗機用洗剤', 'ガスボンベ', 'ティッシュ', 'アルコールウェット',
+        'ノンアルコールウェット', 'ハンドソープ (キレイキレイ)', 'ハンドペーパー',
+        '洗濯用洗剤', '洗濯用柔軟剤', '洗濯用漂白剤', '洗濯用洗剤 (翔真用)',
+        '洗濯用柔軟剤(翔真用)', '洗濯用漂白剤(翔真用)', 'バスマジックリン (噴射)',
+        'コロコロ', 'ファブリーズ', 'トイレットペーパー', 'トイレ用クイックル(花王)',
+        'トイレ用スタンプ(ジョンソン)', 'トイレ用スポンジ(スコッチブライト)',
+        'クイックルワイパー (乾拭)', 'クイックルワイパー (濡拭)', 'シャンプー',
+        'リンス', 'ボディーソープ', '歯ブラシ', '歯磨き粉', '歯磨き後のフッ素ラムネ',
+        'おむつ', 'お尻ふき', '消臭袋', 'ポリ袋'
+    ];
+
+    try {
+        const batch = db.batch();
+        let order = shoppingItems.length > 0 ? Math.max(...shoppingItems.map(item => item.order || 0)) + 1 : 1;
+
+        items.forEach((name) => {
+            const docRef = db.collection('shoppingList').doc();
+            batch.set(docRef, {
+                name: name,
+                quantity: 1,
+                unit: '個',
+                purchased: false,
+                order: order++,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+
+        await batch.commit();
+        console.log(`${items.length}個のアイテムを追加しました`);
+        alert(`${items.length}個のアイテムを追加しました`);
+    } catch (error) {
+        console.error('一括追加エラー:', error);
+        alert('追加に失敗しました: ' + error.message);
+    }
+}
+
 // 初期化
 function initializeShoppingList() {
     loadShoppingList();
