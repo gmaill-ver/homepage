@@ -2052,8 +2052,7 @@ async function renderExpenseChart() {
                         borderColor: '#10B981',
                         backgroundColor: '#10B98120',
                         tension: 0.3,
-                        borderWidth: 2,
-                        hidden: true
+                        borderWidth: 3
                     },
                     {
                         label: '支出合計',
@@ -2061,16 +2060,15 @@ async function renderExpenseChart() {
                         borderColor: '#EF4444',
                         backgroundColor: '#EF444420',
                         tension: 0.3,
-                        borderWidth: 2,
-                        hidden: true
+                        borderWidth: 3
                     },
                     {
-                        label: '月次収支',
+                        label: '収支',
                         data: balanceData,
                         borderColor: '#3B82F6',
                         backgroundColor: '#3B82F620',
                         tension: 0.3,
-                        borderWidth: 2
+                        borderWidth: 3
                     },
                     {
                         label: '累積収支',
@@ -2078,8 +2076,7 @@ async function renderExpenseChart() {
                         borderColor: '#8B5CF6',
                         backgroundColor: '#8B5CF620',
                         tension: 0.3,
-                        borderWidth: 4,
-                        borderDash: []
+                        borderWidth: 4
                     }
                 ]
             },
