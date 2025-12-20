@@ -1680,21 +1680,21 @@ body {
 
 .feature-card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    padding: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    padding: 0.5rem;
 }
 
 @media (min-width: 768px) {
     .feature-card-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 .feature-card {
     background: white;
-    border-radius: 1rem;
-    padding: 1.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1703,30 +1703,32 @@ body {
 }
 
 .feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-color: #3B82F6;
 }
 
 .feature-card:active {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .feature-card-icon {
-    font-size: 3rem;
-    margin-bottom: 0.5rem;
-}
-
-.feature-card-title {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #1F2937;
+    font-size: 2rem;
     margin-bottom: 0.25rem;
 }
 
-.feature-card-description {
+.feature-card-title {
     font-size: 0.75rem;
+    font-weight: bold;
+    color: #1F2937;
+    margin-bottom: 0.125rem;
+    line-height: 1.2;
+}
+
+.feature-card-description {
+    font-size: 0.625rem;
     color: #6B7280;
+    line-height: 1.2;
 }
 
 /* 機能ページ */
