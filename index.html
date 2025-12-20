@@ -482,21 +482,17 @@
                 </div>
                 <section class="card" id="shoppingListCard">
                     <div class="card-header" onclick="toggleCard('shoppingListCard')">
-                        <h2>🛒 買い物リスト</h2>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <!-- アイテム追加トグルボタン -->
+                        <button onclick="toggleShoppingAddForm(); event.stopPropagation();" style="flex: 1; padding: 0.75rem; background: #F9FAFB; border: 2px dashed #3B82F6; color: #3B82F6; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F9FAFB'">➕ アイテムを追加</button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
                             <button class="btn-icon-simple" onclick="toggleShoppingEditMode(); event.stopPropagation();" title="編集">✏️</button>
                             <button class="btn-icon-simple" onclick="toggleShoppingDeleteMode(); event.stopPropagation();" title="削除">🗑️</button>
                             <button class="btn-icon-simple" onclick="toggleShoppingReorderMode(); event.stopPropagation();" title="並び替え">⇅</button>
                         </div>
                     </div>
                     <div class="card-content">
-                        <!-- アイテム追加トグルボタン -->
-                        <div style="margin-bottom: 1rem;">
-                            <button onclick="toggleShoppingAddForm()" style="width: 100%; padding: 0.75rem; background: #F9FAFB; border: 2px dashed #3B82F6; color: #3B82F6; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F9FAFB'">➕ アイテムを追加</button>
-                        </div>
-
                         <!-- アイテム追加フォーム -->
-                        <div id="shoppingAddForm" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: #F9FAFB; border-radius: 0.5rem;">
+                        <div id="shoppingAddForm" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #F9FAFB; border-radius: 0.5rem;">
                             <div style="display: flex; gap: 0.5rem;">
                                 <input type="text" id="shoppingItemName" placeholder="商品名（例: 牛乳）" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
                                 <button onclick="addShoppingItem()" class="btn-primary" style="padding: 0.5rem 1rem; background: #3B82F6;">追加</button>
