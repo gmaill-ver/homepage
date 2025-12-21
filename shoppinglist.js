@@ -96,86 +96,84 @@ function renderShoppingList() {
         container.innerHTML = html;
 
         // タップで即座にトグル、長押しで数量変更
-        const containerElement = container.querySelector('div');
-        if (containerElement) {
-            containerElement.addEventListener('touchstart', (e) => {
-                const itemElement = e.target.closest('.shopping-item');
-                if (itemElement) {
-                    const itemId = itemElement.getAttribute('data-item-id');
-                    const item = shoppingItems.find(i => i.id === itemId);
-                    if (item) {
-                        // DOM直接操作で即座に色変更（再描画なし）
-                        const newPurchased = !item.purchased;
-                        if (newPurchased) {
-                            itemElement.style.background = '#10B981';
-                            itemElement.style.borderColor = '#10B981';
-                            const textDiv = itemElement.querySelector('div');
-                            if (textDiv) textDiv.style.color = 'white';
-                        } else {
-                            itemElement.style.background = 'white';
-                            itemElement.style.borderColor = '#E5E7EB';
-                            const textDiv = itemElement.querySelector('div');
-                            if (textDiv) textDiv.style.color = '#1F2937';
-                        }
-                        // バックグラウンドでFirebase保存
-                        togglePurchased(itemId);
+        // container自体にイベントリスナーを設定（イベントデリゲーション）
+        container.addEventListener('touchstart', (e) => {
+            const itemElement = e.target.closest('.shopping-item');
+            if (itemElement) {
+                const itemId = itemElement.getAttribute('data-item-id');
+                const item = shoppingItems.find(i => i.id === itemId);
+                if (item) {
+                    // DOM直接操作で即座に色変更（再描画なし）
+                    const newPurchased = !item.purchased;
+                    if (newPurchased) {
+                        itemElement.style.background = '#10B981';
+                        itemElement.style.borderColor = '#10B981';
+                        const textDiv = itemElement.querySelector('div');
+                        if (textDiv) textDiv.style.color = 'white';
+                    } else {
+                        itemElement.style.background = 'white';
+                        itemElement.style.borderColor = '#E5E7EB';
+                        const textDiv = itemElement.querySelector('div');
+                        if (textDiv) textDiv.style.color = '#1F2937';
                     }
-                    // 長押し判定開始
-                    startLongPressForQuantity(itemId);
+                    // バックグラウンドでFirebase保存
+                    togglePurchased(itemId);
                 }
-            }, { passive: true });
+                // 長押し判定開始
+                startLongPressForQuantity(itemId);
+            }
+        }, { passive: true });
 
-            containerElement.addEventListener('touchend', () => {
-                cancelLongPressForQuantity();
-            }, { passive: true });
+        container.addEventListener('touchend', () => {
+            cancelLongPressForQuantity();
+        }, { passive: true });
 
-            containerElement.addEventListener('touchmove', () => {
-                const canceledItemId = cancelLongPressForQuantity();
-                // スクロールでキャンセルされた場合は元に戻す
-                if (canceledItemId) {
-                    togglePurchased(canceledItemId);
-                }
-            }, { passive: true });
+        container.addEventListener('touchmove', () => {
+            const canceledItemId = cancelLongPressForQuantity();
+            // スクロールでキャンセルされた場合は元に戻す
+            if (canceledItemId) {
+                togglePurchased(canceledItemId);
+            }
+        }, { passive: true });
 
-            containerElement.addEventListener('mousedown', (e) => {
-                const itemElement = e.target.closest('.shopping-item');
-                if (itemElement) {
-                    const itemId = itemElement.getAttribute('data-item-id');
-                    const item = shoppingItems.find(i => i.id === itemId);
-                    if (item) {
-                        // DOM直接操作で即座に色変更（再描画なし）
-                        const newPurchased = !item.purchased;
-                        if (newPurchased) {
-                            itemElement.style.background = '#10B981';
-                            itemElement.style.borderColor = '#10B981';
-                            const textDiv = itemElement.querySelector('div');
-                            if (textDiv) textDiv.style.color = 'white';
-                        } else {
-                            itemElement.style.background = 'white';
-                            itemElement.style.borderColor = '#E5E7EB';
-                            const textDiv = itemElement.querySelector('div');
-                            if (textDiv) textDiv.style.color = '#1F2937';
-                        }
-                        // バックグラウンドでFirebase保存
-                        togglePurchased(itemId);
+        container.addEventListener('mousedown', (e) => {
+            const itemElement = e.target.closest('.shopping-item');
+            if (itemElement) {
+                const itemId = itemElement.getAttribute('data-item-id');
+                const item = shoppingItems.find(i => i.id === itemId);
+                if (item) {
+                    // DOM直接操作で即座に色変更（再描画なし）
+                    const newPurchased = !item.purchased;
+                    if (newPurchased) {
+                        itemElement.style.background = '#10B981';
+                        itemElement.style.borderColor = '#10B981';
+                        const textDiv = itemElement.querySelector('div');
+                        if (textDiv) textDiv.style.color = 'white';
+                    } else {
+                        itemElement.style.background = 'white';
+                        itemElement.style.borderColor = '#E5E7EB';
+                        const textDiv = itemElement.querySelector('div');
+                        if (textDiv) textDiv.style.color = '#1F2937';
                     }
-                    // 長押し判定開始
-                    startLongPressForQuantity(itemId);
+                    // バックグラウンドでFirebase保存
+                    togglePurchased(itemId);
                 }
-            });
+                // 長押し判定開始
+                startLongPressForQuantity(itemId);
+            }
+        });
 
-            containerElement.addEventListener('mouseup', () => {
-                cancelLongPressForQuantity();
-            });
+        container.addEventListener('mouseup', () => {
+            cancelLongPressForQuantity();
+        });
 
-            containerElement.addEventListener('mouseleave', () => {
-                const canceledItemId = cancelLongPressForQuantity();
-                // マウスが離れてキャンセルされた場合は元に戻す
-                if (canceledItemId) {
-                    togglePurchased(canceledItemId);
-                }
-            });
-        }
+        container.addEventListener('mouseleave', () => {
+            const canceledItemId = cancelLongPressForQuantity();
+            // マウスが離れてキャンセルされた場合は元に戻す
+            if (canceledItemId) {
+                togglePurchased(canceledItemId);
+            }
+        });
     }
     // 編集モード
     else if (isShoppingEditMode) {
