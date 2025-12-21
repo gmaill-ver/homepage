@@ -16,13 +16,13 @@ let categories = [
     { id: 'nursery', icon: '🏫', name: '保育園' }
 ];
 
-// 人物名のマッピング
-const personNames = {
-    'common': '共',
-    'me': '英',
-    'wife': '歩',
-    'son': '翔'
-};
+// 人物の定義
+let people = [
+    { id: 'common', icon: '📦', name: '共' },
+    { id: 'me', icon: '👨', name: '英' },
+    { id: 'wife', icon: '👩', name: '歩' },
+    { id: 'son', icon: '👶', name: '翔' }
+];
 
 // カテゴリを読み込み
 async function loadCategories() {
@@ -36,11 +36,24 @@ async function loadCategories() {
     }
 }
 
+// 人物を読み込み
+async function loadPeople() {
+    try {
+        const doc = await db.collection('settings').doc('checklistPeople').get();
+        if (doc.exists) {
+            people = doc.data().people || people;
+        }
+    } catch (error) {
+        console.error('人物読み込みエラー:', error);
+    }
+}
+
 // アイテムを読み込み
 async function loadChecklistItems() {
     try {
-        // カテゴリを先に読み込み
+        // カテゴリと人物を先に読み込み
         await loadCategories();
+        await loadPeople();
 
         const doc = await db.collection('settings').doc('checklistItems').get();
         if (doc.exists) {
@@ -155,13 +168,40 @@ function filterByPerson(person) {
 
 // 人物ラベルを取得
 function getPersonLabel(person) {
-    const labels = {
-        'me': '👨',
-        'wife': '👩',
-        'son': '👶',
-        'common': '🔗'
-    };
-    return labels[person] || '';
+    const personObj = people.find(p => p.id === person);
+    return personObj ? personObj.icon : '';
+}
+
+// 人物名を取得
+function getPersonName(person) {
+    const personObj = people.find(p => p.id === person);
+    return personObj ? personObj.name : '';
+}
+
+// 人物タブのHTMLを生成
+function renderPersonTabs() {
+    const packingPersonTabs = document.querySelector('.packing-person-tab')?.parentElement;
+    const personFilterBtns = document.querySelector('.person-filter-btn')?.parentElement;
+
+    if (packingPersonTabs) {
+        packingPersonTabs.innerHTML = people.map(person => `
+            <button class="packing-person-tab ${person.id === currentPackingPersonTab ? 'active' : ''}"
+                    data-person="${person.id}"
+                    onclick="selectPackingPersonTab('${person.id}')">
+                ${person.icon} ${person.name}
+            </button>
+        `).join('');
+    }
+
+    if (personFilterBtns) {
+        personFilterBtns.innerHTML = people.map(person => `
+            <button class="person-filter-btn ${person.id === currentPersonFilter ? 'active' : ''}"
+                    data-person="${person.id}"
+                    onclick="filterByPerson('${person.id}')">
+                ${person.icon} ${person.name}
+            </button>
+        `).join('');
+    }
 }
 
 // 持っていくものリストの人物タブを切り替え
@@ -695,18 +735,193 @@ async function moveItemDown(index) {
     }
 }
 
+// 人物を追加
+async function addPerson() {
+    const input = document.getElementById('newPersonInput');
+    const fullText = input.value.trim();
+
+    if (!fullText) {
+        alert('人物名を入力してください');
+        return;
+    }
+
+    // 最初の文字が絵文字かチェック
+    const firstChar = Array.from(fullText)[0];
+    let icon = '';
+    let name = '';
+
+    const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F910}-\u{1F96B}\u{1F980}-\u{1F9E0}]/u;
+
+    if (firstChar && (firstChar.length > 1 || emojiRegex.test(firstChar))) {
+        icon = firstChar;
+        name = fullText.slice(firstChar.length).trim();
+    } else {
+        icon = '';
+        name = fullText;
+    }
+
+    if (!name && icon) {
+        name = icon;
+    }
+
+    // 一意のIDを生成
+    const id = 'person_' + Date.now();
+
+    people.push({ id, icon, name });
+
+    try {
+        await db.collection('settings').doc('checklistPeople').set({ people });
+        input.value = '';
+        renderPersonEditModal();
+        renderPersonTabs();
+        renderPersonSelectOptions();
+        renderChecklist();
+    } catch (error) {
+        console.error('人物追加エラー:', error);
+        alert('追加に失敗しました');
+    }
+}
+
+// 人物を削除
+async function removePerson(index) {
+    const person = people[index];
+
+    // commonは削除できないようにする
+    if (person.id === 'common') {
+        alert('「共通」は削除できません');
+        return;
+    }
+
+    // この人物のアイテムがあるか確認
+    const hasItems = checklistItems.some(item => item.person === person.id);
+    if (hasItems) {
+        if (!confirm(`「${person.name}」のアイテムが存在します。\n削除すると、この人物のアイテムはすべて「共通」に移動されます。\n削除しますか？`)) {
+            return;
+        }
+        // この人物のアイテムをcommonに移動
+        checklistItems.forEach(item => {
+            if (item.person === person.id) {
+                item.person = 'common';
+            }
+        });
+    }
+
+    people.splice(index, 1);
+
+    // 削除した人物が選択中だった場合はcommonに切り替え
+    if (currentPersonFilter === person.id) {
+        currentPersonFilter = 'common';
+    }
+    if (currentPackingPersonTab === person.id) {
+        currentPackingPersonTab = 'common';
+    }
+
+    try {
+        await db.collection('settings').doc('checklistPeople').set({ people });
+        if (hasItems) {
+            await db.collection('settings').doc('checklistItems').set({ items: checklistItems });
+        }
+        renderPersonEditModal();
+        renderPersonTabs();
+        renderPersonSelectOptions();
+        renderChecklist();
+    } catch (error) {
+        console.error('人物削除エラー:', error);
+        alert('削除に失敗しました');
+    }
+}
+
+// 人物表示を更新
+async function updatePersonDisplay(index, value) {
+    if (!value || value.trim() === '') {
+        alert('人物名を入力してください');
+        renderPersonEditModal();
+        return;
+    }
+
+    const trimmed = value.trim();
+    const parts = trimmed.split(' ');
+
+    const firstPart = parts[0];
+    const isEmoji = firstPart.length <= 2 && /[\u{1F300}-\u{1F9FF}]/u.test(firstPart);
+
+    if (isEmoji && parts.length > 1) {
+        people[index].icon = firstPart;
+        people[index].name = parts.slice(1).join(' ');
+    } else {
+        people[index].icon = '';
+        people[index].name = trimmed;
+    }
+
+    try {
+        await db.collection('settings').doc('checklistPeople').set({ people });
+        renderPersonEditModal();
+        renderPersonTabs();
+        renderPersonSelectOptions();
+    } catch (error) {
+        console.error('人物更新エラー:', error);
+        alert('更新に失敗しました');
+    }
+}
+
+// 人物編集モーダルを描画
+function renderPersonEditModal() {
+    const personList = document.getElementById('personList');
+    if (!personList) return;
+
+    personList.innerHTML = people.map((person, index) => {
+        const displayValue = (person.icon ? person.icon + ' ' : '') + person.name;
+        const isCommon = person.id === 'common';
+        return `
+            <div style="display: flex; align-items: stretch; gap: 0.2rem; margin-bottom: 0.2rem;">
+                <input type="text" value="${displayValue}" onchange="updatePersonDisplay(${index}, this.value)" placeholder="👤 人物名" style="flex: 1; font-weight: 500; padding: 0.4rem; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.8rem; background: white;">
+                <button onclick="removePerson(${index})" style="background: transparent; border: 1px solid #E5E7EB; border-radius: 0.25rem; font-size: 0.9rem; padding: 0.4rem; cursor: pointer; opacity: ${isCommon ? '0.3' : '0.6'}; display: flex; align-items: center; justify-content: center;" ${isCommon ? 'disabled' : ''}>🗑️</button>
+            </div>
+        `;
+    }).join('');
+}
+
+// 人物セレクトボックスのオプションを更新
+function renderPersonSelectOptions() {
+    const selects = document.querySelectorAll('#checklistItemPerson');
+    selects.forEach(select => {
+        const currentValue = select.value;
+        select.innerHTML = people.map(person =>
+            `<option value="${person.id}">${person.icon} ${person.name}</option>`
+        ).join('');
+        select.value = currentValue;
+    });
+}
+
 // チェックリスト機能の初期化
 async function initializeChecklist() {
     await loadChecklistItems();
     renderCategoryButtons();
+    renderPersonTabs();
+    renderPersonSelectOptions();
     renderChecklist();
 
-    // モーダルを開いた時にカテゴリ一覧を更新
+    // モーダルを開いた時にカテゴリ一覧と人物一覧を更新
     const categoryEditModal = document.getElementById('categoryEditModal');
     if (categoryEditModal) {
         categoryEditModal.addEventListener('click', (e) => {
             if (e.target === categoryEditModal) return;
             renderCategoryEditModal();
+            renderPersonEditModal();
         });
     }
 }
+
+// モーダルを開く共通関数をオーバーライド（カテゴリ編集モーダル用）
+const originalOpenModal = window.openModal;
+window.openModal = function(modalId) {
+    if (modalId === 'categoryEditModal') {
+        renderCategoryEditModal();
+        renderPersonEditModal();
+    }
+    if (originalOpenModal) {
+        originalOpenModal(modalId);
+    } else {
+        document.getElementById(modalId).style.display = 'flex';
+    }
+};
