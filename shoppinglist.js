@@ -63,8 +63,8 @@ function renderShoppingList() {
         return;
     }
 
-    // カテゴリ別に分類
-    const foodItems = shoppingItems.filter(item => item.category === '食品');
+    // カテゴリ別に分類（categoryがない場合は'食品'として扱う）
+    const foodItems = shoppingItems.filter(item => !item.category || item.category === '食品');
     const dailyItems = shoppingItems.filter(item => item.category === '日用品');
 
     // 通常モード
