@@ -63,19 +63,35 @@ function renderShoppingList() {
         return;
     }
 
+    // カテゴリ別に分類
+    const foodItems = shoppingItems.filter(item => item.category === '食品');
+    const dailyItems = shoppingItems.filter(item => item.category === '日用品');
+
     // 通常モード
     if (!isShoppingEditMode && !isShoppingDeleteMode && !isShoppingReorderMode) {
-        const html = `
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
-                ${shoppingItems.map(item => `
-                    <div
-                        data-item-id="${item.id}"
-                        class="shopping-item"
-                        style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+        const renderCategorySection = (items, categoryName) => {
+            if (items.length === 0) return '';
+            return `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                        ${items.map(item => `
+                            <div
+                                data-item-id="${item.id}"
+                                class="shopping-item"
+                                style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                                <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
+                </div>
+            `;
+        };
+
+        const html = `
+            ${renderCategorySection(foodItems, '食品')}
+            ${foodItems.length > 0 && dailyItems.length > 0 ? '<hr style="border: none; border-top: 2px solid #E5E7EB; margin: 1rem 0;">' : ''}
+            ${renderCategorySection(dailyItems, '日用品')}
         `;
         container.innerHTML = html;
 
@@ -163,45 +179,83 @@ function renderShoppingList() {
     }
     // 編集モード
     else if (isShoppingEditMode) {
-        const html = `
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
-                ${shoppingItems.map(item => `
-                    <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+        const renderCategorySection = (items, categoryName) => {
+            if (items.length === 0) return '';
+            return `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                        ${items.map(item => `
+                            <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
+                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
+                </div>
+            `;
+        };
+
+        const html = `
+            ${renderCategorySection(foodItems, '食品')}
+            ${foodItems.length > 0 && dailyItems.length > 0 ? '<hr style="border: none; border-top: 2px solid #E5E7EB; margin: 1rem 0;">' : ''}
+            ${renderCategorySection(dailyItems, '日用品')}
         `;
         container.innerHTML = html;
     }
     // 削除モード
     else if (isShoppingDeleteMode) {
-        const html = `
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
-                ${shoppingItems.map(item => `
-                    <div class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
-                        <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
+        const renderCategorySection = (items, categoryName) => {
+            if (items.length === 0) return '';
+            return `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                        ${items.map(item => `
+                            <div class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
+                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                                <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
-            </div>
+                </div>
+            `;
+        };
+
+        const html = `
+            ${renderCategorySection(foodItems, '食品')}
+            ${foodItems.length > 0 && dailyItems.length > 0 ? '<hr style="border: none; border-top: 2px solid #E5E7EB; margin: 1rem 0;">' : ''}
+            ${renderCategorySection(dailyItems, '日用品')}
         `;
         container.innerHTML = html;
     }
     // 並び替えモード（ドラッグ&ドロップ）
     else if (isShoppingReorderMode) {
-        const html = `
-            <div id="reorderContainer" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
-                ${shoppingItems.map((item, index) => `
-                    <div
-                        class="shopping-item reorder-item"
-                        data-item-id="${item.id}"
-                        data-index="${index}"
-                        draggable="true"
-                        style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; text-align: center; cursor: move; user-select: none; touch-action: none;">
-                        <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+        const renderCategorySection = (items, categoryName) => {
+            if (items.length === 0) return '';
+            return `
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                        ${items.map((item, index) => `
+                            <div
+                                class="shopping-item reorder-item"
+                                data-item-id="${item.id}"
+                                data-index="${index}"
+                                draggable="true"
+                                style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; text-align: center; cursor: move; user-select: none; touch-action: none;">
+                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('')}
+                </div>
+            `;
+        };
+
+        const html = `
+            <div id="reorderContainer">
+                ${renderCategorySection(foodItems, '食品')}
+                ${foodItems.length > 0 && dailyItems.length > 0 ? '<hr style="border: none; border-top: 2px solid #E5E7EB; margin: 1rem 0;">' : ''}
+                ${renderCategorySection(dailyItems, '日用品')}
             </div>
         `;
         container.innerHTML = html;
@@ -250,7 +304,9 @@ function toggleShoppingAddForm() {
 // アイテムを追加
 async function addShoppingItem() {
     const nameInput = document.getElementById('shoppingItemName');
+    const categorySelect = document.getElementById('shoppingItemCategory');
     const name = nameInput.value.trim();
+    const category = categorySelect ? categorySelect.value : '食品';
 
     if (!name) {
         alert('商品名を入力してください');
@@ -265,6 +321,7 @@ async function addShoppingItem() {
             name: name,
             quantity: 1,
             unit: '個',
+            category: category,
             purchased: false,
             order: maxOrder + 1,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -272,6 +329,7 @@ async function addShoppingItem() {
 
         // フォームをリセットして閉じる
         nameInput.value = '';
+        if (categorySelect) categorySelect.value = '食品';
         const form = document.getElementById('shoppingAddForm');
         form.style.display = 'none';
     } catch (error) {
@@ -314,6 +372,11 @@ function editShoppingItem(itemId) {
     document.getElementById('editShoppingItemQuantity').value = item.quantity || 1;
     document.getElementById('editShoppingItemUnit').value = item.unit || '個';
 
+    const categorySelect = document.getElementById('editShoppingItemCategory');
+    if (categorySelect) {
+        categorySelect.value = item.category || '食品';
+    }
+
     const modal = document.getElementById('editShoppingItemModal');
     if (modal) {
         modal.style.display = 'flex';
@@ -334,6 +397,8 @@ async function saveEditedShoppingItem() {
     const name = document.getElementById('editShoppingItemName').value.trim();
     const quantity = parseInt(document.getElementById('editShoppingItemQuantity').value) || 1;
     const unit = document.getElementById('editShoppingItemUnit').value.trim() || '個';
+    const categorySelect = document.getElementById('editShoppingItemCategory');
+    const category = categorySelect ? categorySelect.value : '食品';
 
     if (!name) {
         alert('商品名を入力してください');
@@ -344,7 +409,8 @@ async function saveEditedShoppingItem() {
         await db.collection('shoppingList').doc(editingItemId).update({
             name: name,
             quantity: quantity,
-            unit: unit
+            unit: unit,
+            category: category
         });
         closeEditShoppingItemModal();
     } catch (error) {
@@ -521,7 +587,7 @@ function cancelLongPressForQuantity() {
     return wasCanceled ? savedItemId : null;
 }
 
-// 数量変更モーダルを表示
+// 数量変更モーダルを表示（名前とカテゴリも編集可能）
 function showQuantityChangeModal(itemId) {
     console.log('showQuantityChangeModal called with itemId:', itemId);
     const item = shoppingItems.find(i => i.id === itemId);
@@ -542,11 +608,23 @@ function showQuantityChangeModal(itemId) {
         console.log('Modal data-item-id set to:', itemId);
     }
 
-    // 商品名を表示
-    document.getElementById('quantityChangeItemName').textContent = item.name;
+    // 商品名を入力フィールドに設定
+    const nameInput = document.getElementById('quantityChangeItemName');
+    if (nameInput) {
+        nameInput.value = item.name;
+    }
 
     // 現在の数量を選択
-    document.getElementById('quantitySelect').value = item.quantity || 1;
+    const quantitySelect = document.getElementById('quantitySelect');
+    if (quantitySelect) {
+        quantitySelect.value = item.quantity || 1;
+    }
+
+    // カテゴリを選択
+    const categorySelect = document.getElementById('quantityChangeCategorySelect');
+    if (categorySelect) {
+        categorySelect.value = item.category || '食品';
+    }
 
     // モーダルを表示
     if (modal) {
@@ -570,7 +648,7 @@ function closeQuantityChangeModal() {
     longPressItemId = null;
 }
 
-// 数量変更を保存
+// 数量変更を保存（名前とカテゴリも保存）
 async function saveQuantityChange() {
     console.log('saveQuantityChange called, longPressItemId:', longPressItemId);
 
@@ -586,27 +664,43 @@ async function saveQuantityChange() {
         return;
     }
 
-    const quantity = parseInt(document.getElementById('quantitySelect').value);
+    const nameInput = document.getElementById('quantityChangeItemName');
+    const quantitySelect = document.getElementById('quantitySelect');
+    const categorySelect = document.getElementById('quantityChangeCategorySelect');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const quantity = quantitySelect ? parseInt(quantitySelect.value) : 1;
+    const category = categorySelect ? categorySelect.value : '食品';
+
+    if (!name) {
+        alert('商品名を入力してください');
+        return;
+    }
+
     const item = shoppingItems.find(i => i.id === itemId);
 
-    console.log('Saving quantity:', quantity, 'for item:', item);
+    console.log('Saving - name:', name, 'quantity:', quantity, 'category:', category, 'for item:', item);
 
     if (item) {
-        // ローカルの数量を更新
+        // ローカルデータを更新
+        item.name = name;
         item.quantity = quantity;
+        item.category = category;
     }
 
     try {
         await db.collection('shoppingList').doc(itemId).update({
-            quantity: quantity
+            name: name,
+            quantity: quantity,
+            category: category
         });
         console.log('Firebase update successful');
         closeQuantityChangeModal();
-        // 再描画して数量を表示
+        // 再描画して変更を表示
         renderShoppingList();
     } catch (error) {
-        console.error('数量変更エラー:', error);
-        alert('数量変更に失敗しました: ' + error.message);
+        console.error('更新エラー:', error);
+        alert('更新に失敗しました: ' + error.message);
     }
 }
 
@@ -655,6 +749,85 @@ async function addInitialItems() {
     } catch (error) {
         console.error('一括追加エラー:', error);
         alert('追加に失敗しました: ' + error.message);
+    }
+}
+
+// 既存アイテムにカテゴリを自動設定
+async function autoCategorizeItems() {
+    // 食品キーワード
+    const foodKeywords = [
+        '砂糖', '塩', '胡椒', '塩胡椒', '醤油', '酢', '酒', 'みりん', '味噌',
+        'サラダ油', 'オリーブオイル', 'ごま油', 'バター', '小麦粉', '片栗粉',
+        '薄力粉', 'パン粉', '鰹節', '昆布つゆ', 'BEL', '顆粒だし', '鶏ガラ',
+        'コンソメ', 'オイスター', '中濃ソース', 'マヨネーズ', 'ケチャップ',
+        'ポン酢', '豆板醤', '甜麵醬', '七味', '焼き肉のタレ', 'レモン汁',
+        'ラー油', '輪切り唐辛子', 'ごま', '乾燥わかめ', '生姜チューブ',
+        '山葵チューブ', 'にんにくチューブ', '辛子チューブ', '牛乳', '卵',
+        '肉', '魚', '野菜', '果物', 'パン', '米', '麺', 'ラーメン', 'パスタ',
+        'チーズ', 'ヨーグルト', '豆腐', '納豆', 'ジュース', '水', 'お茶',
+        'コーヒー', '紅茶', 'お菓子', 'アイス', 'デザート', '調味料'
+    ];
+
+    // 日用品キーワード
+    const dailyItemsKeywords = [
+        'サランラップ', 'アルミホイル', 'クッキングシート', 'ごみ袋', 'キッチンペーパー',
+        'ネット', 'スポンジ', '洗剤', 'シンク用洗剤', '食器用洗剤',
+        '食洗機用洗剤', 'ガスボンベ', 'ティッシュ', 'アルコールウェット',
+        'ノンアルコールウェット', 'ハンドソープ', 'キレイキレイ', 'ハンドペーパー',
+        '洗濯', '柔軟剤', '漂白剤', 'バスマジックリン', 'コロコロ', 'ファブリーズ',
+        'トイレットペーパー', 'トイレ用クイックル', 'トイレ用スタンプ', 'トイレ用スポンジ',
+        'クイックルワイパー', 'シャンプー', 'リンス', 'ボディーソープ', '歯ブラシ',
+        '歯磨き粉', 'フッ素ラムネ', 'おむつ', 'お尻ふき', '消臭袋', 'ポリ袋',
+        '石鹸', 'タオル', '洗顔', 'メイク落とし', '化粧水', '乳液'
+    ];
+
+    // カテゴリ判定関数
+    const determineCategory = (name) => {
+        const lowerName = name.toLowerCase();
+
+        // 日用品キーワードをチェック
+        for (const keyword of dailyItemsKeywords) {
+            if (name.includes(keyword)) {
+                return '日用品';
+            }
+        }
+
+        // 食品キーワードをチェック
+        for (const keyword of foodKeywords) {
+            if (name.includes(keyword)) {
+                return '食品';
+            }
+        }
+
+        // デフォルトは食品
+        return '食品';
+    };
+
+    try {
+        const batch = db.batch();
+        let updateCount = 0;
+
+        for (const item of shoppingItems) {
+            // categoryフィールドがない、または空の場合のみ更新
+            if (!item.category) {
+                const category = determineCategory(item.name);
+                const docRef = db.collection('shoppingList').doc(item.id);
+                batch.update(docRef, { category: category });
+                updateCount++;
+            }
+        }
+
+        if (updateCount > 0) {
+            await batch.commit();
+            console.log(`${updateCount}個のアイテムにカテゴリを設定しました`);
+            alert(`${updateCount}個のアイテムにカテゴリを自動設定しました`);
+        } else {
+            console.log('すべてのアイテムにカテゴリが設定されています');
+            alert('すべてのアイテムにカテゴリが設定されています');
+        }
+    } catch (error) {
+        console.error('自動カテゴリ設定エラー:', error);
+        alert('自動カテゴリ設定に失敗しました: ' + error.message);
     }
 }
 

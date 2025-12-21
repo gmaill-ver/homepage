@@ -492,8 +492,12 @@
                     <div class="card-content">
                         <!-- アイテム追加フォーム -->
                         <div id="shoppingAddForm" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #F9FAFB; border-radius: 0.5rem;">
-                            <div style="display: flex; gap: 0.5rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
                                 <input type="text" id="shoppingItemName" placeholder="商品名（例: 牛乳）" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                                <select id="shoppingItemCategory" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+                                    <option value="食品">食品</option>
+                                    <option value="日用品">日用品</option>
+                                </select>
                                 <button onclick="addShoppingItem()" class="btn-primary" style="padding: 0.5rem 1rem; background: #3B82F6;">追加</button>
                             </div>
                         </div>
@@ -556,7 +560,7 @@
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">商品名</label>
                 <input type="text" id="editShoppingItemName" placeholder="商品名" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">数量</label>
                     <input type="number" id="editShoppingItemQuantity" min="1" value="1" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
@@ -564,6 +568,13 @@
                 <div>
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">単位</label>
                     <input type="text" id="editShoppingItemUnit" placeholder="個" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">カテゴリ</label>
+                    <select id="editShoppingItemCategory" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; background: white;">
+                        <option value="食品">食品</option>
+                        <option value="日用品">日用品</option>
+                    </select>
                 </div>
             </div>
             <div class="modal-actions">
@@ -576,21 +587,34 @@
     <!-- 買い物リスト数量変更モーダル -->
     <div id="quantityChangeModal" class="modal" style="display: none;">
         <div class="modal-content modal-small" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()" ontouchend="event.stopPropagation()">
-            <h3>数量を変更</h3>
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;" id="quantityChangeItemName"></label>
-                <select id="quantitySelect" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.5rem; font-size: 0.875rem;">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
-                </select>
+            <h3>アイテムを編集</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">商品名</label>
+                <input type="text" id="quantityChangeItemName" placeholder="商品名" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">数量</label>
+                    <select id="quantitySelect" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.5rem; font-size: 0.875rem; background: white;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151;">カテゴリ</label>
+                    <select id="quantityChangeCategorySelect" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.5rem; font-size: 0.875rem; background: white;">
+                        <option value="食品">食品</option>
+                        <option value="日用品">日用品</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-actions">
                 <button onclick="closeQuantityChangeModal()" ontouchend="event.stopPropagation(); event.preventDefault(); closeQuantityChangeModal();" class="btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem; min-height: 2rem; white-space: nowrap;">キャンセル</button>
