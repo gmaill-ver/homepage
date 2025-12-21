@@ -177,7 +177,8 @@
 
             <!-- チェックリスト機能ページ -->
             <div id="checklistFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">📋 持ち物チェックリスト</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button class="btn-icon-simple" onclick="openModal('categoryEditModal');" title="カテゴリを編集">✏️</button>
                         <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
@@ -239,7 +240,8 @@
 
             <!-- メモ機能ページ -->
             <div id="memoFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">📝 家族のメモ</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="addMemoBtn" class="btn-add">➕</button>
                         <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
@@ -255,7 +257,8 @@
 
             <!-- 保険機能ページ -->
             <div id="insuranceFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">🏥 保険加入状況</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="addInsuranceBtn" class="btn-add">➕</button>
                         <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
@@ -271,7 +274,8 @@
 
             <!-- 月次費用機能ページ -->
             <div id="expensesFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">💰 月次費用</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="manageExpenseItemsBtn" class="btn-edit">✏️</button>
                         <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
@@ -359,7 +363,8 @@
 
             <!-- 割り勘機能ページ -->
             <div id="splitbillFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">💸 割り勘</h2>
                     <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
                 </div>
                 <!-- 割り勘 -->
@@ -407,7 +412,8 @@
 
             <!-- 時系列ログ機能ページ -->
             <div id="timelineFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600;">📍 時系列ログ</h2>
                     <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
                 </div>
                 <!-- 時系列ログ -->
@@ -464,13 +470,13 @@
                     <div class="card-content" style="padding-top: 0;">
                         <!-- アイテム追加フォーム -->
                         <div id="shoppingAddForm" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #F9FAFB; border-radius: 0.5rem;">
-                            <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="text" id="shoppingItemName" placeholder="商品名（例: 牛乳）" style="flex: 1; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
-                                <select id="shoppingItemCategory" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <input type="text" id="shoppingItemName" placeholder="商品名（例: 牛乳）" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                                <select id="shoppingItemCategory" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
                                     <option value="食品">食品</option>
                                     <option value="日用品">日用品</option>
                                 </select>
-                                <button onclick="addShoppingItem()" class="btn-primary" style="padding: 0.5rem 1rem; background: #3B82F6;">追加</button>
+                                <button onclick="addShoppingItem()" class="btn-primary" style="width: 100%; padding: 0.5rem 1rem; background: #3B82F6;">追加</button>
                             </div>
                         </div>
 
