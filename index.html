@@ -239,19 +239,15 @@
 
             <!-- メモ機能ページ -->
             <div id="memoFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>📝 家族のメモ</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addMemoBtn" class="btn-add">➕</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
                 </div>
                 <!-- 家族のメモ -->
             <section class="card" id="familyMemoCard">
-                <div class="card-header" onclick="toggleCard('familyMemoCard')">
-                    <h2>📝 家族のメモ</h2>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="addMemoBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
-                    </div>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <div id="memoList" class="memo-list"></div>
                 </div>
             </section>
@@ -259,19 +255,15 @@
 
             <!-- 保険機能ページ -->
             <div id="insuranceFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>🏥 保険加入状況</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addInsuranceBtn" class="btn-add">➕</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
                 </div>
                 <!-- 保険加入状況 -->
             <section class="card" id="insuranceCard">
-                <div class="card-header" onclick="toggleCard('insuranceCard')">
-                    <h2>🏥 保険加入状況</h2>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="addInsuranceBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
-                    </div>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <div id="insuranceList" class="insurance-list"></div>
                 </div>
             </section>
@@ -279,19 +271,15 @@
 
             <!-- 月次費用機能ページ -->
             <div id="expensesFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>💰 月次費用</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="manageExpenseItemsBtn" class="btn-edit">✏️</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
                 </div>
                 <!-- 月次費用 -->
             <section class="card" id="monthlyExpensesCard">
-                <div class="card-header" onclick="toggleCard('monthlyExpensesCard')">
-                    <h2>💰 月次費用</h2>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <button id="manageExpenseItemsBtn" class="btn-edit" onclick="event.stopPropagation()">✏️</button>
-                    </div>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <!-- 年月選択 -->
                     <div class="expense-month-selector">
                         <button id="prevExpenseMonth" class="month-btn">◀</button>
@@ -371,16 +359,12 @@
 
             <!-- 割り勘機能ページ -->
             <div id="splitbillFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>💸 割り勘</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
                 </div>
                 <!-- 割り勘 -->
             <section class="card" id="splitBillCard">
-                <div class="card-header" onclick="toggleCard('splitBillCard')">
-                    <h2>💰 割り勘</h2>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <!-- 支払い追加 -->
                     <div style="margin-bottom: 1rem;">
                         <h3 style="color: #667eea; margin-bottom: 0.5rem; font-size: 1rem;">💳 支払いを追加</h3>
@@ -423,16 +407,12 @@
 
             <!-- 時系列ログ機能ページ -->
             <div id="timelineFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>📍 時系列ログ</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
                 </div>
                 <!-- 時系列ログ -->
             <section class="card" id="timelineCard">
-                <div class="card-header" onclick="toggleCard('timelineCard')">
-                    <h2>📍 時系列ログ</h2>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <!-- 訪問先選択 -->
                     <div style="margin-bottom: 1rem;">
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #374151; font-size: 0.875rem;">訪問先を選択</label>
