@@ -871,9 +871,18 @@ function renderCheckedShoppingWidget() {
 
     if (!widget || !itemsContainer) return;
 
-    // その他ページが表示されていない場合は何もしない
+    // 買い物リストページが表示されている場合は非表示にして終了
+    const shoppingFeaturePage = document.getElementById('shoppingFeaturePage');
+    if (shoppingFeaturePage && shoppingFeaturePage.style.display !== 'none') {
+        widget.style.display = 'none';
+        return;
+    }
+
+    // その他ページが表示されていない場合は非表示にして終了
     const otherPage = document.getElementById('otherPage');
-    if (!otherPage || !otherPage.classList.contains('active')) {
+    const cardGrid = document.getElementById('featureCardGrid');
+    if (!otherPage || otherPage.style.display === 'none' || !cardGrid || cardGrid.style.display === 'none') {
+        widget.style.display = 'none';
         return;
     }
 
@@ -897,8 +906,7 @@ function renderCheckedShoppingWidget() {
         html += '<div style="margin-bottom: 0.5rem;"><strong style="font-size: 0.875rem; color: #6B7280;">食品</strong></div>';
         html += foodItems.map(item => {
             const quantity = item.quantity > 1 ? ` ×${item.quantity}` : '';
-            const unit = item.unit ? ` ${item.unit}` : '';
-            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}${unit}</div>`;
+            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}</div>`;
         }).join('');
     }
 
@@ -909,8 +917,7 @@ function renderCheckedShoppingWidget() {
         html += '<div style="margin-bottom: 0.5rem;"><strong style="font-size: 0.875rem; color: #6B7280;">日用品</strong></div>';
         html += dailyItems.map(item => {
             const quantity = item.quantity > 1 ? ` ×${item.quantity}` : '';
-            const unit = item.unit ? ` ${item.unit}` : '';
-            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}${unit}</div>`;
+            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}</div>`;
         }).join('');
     }
 
