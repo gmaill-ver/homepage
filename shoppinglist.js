@@ -584,7 +584,7 @@ async function swapItems(itemId1, itemId2) {
 function startLongPressForQuantity(itemId) {
     longPressItemId = itemId;
     longPressTimer = setTimeout(() => {
-        // 2秒長押しされたのでモーダル表示（色は元に戻す）
+        // 1.5秒長押しされたのでモーダル表示（色は元に戻す）
         const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
         if (itemElement) {
             const item = shoppingItems.find(i => i.id === itemId);
@@ -605,7 +605,7 @@ function startLongPressForQuantity(itemId) {
         }
         showQuantityChangeModal(itemId);
         longPressTimer = null;
-    }, 2000);
+    }, 1500);
 }
 
 // 長押しキャンセル（キャンセルされたかどうかのbool値を返す）
