@@ -345,17 +345,14 @@ async function togglePurchased(itemId) {
     item.purchased = !item.purchased;
 
     try {
-        // Firestoreに保存
+        // Firestoreに保存（リアルタイムリスナーが自動的にrenderShoppingListを呼ぶ）
         await db.collection('shoppingList').doc(itemId).update({
             purchased: item.purchased
         });
-        // 再描画
-        renderShoppingList();
     } catch (error) {
         console.error('更新エラー:', error);
         // エラー時は元に戻す
         item.purchased = !item.purchased;
-        renderShoppingList();
     }
 }
 
