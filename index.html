@@ -478,12 +478,14 @@
             <div id="shoppingFeaturePage" class="feature-page" style="display: none;">
                 <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
                     <button onclick="toggleShoppingAddForm();" style="padding: 0.5rem 1rem; background: transparent; border: none; color: #3B82F6; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">➕ アイテムを追加</button>
-                    <button class="back-btn" onclick="showCardGrid()" style="margin-left: auto;">↩︎</button>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button class="btn-icon-simple" onclick="toggleShoppingDeleteMode();" title="削除">🗑️</button>
+                        <button class="btn-icon-simple" onclick="toggleShoppingReorderMode();" title="並び替え">⇅</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
                 </div>
                 <section class="card" id="shoppingListCard">
-                    <div class="card-header" style="display: flex; align-items: center; justify-content: flex-end; padding: 0.75rem; gap: 0.5rem;">
-                        <button class="btn-icon-simple" onclick="toggleShoppingDeleteMode(); event.stopPropagation();" title="削除">🗑️</button>
-                        <button class="btn-icon-simple" onclick="toggleShoppingReorderMode(); event.stopPropagation();" title="並び替え">⇅</button>
+                    <div class="card-header" onclick="toggleCard('shoppingListCard')" style="padding: 0.75rem;">
                     </div>
                     <div class="card-content">
                         <!-- アイテム追加フォーム -->
