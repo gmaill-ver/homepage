@@ -87,9 +87,14 @@ function renderShoppingList() {
         `;
         container.innerHTML = html;
 
+        // イベントリスナーの重複を防ぐため、containerを複製して置き換え
+        const newContainer = container.cloneNode(true);
+        container.parentNode.replaceChild(newContainer, container);
+        const finalContainer = document.getElementById('shoppingListContainer');
+
         // タップで即座にトグル、長押しで数量変更
         // container自体にイベントリスナーを設定（イベントデリゲーション）
-        container.addEventListener('touchstart', (e) => {
+        finalContainer.addEventListener('touchstart', (e) => {
             const itemElement = e.target.closest('.shopping-item');
             if (itemElement) {
                 const itemId = itemElement.getAttribute('data-item-id');
@@ -116,11 +121,11 @@ function renderShoppingList() {
             }
         }, { passive: true });
 
-        container.addEventListener('touchend', () => {
+        finalContainer.addEventListener('touchend', () => {
             cancelLongPressForQuantity();
         }, { passive: true });
 
-        container.addEventListener('touchmove', () => {
+        finalContainer.addEventListener('touchmove', () => {
             const canceledItemId = cancelLongPressForQuantity();
             // スクロールでキャンセルされた場合は元に戻す
             if (canceledItemId) {
@@ -128,7 +133,7 @@ function renderShoppingList() {
             }
         }, { passive: true });
 
-        container.addEventListener('mousedown', (e) => {
+        finalContainer.addEventListener('mousedown', (e) => {
             const itemElement = e.target.closest('.shopping-item');
             if (itemElement) {
                 const itemId = itemElement.getAttribute('data-item-id');
@@ -155,11 +160,11 @@ function renderShoppingList() {
             }
         });
 
-        container.addEventListener('mouseup', () => {
+        finalContainer.addEventListener('mouseup', () => {
             cancelLongPressForQuantity();
         });
 
-        container.addEventListener('mouseleave', () => {
+        finalContainer.addEventListener('mouseleave', () => {
             const canceledItemId = cancelLongPressForQuantity();
             // マウスが離れてキャンセルされた場合は元に戻す
             if (canceledItemId) {
