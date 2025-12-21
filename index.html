@@ -137,6 +137,15 @@
 
         <!-- その他ページ -->
         <main class="main-content page-content" id="otherPage" style="display: none; background-image: url('background.jpg'); background-size: cover; background-position: center; background-attachment: fixed; min-height: 100vh; position: relative;">
+            <!-- チェック済み買い物リスト -->
+            <div id="checkedShoppingListWidget" style="display: none; background: rgba(255, 255, 255, 0.95); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h3 style="margin: 0; font-size: 1rem; color: #374151;">🛒 買い物リスト</h3>
+                    <button onclick="clearPurchasedItems()" class="btn-primary" style="padding: 0.4rem 0.75rem; font-size: 0.875rem; background: #10B981;">購入した</button>
+                </div>
+                <div id="checkedShoppingItems" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            </div>
+
             <!-- カード一覧 -->
             <div id="featureCardGrid" class="feature-card-grid">
                 <div class="feature-card" onclick="showFeature('shopping')">

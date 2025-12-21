@@ -40,6 +40,7 @@ function loadShoppingList() {
                     return a.name.localeCompare(b.name, 'ja');
                 });
                 renderShoppingList();
+                renderCheckedShoppingWidget();
             }, (error) => {
                 console.error('買い物リスト読み込みエラー:', error);
             });
@@ -860,6 +861,78 @@ async function autoCategorizeItems() {
     } catch (error) {
         console.error('自動カテゴリ設定エラー:', error);
         alert('自動カテゴリ設定に失敗しました: ' + error.message);
+    }
+}
+
+// その他ページにチェック済み買い物リストを表示
+function renderCheckedShoppingWidget() {
+    const widget = document.getElementById('checkedShoppingListWidget');
+    const itemsContainer = document.getElementById('checkedShoppingItems');
+
+    if (!widget || !itemsContainer) return;
+
+    // チェック済み（塗りつぶし済み）のアイテムを取得
+    const checkedItems = shoppingItems.filter(item => item.purchased);
+
+    if (checkedItems.length === 0) {
+        widget.style.display = 'none';
+        return;
+    }
+
+    widget.style.display = 'block';
+
+    // カテゴリ別にグループ化
+    const foodItems = checkedItems.filter(item => !item.category || item.category === '食品');
+    const dailyItems = checkedItems.filter(item => item.category === '日用品');
+
+    let html = '';
+
+    if (foodItems.length > 0) {
+        html += '<div style="margin-bottom: 0.5rem;"><strong style="font-size: 0.875rem; color: #6B7280;">食品</strong></div>';
+        html += foodItems.map(item => {
+            const quantity = item.quantity > 1 ? ` ×${item.quantity}` : '';
+            const unit = item.unit ? ` ${item.unit}` : '';
+            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}${unit}</div>`;
+        }).join('');
+    }
+
+    if (dailyItems.length > 0) {
+        if (foodItems.length > 0) {
+            html += '<div style="border-top: 1px solid #E5E7EB; margin: 0.5rem 0;"></div>';
+        }
+        html += '<div style="margin-bottom: 0.5rem;"><strong style="font-size: 0.875rem; color: #6B7280;">日用品</strong></div>';
+        html += dailyItems.map(item => {
+            const quantity = item.quantity > 1 ? ` ×${item.quantity}` : '';
+            const unit = item.unit ? ` ${item.unit}` : '';
+            return `<div style="font-size: 0.875rem; padding: 0.25rem 0; color: #374151;">• ${item.name}${quantity}${unit}</div>`;
+        }).join('');
+    }
+
+    itemsContainer.innerHTML = html;
+}
+
+// 購入済みアイテムをクリア
+async function clearPurchasedItems() {
+    const checkedItems = shoppingItems.filter(item => item.purchased);
+
+    if (checkedItems.length === 0) {
+        return;
+    }
+
+    if (!confirm(`${checkedItems.length}個のアイテムを削除しますか？`)) {
+        return;
+    }
+
+    try {
+        const batch = db.batch();
+        checkedItems.forEach(item => {
+            const docRef = db.collection('shoppingList').doc(item.id);
+            batch.delete(docRef);
+        });
+        await batch.commit();
+    } catch (error) {
+        console.error('購入済みアイテム削除エラー:', error);
+        alert('削除に失敗しました');
     }
 }
 
