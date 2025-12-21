@@ -32,17 +32,9 @@ function loadShoppingList() {
                         ...doc.data()
                     });
                 });
-                // クライアント側でソート（order優先、なければcreatedAt）
+                // クライアント側でソート（五十音順）
                 shoppingItems.sort((a, b) => {
-                    const orderA = a.order || 999999;
-                    const orderB = b.order || 999999;
-                    if (orderA !== orderB) {
-                        return orderA - orderB;
-                    }
-                    // orderが同じ場合はcreatedAtで降順
-                    const timeA = a.createdAt?.toMillis() || 0;
-                    const timeB = b.createdAt?.toMillis() || 0;
-                    return timeB - timeA;
+                    return a.name.localeCompare(b.name, 'ja');
                 });
                 renderShoppingList();
             }, (error) => {
@@ -72,15 +64,15 @@ function renderShoppingList() {
         const renderCategorySection = (items, categoryName) => {
             if (items.length === 0) return '';
             return `
-                <div style="margin-bottom: 1rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                <div style="margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.375rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem;">
                         ${items.map(item => `
                             <div
                                 data-item-id="${item.id}"
                                 class="shopping-item"
-                                style="padding: 0.375rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.375rem; border: 2px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-                                <div style="font-weight: 600; font-size: 0.85rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                                style="padding: 0.25rem; background: ${item.purchased ? '#10B981' : 'white'}; border-radius: 0.25rem; border: 1px solid ${item.purchased ? '#10B981' : '#E5E7EB'}; cursor: pointer; text-align: center; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                                <div style="font-weight: 600; font-size: 0.7rem; color: ${item.purchased ? 'white' : '#1F2937'};">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.6rem;">×${item.quantity}</span>` : ''}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -180,12 +172,12 @@ function renderShoppingList() {
         const renderCategorySection = (items, categoryName) => {
             if (items.length === 0) return '';
             return `
-                <div style="margin-bottom: 1rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                <div style="margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.375rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem;">
                         ${items.map(item => `
-                            <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
-                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                            <div onclick="editShoppingItem('${item.id}')" class="shopping-item" style="padding: 0.25rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.25rem; border: 1px solid #9CA3AF; cursor: pointer; transition: all 0.2s; text-align: center;">
+                                <div style="font-weight: 600; font-size: 0.7rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.6rem;">×${item.quantity}</span>` : ''}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -205,13 +197,13 @@ function renderShoppingList() {
         const renderCategorySection = (items, categoryName) => {
             if (items.length === 0) return '';
             return `
-                <div style="margin-bottom: 1rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                <div style="margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.375rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem;">
                         ${items.map(item => `
-                            <div class="shopping-item" style="padding: 0.375rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.375rem; border: 2px solid #9CA3AF; position: relative; text-align: center;">
-                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937; padding-right: 2rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
-                                <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.25rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
+                            <div class="shopping-item" style="padding: 0.25rem; background: ${item.purchased ? '#D1FAE5' : '#F3F4F6'}; border-radius: 0.25rem; border: 1px solid #9CA3AF; position: relative; text-align: center;">
+                                <div style="font-weight: 600; font-size: 0.7rem; color: #1F2937; padding-right: 1.5rem;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.6rem;">×${item.quantity}</span>` : ''}</div>
+                                <button onclick="deleteShoppingItem('${item.id}')" style="position: absolute; top: 50%; right: 0.2rem; transform: translateY(-50%); background: transparent; color: #EF4444; border: none; cursor: pointer; font-size: 1rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-50%) scale(1.2)'" onmouseout="this.style.transform='translateY(-50%) scale(1)'">🗑️</button>
                             </div>
                         `).join('')}
                     </div>
@@ -231,17 +223,17 @@ function renderShoppingList() {
         const renderCategorySection = (items, categoryName) => {
             if (items.length === 0) return '';
             return `
-                <div style="margin-bottom: 1rem;">
-                    <h4 style="font-size: 0.875rem; font-weight: 700; color: #374151; margin-bottom: 0.5rem; padding-left: 0.25rem;">${categoryName}</h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem;">
+                <div style="margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.75rem; font-weight: 700; color: #374151; margin-bottom: 0.375rem; padding-left: 0.25rem;">${categoryName}</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.2rem;">
                         ${items.map((item, index) => `
                             <div
                                 class="shopping-item reorder-item"
                                 data-item-id="${item.id}"
                                 data-index="${index}"
                                 draggable="true"
-                                style="padding: 0.375rem; background: #F3F4F6; border-radius: 0.375rem; border: 2px solid #9CA3AF; text-align: center; cursor: move; user-select: none; touch-action: none;">
-                                <div style="font-weight: 600; font-size: 0.85rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.7rem;">×${item.quantity}</span>` : ''}</div>
+                                style="padding: 0.25rem; background: #F3F4F6; border-radius: 0.25rem; border: 1px solid #9CA3AF; text-align: center; cursor: move; user-select: none; touch-action: none;">
+                                <div style="font-weight: 600; font-size: 0.7rem; color: #1F2937;">${item.name}${(item.quantity && item.quantity > 1) ? ` <span style="font-size: 0.6rem;">×${item.quantity}</span>` : ''}</div>
                             </div>
                         `).join('')}
                     </div>
