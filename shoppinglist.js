@@ -115,23 +115,47 @@ function renderShoppingList() {
                             const textDiv = itemElement.querySelector('div');
                             if (textDiv) textDiv.style.color = '#1F2937';
                         }
-                        // バックグラウンドでFirebase保存
-                        togglePurchased(itemId);
                     }
                     // 長押し判定開始
                     startLongPressForQuantity(itemId);
                 }
             }, { passive: true });
 
-            container.addEventListener('touchend', () => {
-                cancelLongPressForQuantity();
+            container.addEventListener('touchend', (e) => {
+                const wasCanceled = cancelLongPressForQuantity();
+                // タイマーがキャンセルされた場合（通常のタップ）のみFirebase保存
+                if (wasCanceled) {
+                    const itemElement = e.target.closest('.shopping-item');
+                    if (itemElement) {
+                        const itemId = itemElement.getAttribute('data-item-id');
+                        togglePurchased(itemId);
+                    }
+                }
             }, { passive: true });
 
-            container.addEventListener('touchmove', () => {
-                const canceledItemId = cancelLongPressForQuantity();
-                // スクロールでキャンセルされた場合は元に戻す
-                if (canceledItemId) {
-                    togglePurchased(canceledItemId);
+            container.addEventListener('touchmove', (e) => {
+                const wasCanceled = cancelLongPressForQuantity();
+                // スクロールでキャンセルされた場合は色を元に戻す
+                if (wasCanceled) {
+                    const itemElement = e.target.closest('.shopping-item');
+                    if (itemElement) {
+                        const itemId = itemElement.getAttribute('data-item-id');
+                        const item = shoppingItems.find(i => i.id === itemId);
+                        if (item) {
+                            // 元の色に戻す
+                            if (item.purchased) {
+                                itemElement.style.background = '#10B981';
+                                itemElement.style.borderColor = '#10B981';
+                                const textDiv = itemElement.querySelector('div');
+                                if (textDiv) textDiv.style.color = 'white';
+                            } else {
+                                itemElement.style.background = 'white';
+                                itemElement.style.borderColor = '#E5E7EB';
+                                const textDiv = itemElement.querySelector('div');
+                                if (textDiv) textDiv.style.color = '#1F2937';
+                            }
+                        }
+                    }
                 }
             }, { passive: true });
 
@@ -560,26 +584,39 @@ async function swapItems(itemId1, itemId2) {
 function startLongPressForQuantity(itemId) {
     longPressItemId = itemId;
     longPressTimer = setTimeout(() => {
-        // 2秒長押しされたので状態を元に戻してモーダル表示
-        togglePurchased(itemId);
+        // 2秒長押しされたのでモーダル表示（色は元に戻す）
+        const itemElement = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (itemElement) {
+            const item = shoppingItems.find(i => i.id === itemId);
+            if (item) {
+                // 元の色に戻す
+                if (item.purchased) {
+                    itemElement.style.background = '#10B981';
+                    itemElement.style.borderColor = '#10B981';
+                    const textDiv = itemElement.querySelector('div');
+                    if (textDiv) textDiv.style.color = 'white';
+                } else {
+                    itemElement.style.background = 'white';
+                    itemElement.style.borderColor = '#E5E7EB';
+                    const textDiv = itemElement.querySelector('div');
+                    if (textDiv) textDiv.style.color = '#1F2937';
+                }
+            }
+        }
         showQuantityChangeModal(itemId);
-        // longPressItemIdはsaveQuantityChangeで使うのでnullにしない
         longPressTimer = null;
     }, 2000);
 }
 
-// 長押しキャンセル（キャンセルしたかどうかを返す）
+// 長押しキャンセル（キャンセルされたかどうかのbool値を返す）
 function cancelLongPressForQuantity() {
-    console.log('cancelLongPressForQuantity called, current longPressItemId:', longPressItemId);
     const wasCanceled = longPressTimer !== null;
     if (longPressTimer) {
         clearTimeout(longPressTimer);
         longPressTimer = null;
     }
-    const savedItemId = longPressItemId;
     longPressItemId = null;
-    console.log('longPressItemId cleared, returning:', savedItemId);
-    return wasCanceled ? savedItemId : null;
+    return wasCanceled;
 }
 
 // 数量変更モーダルを表示（名前とカテゴリも編集可能）
