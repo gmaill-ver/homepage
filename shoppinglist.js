@@ -560,12 +560,12 @@ async function swapItems(itemId1, itemId2) {
 function startLongPressForQuantity(itemId) {
     longPressItemId = itemId;
     longPressTimer = setTimeout(() => {
-        // 2秒長押しされたので状態を元に戻してモーダル表示
+        // 1.5秒長押しされたので状態を元に戻してモーダル表示
         togglePurchased(itemId);
         showQuantityChangeModal(itemId);
         // longPressItemIdはsaveQuantityChangeで使うのでnullにしない
         longPressTimer = null;
-    }, 2000);
+    }, 1500);
 }
 
 // 長押しキャンセル（キャンセルしたかどうかを返す）
