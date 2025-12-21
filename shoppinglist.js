@@ -924,7 +924,7 @@ function renderCheckedShoppingWidget() {
     itemsContainer.innerHTML = html;
 }
 
-// 購入済みアイテムをクリア
+// 購入済みアイテムをクリア（塗りつぶしを解除）
 async function clearPurchasedItems() {
     const checkedItems = shoppingItems.filter(item => item.purchased);
 
@@ -932,20 +932,17 @@ async function clearPurchasedItems() {
         return;
     }
 
-    if (!confirm(`${checkedItems.length}個のアイテムを削除しますか？`)) {
-        return;
-    }
-
     try {
         const batch = db.batch();
         checkedItems.forEach(item => {
             const docRef = db.collection('shoppingList').doc(item.id);
-            batch.delete(docRef);
+            // アイテムは削除せず、purchasedをfalseに戻す
+            batch.update(docRef, { purchased: false });
         });
         await batch.commit();
     } catch (error) {
-        console.error('購入済みアイテム削除エラー:', error);
-        alert('削除に失敗しました');
+        console.error('購入済みアイテムクリアエラー:', error);
+        alert('クリアに失敗しました');
     }
 }
 
