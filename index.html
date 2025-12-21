@@ -177,19 +177,15 @@
 
             <!-- チェックリスト機能ページ -->
             <div id="checklistFeaturePage" class="feature-page" style="display: none;">
-                <div class="feature-page-header">
-                    <button class="back-btn" onclick="showCardGrid()">← 戻る</button>
-                    <h2>📋 持ち物チェックリスト</h2>
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: flex-end;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button class="btn-icon-simple" onclick="openModal('categoryEditModal');" title="カテゴリを編集">✏️</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
                 </div>
                 <!-- 持ち物チェックリスト -->
             <section class="card" id="checklistCard">
-                <div class="card-header" onclick="toggleCard('checklistCard')">
-                    <h2>📋 持ち物チェックリスト</h2>
-                    <div style="display: flex; align-items: center; gap: 0.25rem;">
-                        <button class="btn-icon-simple" onclick="openModal('categoryEditModal'); event.stopPropagation();" title="カテゴリを編集">✏️</button>
-                    </div>
-                </div>
-                <div class="card-content">
+                <div class="card-content" style="padding-top: 0;">
                     <!-- カテゴリ選択 -->
                     <div style="margin-bottom: 0.75rem;">
                         <div id="categoryButtonsContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
