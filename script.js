@@ -163,6 +163,11 @@ auth.onAuthStateChanged(async (user) => {
 
         currentUser = user;
         showMainApp();
+
+        // 買い物リストを初期化（その他ページのウィジェット用）
+        if (typeof initializeShoppingList === 'function') {
+            initializeShoppingList();
+        }
     } else {
         currentUser = null;
         showLoginScreen();
