@@ -1119,6 +1119,11 @@ function showCardGrid() {
     if (cardGrid) {
         cardGrid.style.display = 'grid';
     }
+
+    // チェック済み買い物リストを更新
+    if (typeof renderCheckedShoppingWidget === 'function') {
+        renderCheckedShoppingWidget();
+    }
 }
 
 // 機能ページを表示（遅延読み込み付き）

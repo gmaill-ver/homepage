@@ -871,6 +871,12 @@ function renderCheckedShoppingWidget() {
 
     if (!widget || !itemsContainer) return;
 
+    // その他ページが表示されていない場合は何もしない
+    const otherPage = document.getElementById('otherPage');
+    if (!otherPage || !otherPage.classList.contains('active')) {
+        return;
+    }
+
     // チェック済み（塗りつぶし済み）のアイテムを取得
     const checkedItems = shoppingItems.filter(item => item.purchased);
 
