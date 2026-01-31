@@ -748,7 +748,7 @@ async function renderNotices() {
                     <button class="notice-delete" onclick="deleteNotice('${notice.id}')">✕</button>
                 </div>
                 <div class="notice-content">${notice.content}</div>
-                <div class="notice-date">${new Date(notice.date).toLocaleDateString('ja-JP')}</div>
+                <div class="notice-date">${(notice.date?.toDate ? notice.date.toDate() : new Date(notice.date)).toLocaleDateString('ja-JP')}</div>
                 ${notice.image ? `<img src="${notice.image}" alt="お知らせ画像" class="notice-image">` : ''}
             </div>
         `).join('');
@@ -797,7 +797,7 @@ async function addNotice() {
         await db.collection('notices').add({
             title: title,
             content: content,
-            date: new Date().toISOString(),
+            date: firebase.firestore.FieldValue.serverTimestamp(),
             image: imageUrl
         });
 
