@@ -319,7 +319,7 @@ body {
 .weather-info {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .weather-current {
@@ -327,24 +327,24 @@ body {
     align-items: center;
     justify-content: space-between;
     background: white;
-    border-radius: 0.75rem;
-    padding: 1rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .weather-main {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 .weather-icon {
-    width: 4rem;
-    height: 4rem;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .weather-temp {
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     font-weight: bold;
     color: #1F2937;
 }
@@ -376,21 +376,21 @@ body {
 .forecast-day {
     background: white;
     border-radius: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.4rem;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .forecast-date {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #6B7280;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .forecast-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin: 0 auto 0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: 0 auto 0.25rem;
 }
 
 .forecast-temp {
@@ -566,8 +566,26 @@ body {
 .notice-header {
     display: flex;
     justify-content: space-between;
-    align-items: start;
+    align-items: center;
     margin-bottom: 0.5rem;
+    gap: 0.5rem;
+}
+
+.notice-drag-handle {
+    color: #9CA3AF;
+    cursor: grab;
+    font-size: 1rem;
+    user-select: none;
+    touch-action: none;
+}
+
+.notice-item.dragging {
+    opacity: 0.5;
+    background: #DBEAFE;
+}
+
+.notice-item[draggable="true"] {
+    cursor: default;
 }
 
 .notice-title {

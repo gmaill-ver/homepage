@@ -733,8 +733,11 @@ async function renderNotices() {
             }
         });
 
-        // 日付順（新しい順）でソート
+        // order値でソート（orderがない場合は日付順）
         notices.sort((a, b) => {
+            if (a.order !== undefined && b.order !== undefined) {
+                return a.order - b.order;
+            }
             const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
             const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
             return dateB - dateA;
@@ -750,9 +753,10 @@ async function renderNotices() {
             return;
         }
 
-        noticeList.innerHTML = notices.map(notice => `
-            <div class="notice-item">
+        noticeList.innerHTML = notices.map((notice, index) => `
+            <div class="notice-item" draggable="true" data-id="${notice.id}" data-index="${index}">
                 <div class="notice-header">
+                    <div class="notice-drag-handle">☰</div>
                     <div class="notice-title">${notice.title}</div>
                     <div class="notice-actions">
                         <button class="notice-edit" onclick="editNotice('${notice.id}')">✏️</button>
@@ -764,6 +768,9 @@ async function renderNotices() {
                 ${notice.image ? `<img src="${notice.image}" alt="お知らせ画像" class="notice-image">` : ''}
             </div>
         `).join('');
+
+        // ドラッグ&ドロップイベントを設定
+        setupNoticeDragAndDrop();
     } catch (error) {
         console.error('お知らせ読み込みエラー:', error);
         noticeList.innerHTML = `
@@ -771,6 +778,101 @@ async function renderNotices() {
                 <p>お知らせの読み込みに失敗しました</p>
             </div>
         `;
+    }
+}
+
+// お知らせのドラッグ&ドロップ設定
+function setupNoticeDragAndDrop() {
+    const noticeList = document.getElementById('noticeList');
+    const items = noticeList.querySelectorAll('.notice-item');
+    let draggedItem = null;
+    let touchStartY = 0;
+    let longPressTimer = null;
+
+    items.forEach(item => {
+        // PC向けドラッグ&ドロップ
+        item.addEventListener('dragstart', (e) => {
+            draggedItem = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            draggedItem = null;
+            saveNoticeOrder();
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (draggedItem && draggedItem !== item) {
+                const rect = item.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (e.clientY < midY) {
+                    item.parentNode.insertBefore(draggedItem, item);
+                } else {
+                    item.parentNode.insertBefore(draggedItem, item.nextSibling);
+                }
+            }
+        });
+
+        // スマホ向け長押しドラッグ
+        item.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+            longPressTimer = setTimeout(() => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                navigator.vibrate && navigator.vibrate(50);
+            }, 500);
+        });
+
+        item.addEventListener('touchmove', (e) => {
+            if (!draggedItem) {
+                clearTimeout(longPressTimer);
+                return;
+            }
+            e.preventDefault();
+            const touchY = e.touches[0].clientY;
+            const elements = document.elementsFromPoint(e.touches[0].clientX, touchY);
+            const targetItem = elements.find(el => el.classList.contains('notice-item') && el !== draggedItem);
+            if (targetItem) {
+                const rect = targetItem.getBoundingClientRect();
+                const midY = rect.top + rect.height / 2;
+                if (touchY < midY) {
+                    targetItem.parentNode.insertBefore(draggedItem, targetItem);
+                } else {
+                    targetItem.parentNode.insertBefore(draggedItem, targetItem.nextSibling);
+                }
+            }
+        }, { passive: false });
+
+        item.addEventListener('touchend', () => {
+            clearTimeout(longPressTimer);
+            if (draggedItem) {
+                item.classList.remove('dragging');
+                draggedItem = null;
+                saveNoticeOrder();
+            }
+        });
+    });
+}
+
+// お知らせの並び順を保存
+async function saveNoticeOrder() {
+    const noticeList = document.getElementById('noticeList');
+    const items = noticeList.querySelectorAll('.notice-item');
+    const batch = db.batch();
+
+    items.forEach((item, index) => {
+        const id = item.dataset.id;
+        const ref = db.collection('notices').doc(id);
+        batch.update(ref, { order: index });
+    });
+
+    try {
+        await batch.commit();
+    } catch (error) {
+        console.error('並び順保存エラー:', error);
     }
 }
 
