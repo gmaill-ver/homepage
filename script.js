@@ -338,6 +338,7 @@ function showMainApp() {
         renderPhotos();
         renderCalendar();
         renderNotices();
+        renderMessages();
         renderContacts();
         updateMonthDisplay();
     }, 100);
@@ -864,6 +865,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ==========================================
+// 連絡カード機能 (Firestore)
+// ==========================================
+
+let currentMessagePerson = 'ayu'; // 現在選択中のタブ（ayu or hide）
+
+// タブ切り替え
+function switchMessageTab(person) {
+    currentMessagePerson = person;
+    document.querySelectorAll('.message-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.person === person);
+    });
+    renderMessages();
+}
+
+// メッセージを表示
+async function renderMessages() {
+    const messageList = document.getElementById('messageList');
+
+    try {
+        const snapshot = await db.collection('messages')
+            .where('from', '==', currentMessagePerson)
+            .orderBy('date', 'desc')
+            .get();
+
+        const messages = [];
+        snapshot.forEach(doc => {
+            messages.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (messages.length === 0) {
+            const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
+            messageList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">💌</div>
+                    <p>${toName}へのメッセージはありません</p>
+                </div>
+            `;
+            return;
+        }
+
+        const fromName = currentMessagePerson === 'ayu' ? 'あゆ' : 'ひで';
+        messageList.innerHTML = messages.map(msg => `
+            <div class="message-item">
+                <div class="message-header">
+                    <span class="message-from">${fromName}</span>
+                    <button class="message-delete" onclick="deleteMessage('${msg.id}')">✕</button>
+                </div>
+                <div class="message-content">${msg.content}</div>
+                <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('メッセージ読み込みエラー:', error);
+        messageList.innerHTML = `
+            <div class="empty-state">
+                <p>メッセージの読み込みに失敗しました</p>
+            </div>
+        `;
+    }
+}
+
+// メッセージを追加
+async function addMessage() {
+    const content = document.getElementById('messageContent').value;
+
+    if (!content) {
+        alert('メッセージを入力してください');
+        return;
+    }
+
+    try {
+        await db.collection('messages').add({
+            from: currentMessagePerson,
+            content: content,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        document.getElementById('messageContent').value = '';
+        closeModal('messageModal');
+        renderMessages();
+    } catch (error) {
+        console.error('メッセージ追加エラー:', error);
+        alert('メッセージの追加に失敗しました');
+    }
+}
+
+// メッセージを削除
+async function deleteMessage(id) {
+    if (!confirm('このメッセージを削除しますか？')) return;
+
+    try {
+        await db.collection('messages').doc(id).delete();
+        renderMessages();
+    } catch (error) {
+        console.error('メッセージ削除エラー:', error);
+        alert('メッセージの削除に失敗しました');
+    }
+}
 
 // ==========================================
 // 連絡先機能 (Firestore)
@@ -2347,6 +2448,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addNoticeBtn').addEventListener('click', () => openModal('noticeModal'));
     document.getElementById('saveNoticeBtn').addEventListener('click', addNotice);
     document.getElementById('closeNoticeBtn').addEventListener('click', () => closeModal('noticeModal'));
+
+    // 連絡カード
+    document.getElementById('addMessageBtn').addEventListener('click', () => {
+        const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
+        document.getElementById('messageModalTitle').textContent = `${toName}へメッセージ`;
+        openModal('messageModal');
+    });
+    document.getElementById('saveMessageBtn').addEventListener('click', addMessage);
+    document.getElementById('closeMessageBtn').addEventListener('click', () => closeModal('messageModal'));
 
     // 連絡先
     document.getElementById('addContactBtn').addEventListener('click', () => openModal('contactModal'));

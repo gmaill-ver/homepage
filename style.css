@@ -609,6 +609,104 @@ body {
     max-width: 100%;
 }
 
+/* 連絡カード */
+.message-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.message-tab {
+    flex: 1;
+    padding: 0.5rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    background: #F9FAFB;
+    color: #6B7280;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.message-tab.active {
+    border-color: #93C5FD;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-weight: bold;
+}
+
+.message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.message-item {
+    border: 2px solid #FDE68A;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    background: #FFFBEB;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.message-from {
+    font-weight: bold;
+    color: #D97706;
+    font-size: 0.875rem;
+}
+
+.message-delete {
+    background: none;
+    border: none;
+    color: #9CA3AF;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+}
+
+.message-delete:hover {
+    opacity: 1;
+    color: #6B7280;
+}
+
+.message-content {
+    font-size: 0.875rem;
+    color: #4B5563;
+    margin-bottom: 0.5rem;
+    white-space: pre-wrap;
+}
+
+.message-date {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+}
+
+.btn-add-message {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px dashed #E5E7EB;
+    border-radius: 0.5rem;
+    background: #F9FAFB;
+    color: #6B7280;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-message:hover {
+    border-color: #93C5FD;
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
 /* ページコンテンツ */
 .page-content {
     display: none;

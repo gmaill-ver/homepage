@@ -51,6 +51,10 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    match /messages/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
     match /hospitals/{docId} {
       allow read, write: if isAuthenticated();
     }
