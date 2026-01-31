@@ -105,12 +105,12 @@
             <section class="card" id="messageCard">
                 <div class="card-header" onclick="toggleCard('messageCard')">
                     <h2>💌 連絡カード</h2>
-                </div>
-                <div class="card-content">
-                    <div class="message-tabs">
+                    <div class="message-tabs" onclick="event.stopPropagation()">
                         <button class="message-tab active" data-person="ayu" onclick="switchMessageTab('ayu')">🌸 あゆ</button>
                         <button class="message-tab" data-person="hide" onclick="switchMessageTab('hide')">🌊 ひで</button>
                     </div>
+                </div>
+                <div class="card-content">
                     <div id="messageList" class="message-list"></div>
                     <button id="addMessageBtn" class="btn-add-message">➕ メッセージを追加</button>
                 </div>
