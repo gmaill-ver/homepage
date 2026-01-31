@@ -886,14 +886,21 @@ async function renderMessages() {
     const messageList = document.getElementById('messageList');
 
     try {
-        const snapshot = await db.collection('messages')
-            .where('from', '==', currentMessagePerson)
-            .orderBy('date', 'desc')
-            .get();
+        const snapshot = await db.collection('messages').get();
 
         const messages = [];
         snapshot.forEach(doc => {
-            messages.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if (data.from === currentMessagePerson) {
+                messages.push({ id: doc.id, ...data });
+            }
+        });
+
+        // 日付順（新しい順）でソート
+        messages.sort((a, b) => {
+            const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+            const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+            return dateB - dateA;
         });
 
         if (messages.length === 0) {
