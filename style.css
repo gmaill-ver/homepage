@@ -748,7 +748,9 @@ body {
 }
 
 .message-edit,
-.message-delete {
+.message-delete,
+.message-archive,
+.message-restore {
     background: none;
     border: none;
     color: #9CA3AF;
@@ -759,7 +761,9 @@ body {
 }
 
 .message-edit:hover,
-.message-delete:hover {
+.message-delete:hover,
+.message-archive:hover,
+.message-restore:hover {
     opacity: 1;
     color: #6B7280;
 }

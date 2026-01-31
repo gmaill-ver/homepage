@@ -1107,7 +1107,7 @@ function selectMessageTo(to) {
     });
 }
 
-// メッセージを表示（全件）
+// メッセージを表示（アーカイブされていないもの）
 async function renderMessages() {
     const messageList = document.getElementById('messageList');
 
@@ -1116,7 +1116,10 @@ async function renderMessages() {
 
         const messages = [];
         snapshot.forEach(doc => {
-            messages.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if (!data.archived) {
+                messages.push({ id: doc.id, ...data });
+            }
         });
 
         // 日付順（新しい順）でソート
@@ -1145,7 +1148,7 @@ async function renderMessages() {
                     <span class="message-to-label">${msg.to === 'ayu' ? '🌸' : '🌊'} ${toName}へ</span>
                     <div class="message-actions">
                         <button class="message-edit" onclick="editMessage('${msg.id}')">✏️</button>
-                        <button class="message-delete" onclick="deleteMessage('${msg.id}')">✕</button>
+                        <button class="message-archive" onclick="archiveMessage('${msg.id}')" title="その他に移動">📁</button>
                     </div>
                 </div>
                 <div class="message-content">${msg.content}</div>
@@ -1159,6 +1162,100 @@ async function renderMessages() {
                 <p>メッセージの読み込みに失敗しました</p>
             </div>
         `;
+    }
+}
+
+// 過去の連絡を表示（アーカイブされたもの）
+async function renderArchivedMessages() {
+    const messageList = document.getElementById('archivedMessageList');
+    if (!messageList) return;
+
+    try {
+        const snapshot = await db.collection('messages').get();
+
+        const messages = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.archived) {
+                messages.push({ id: doc.id, ...data });
+            }
+        });
+
+        // 日付順（新しい順）でソート
+        messages.sort((a, b) => {
+            const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+            const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+            return dateB - dateA;
+        });
+
+        if (messages.length === 0) {
+            messageList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📁</div>
+                    <p>過去の連絡はありません</p>
+                </div>
+            `;
+            return;
+        }
+
+        messageList.innerHTML = messages.map(msg => {
+            const toName = msg.to === 'ayu' ? 'あゆ' : 'ひで';
+            const toClass = msg.to === 'ayu' ? 'to-ayu' : 'to-hide';
+            return `
+            <div class="message-item ${toClass}">
+                <div class="message-header">
+                    <span class="message-to-label">${msg.to === 'ayu' ? '🌸' : '🌊'} ${toName}へ</span>
+                    <div class="message-actions">
+                        <button class="message-restore" onclick="restoreMessage('${msg.id}')" title="ホームに戻す">↩️</button>
+                        <button class="message-delete" onclick="deleteArchivedMessage('${msg.id}')" title="完全に削除">🗑️</button>
+                    </div>
+                </div>
+                <div class="message-content">${msg.content}</div>
+                <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+        `}).join('');
+    } catch (error) {
+        console.error('過去の連絡読み込みエラー:', error);
+        messageList.innerHTML = `
+            <div class="empty-state">
+                <p>読み込みに失敗しました</p>
+            </div>
+        `;
+    }
+}
+
+// 連絡をアーカイブ
+async function archiveMessage(id) {
+    try {
+        await db.collection('messages').doc(id).update({ archived: true });
+        renderMessages();
+    } catch (error) {
+        console.error('連絡アーカイブエラー:', error);
+        alert('連絡の移動に失敗しました');
+    }
+}
+
+// 連絡をホームに戻す
+async function restoreMessage(id) {
+    try {
+        await db.collection('messages').doc(id).update({ archived: false });
+        renderArchivedMessages();
+    } catch (error) {
+        console.error('連絡復元エラー:', error);
+        alert('連絡の復元に失敗しました');
+    }
+}
+
+// 過去の連絡から完全削除
+async function deleteArchivedMessage(id) {
+    if (!confirm('この連絡を完全に削除しますか？')) return;
+
+    try {
+        await db.collection('messages').doc(id).delete();
+        renderArchivedMessages();
+    } catch (error) {
+        console.error('連絡削除エラー:', error);
+        alert('連絡の削除に失敗しました');
     }
 }
 
@@ -1181,7 +1278,8 @@ async function addMessage() {
             await db.collection('messages').add({
                 to: selectedMessageTo,
                 content: content,
-                date: firebase.firestore.FieldValue.serverTimestamp()
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                archived: false
             });
         }
 
@@ -1543,6 +1641,9 @@ function loadFeatureData(featureName) {
             break;
         case 'archivedNotices':
             renderArchivedNotices();
+            break;
+        case 'archivedMessages':
+            renderArchivedMessages();
             break;
     }
 }
