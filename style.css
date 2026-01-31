@@ -595,6 +595,7 @@ body {
     font-size: 0.875rem;
     color: #4B5563;
     margin-bottom: 0.5rem;
+    white-space: pre-wrap;
 }
 
 .notice-date {
