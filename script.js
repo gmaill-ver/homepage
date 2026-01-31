@@ -1093,21 +1093,21 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ==========================================
-// 連絡カード機能 (Firestore)
+// 連絡機能 (Firestore) - 掲示板形式
 // ==========================================
 
-let currentMessagePerson = 'ayu'; // 現在選択中のタブ（ayu or hide）
+let selectedMessageTo = 'hide'; // 宛先（hide or ayu）
+let editingMessageId = null;
 
-// タブ切り替え
-function switchMessageTab(person) {
-    currentMessagePerson = person;
-    document.querySelectorAll('.message-tab').forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.person === person);
+// 宛先選択
+function selectMessageTo(to) {
+    selectedMessageTo = to;
+    document.querySelectorAll('.message-to-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.to === to);
     });
-    renderMessages();
 }
 
-// メッセージを表示
+// メッセージを表示（全件）
 async function renderMessages() {
     const messageList = document.getElementById('messageList');
 
@@ -1116,10 +1116,7 @@ async function renderMessages() {
 
         const messages = [];
         snapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.from === currentMessagePerson) {
-                messages.push({ id: doc.id, ...data });
-            }
+            messages.push({ id: doc.id, ...doc.data() });
         });
 
         // 日付順（新しい順）でソート
@@ -1130,21 +1127,22 @@ async function renderMessages() {
         });
 
         if (messages.length === 0) {
-            const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
             messageList.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-icon">💌</div>
-                    <p>${toName}へのメッセージはありません</p>
+                    <p>連絡はありません</p>
                 </div>
             `;
             return;
         }
 
-        const fromName = currentMessagePerson === 'ayu' ? 'あゆ' : 'ひで';
-        messageList.innerHTML = messages.map(msg => `
-            <div class="message-item">
+        messageList.innerHTML = messages.map(msg => {
+            const toName = msg.to === 'ayu' ? 'あゆ' : 'ひで';
+            const toClass = msg.to === 'ayu' ? 'to-ayu' : 'to-hide';
+            return `
+            <div class="message-item ${toClass}">
                 <div class="message-header">
-                    <span class="message-from">${fromName}</span>
+                    <span class="message-to-label">${msg.to === 'ayu' ? '🌸' : '🌊'} ${toName}へ</span>
                     <div class="message-actions">
                         <button class="message-edit" onclick="editMessage('${msg.id}')">✏️</button>
                         <button class="message-delete" onclick="deleteMessage('${msg.id}')">✕</button>
@@ -1153,7 +1151,7 @@ async function renderMessages() {
                 <div class="message-content">${msg.content}</div>
                 <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
             </div>
-        `).join('');
+        `}).join('');
     } catch (error) {
         console.error('メッセージ読み込みエラー:', error);
         messageList.innerHTML = `
@@ -1163,8 +1161,6 @@ async function renderMessages() {
         `;
     }
 }
-
-let editingMessageId = null;
 
 // メッセージを追加/更新
 async function addMessage() {
@@ -1178,20 +1174,19 @@ async function addMessage() {
     try {
         if (editingMessageId) {
             // 編集モード：更新
-            await db.collection('messages').doc(editingMessageId).update({ content });
+            await db.collection('messages').doc(editingMessageId).update({ content, to: selectedMessageTo });
             editingMessageId = null;
         } else {
             // 新規追加
             await db.collection('messages').add({
-                from: currentMessagePerson,
+                to: selectedMessageTo,
                 content: content,
                 date: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
 
         document.getElementById('messageContent').value = '';
-        const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
-        document.getElementById('messageModalTitle').textContent = `${toName}へメッセージ`;
+        document.getElementById('messageModalTitle').textContent = '連絡を追加';
         document.getElementById('saveMessageBtn').textContent = '追加';
         closeModal('messageModal');
         renderMessages();
@@ -1208,8 +1203,10 @@ async function editMessage(id) {
         if (doc.exists) {
             const msg = doc.data();
             editingMessageId = id;
+            selectedMessageTo = msg.to || 'hide';
+            selectMessageTo(selectedMessageTo);
             document.getElementById('messageContent').value = msg.content;
-            document.getElementById('messageModalTitle').textContent = 'メッセージを編集';
+            document.getElementById('messageModalTitle').textContent = '連絡を編集';
             document.getElementById('saveMessageBtn').textContent = '更新';
             openModal('messageModal');
         }
@@ -1220,7 +1217,7 @@ async function editMessage(id) {
 
 // メッセージを削除
 async function deleteMessage(id) {
-    if (!confirm('このメッセージを削除しますか？')) return;
+    if (!confirm('この連絡を削除しますか？')) return;
 
     try {
         await db.collection('messages').doc(id).delete();
@@ -2717,10 +2714,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveNoticeBtn').addEventListener('click', addNotice);
     document.getElementById('closeNoticeBtn').addEventListener('click', () => closeModal('noticeModal'));
 
-    // 連絡カード
+    // 連絡
     document.getElementById('addMessageBtn').addEventListener('click', () => {
-        const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
-        document.getElementById('messageModalTitle').textContent = `${toName}へメッセージ`;
+        document.getElementById('messageModalTitle').textContent = '連絡を追加';
+        document.getElementById('saveMessageBtn').textContent = '追加';
+        document.getElementById('messageContent').value = '';
+        selectedMessageTo = 'hide';
+        selectMessageTo('hide');
         openModal('messageModal');
     });
     document.getElementById('saveMessageBtn').addEventListener('click', addMessage);

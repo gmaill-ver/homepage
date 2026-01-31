@@ -670,10 +670,20 @@ body {
 }
 
 .message-item {
-    border: 2px solid #FDE68A;
     border-radius: 0.75rem;
     padding: 0.75rem;
-    background: #FFFBEB;
+}
+
+/* ひで宛（青系） */
+.message-item.to-hide {
+    border: 2px solid #93C5FD;
+    background: #EFF6FF;
+}
+
+/* あゆ宛（ピンク系） */
+.message-item.to-ayu {
+    border: 2px solid #FBCFE8;
+    background: #FDF2F8;
 }
 
 .message-header {
@@ -683,10 +693,53 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.message-from {
+.message-to-label {
     font-weight: bold;
-    color: #D97706;
     font-size: 0.875rem;
+}
+
+.to-hide .message-to-label {
+    color: #2563EB;
+}
+
+.to-ayu .message-to-label {
+    color: #DB2777;
+}
+
+/* 宛先選択ボタン */
+.message-to-select {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.message-to-select label {
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+
+.message-to-btn {
+    padding: 0.375rem 0.75rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    background: #F9FAFB;
+    color: #6B7280;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.message-to-btn.active[data-to="hide"] {
+    border-color: #93C5FD;
+    background: #EFF6FF;
+    color: #2563EB;
+}
+
+.message-to-btn.active[data-to="ayu"] {
+    border-color: #FBCFE8;
+    background: #FDF2F8;
+    color: #DB2777;
 }
 
 .message-actions {

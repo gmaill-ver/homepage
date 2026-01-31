@@ -105,14 +105,10 @@
             <section class="card" id="messageCard">
                 <div class="card-header" onclick="toggleCard('messageCard')">
                     <h2>💌 連絡</h2>
-                    <div class="message-tabs" onclick="event.stopPropagation()">
-                        <button class="message-tab active" data-person="ayu" onclick="switchMessageTab('ayu')">🌸 あゆ</button>
-                        <button class="message-tab" data-person="hide" onclick="switchMessageTab('hide')">🌊 ひで</button>
-                    </div>
+                    <button id="addMessageBtn" class="btn-add" onclick="event.stopPropagation()">➕</button>
                 </div>
                 <div class="card-content">
                     <div id="messageList" class="message-list"></div>
-                    <button id="addMessageBtn" class="btn-add-message">➕ メッセージを追加</button>
                 </div>
             </section>
 
@@ -797,10 +793,15 @@
         </div>
     </div>
 
-    <!-- 連絡カード追加モーダル -->
+    <!-- 連絡追加モーダル -->
     <div id="messageModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
-            <h3 id="messageModalTitle">メッセージを追加</h3>
+            <h3 id="messageModalTitle">連絡を追加</h3>
+            <div class="message-to-select">
+                <label>宛先：</label>
+                <button type="button" class="message-to-btn active" data-to="hide" onclick="selectMessageTo('hide')">🌊 ひで</button>
+                <button type="button" class="message-to-btn" data-to="ayu" onclick="selectMessageTo('ayu')">🌸 あゆ</button>
+            </div>
             <textarea id="messageContent" placeholder="メッセージを入力"></textarea>
             <div class="modal-actions">
                 <button id="saveMessageBtn" class="btn-primary-blue">追加</button>
