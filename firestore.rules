@@ -51,6 +51,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // 連絡カード
     match /messages/{docId} {
       allow read, write: if isAuthenticated();
     }
