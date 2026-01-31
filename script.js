@@ -718,18 +718,26 @@ function changeCalendarView(view) {
 // お知らせ機能 (Firestore + Storage)
 // ==========================================
 
-// お知らせを表示
+// お知らせを表示（アーカイブされていないもの）
 async function renderNotices() {
     const noticeList = document.getElementById('noticeList');
 
     try {
-        const snapshot = await db.collection('notices')
-            .orderBy('date', 'desc')
-            .get();
+        const snapshot = await db.collection('notices').get();
 
         const notices = [];
         snapshot.forEach(doc => {
-            notices.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            if (!data.archived) {
+                notices.push({ id: doc.id, ...data });
+            }
+        });
+
+        // 日付順（新しい順）でソート
+        notices.sort((a, b) => {
+            const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+            const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+            return dateB - dateA;
         });
 
         if (notices.length === 0) {
@@ -748,7 +756,7 @@ async function renderNotices() {
                     <div class="notice-title">${notice.title}</div>
                     <div class="notice-actions">
                         <button class="notice-edit" onclick="editNotice('${notice.id}')">✏️</button>
-                        <button class="notice-delete" onclick="deleteNotice('${notice.id}')">✕</button>
+                        <button class="notice-archive" onclick="archiveNotice('${notice.id}')" title="その他に移動">📁</button>
                     </div>
                 </div>
                 <div class="notice-content">${notice.content}</div>
@@ -763,6 +771,74 @@ async function renderNotices() {
                 <p>お知らせの読み込みに失敗しました</p>
             </div>
         `;
+    }
+}
+
+// 過去のお知らせを表示（アーカイブされたもの）
+async function renderArchivedNotices() {
+    const noticeList = document.getElementById('archivedNoticeList');
+    if (!noticeList) return;
+
+    try {
+        const snapshot = await db.collection('notices').get();
+
+        const notices = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.archived) {
+                notices.push({ id: doc.id, ...data });
+            }
+        });
+
+        // 日付順（新しい順）でソート
+        notices.sort((a, b) => {
+            const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+            const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+            return dateB - dateA;
+        });
+
+        if (notices.length === 0) {
+            noticeList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📁</div>
+                    <p>過去のお知らせはありません</p>
+                </div>
+            `;
+            return;
+        }
+
+        noticeList.innerHTML = notices.map(notice => `
+            <div class="notice-item">
+                <div class="notice-header">
+                    <div class="notice-title">${notice.title}</div>
+                    <div class="notice-actions">
+                        <button class="notice-restore" onclick="restoreNotice('${notice.id}')" title="ホームに戻す">↩️</button>
+                        <button class="notice-delete" onclick="deleteArchivedNotice('${notice.id}')" title="完全に削除">🗑️</button>
+                    </div>
+                </div>
+                <div class="notice-content">${notice.content}</div>
+                <div class="notice-date">${(notice.date?.toDate ? notice.date.toDate() : new Date(notice.date)).toLocaleDateString('ja-JP')}</div>
+                ${notice.image ? `<img src="${notice.image}" alt="お知らせ画像" class="notice-image">` : ''}
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('過去のお知らせ読み込みエラー:', error);
+        noticeList.innerHTML = `
+            <div class="empty-state">
+                <p>読み込みに失敗しました</p>
+            </div>
+        `;
+    }
+}
+
+// お知らせをホームに戻す
+async function restoreNotice(id) {
+    try {
+        await db.collection('notices').doc(id).update({ archived: false });
+        renderArchivedNotices();
+    } catch (error) {
+        console.error('お知らせ復元エラー:', error);
+        alert('お知らせの復元に失敗しました');
     }
 }
 
@@ -811,7 +887,8 @@ async function addNotice() {
                 title: title,
                 content: content,
                 date: firebase.firestore.FieldValue.serverTimestamp(),
-                image: imageUrl
+                image: imageUrl,
+                archived: false
             });
         }
 
@@ -852,9 +929,22 @@ async function editNotice(id) {
 }
 
 // お知らせを削除
-async function deleteNotice(id) {
+// お知らせをアーカイブ（その他に移動）
+async function archiveNotice(id) {
     try {
-        // お知らせ情報を取得
+        await db.collection('notices').doc(id).update({ archived: true });
+        renderNotices();
+    } catch (error) {
+        console.error('お知らせアーカイブエラー:', error);
+        alert('お知らせの移動に失敗しました');
+    }
+}
+
+// 過去のお知らせから完全削除
+async function deleteArchivedNotice(id) {
+    if (!confirm('このお知らせを完全に削除しますか？')) return;
+
+    try {
         const doc = await db.collection('notices').doc(id).get();
 
         if (doc.exists) {
@@ -870,9 +960,8 @@ async function deleteNotice(id) {
                 }
             }
 
-            // Firestoreから削除
             await db.collection('notices').doc(id).delete();
-            renderNotices();
+            renderArchivedNotices();
         }
     } catch (error) {
         console.error('お知らせ削除エラー:', error);
@@ -1352,6 +1441,9 @@ function loadFeatureData(featureName) {
             break;
         case 'shopping':
             initializeShoppingList();
+            break;
+        case 'archivedNotices':
+            renderArchivedNotices();
             break;
     }
 }

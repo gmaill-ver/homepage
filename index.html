@@ -196,6 +196,11 @@
                     <div class="feature-card-icon">💸</div>
                     <div class="feature-card-title">割り勘</div>
                 </div>
+
+                <div class="feature-card" onclick="showFeature('archivedNotices')">
+                    <div class="feature-card-icon">📁</div>
+                    <div class="feature-card-title">過去のお知らせ</div>
+                </div>
             </div>
 
             <!-- チェックリスト機能ページ -->
@@ -431,6 +436,19 @@
                     </div>
                 </div>
             </section>
+            </div>
+
+            <!-- 過去のお知らせ機能ページ -->
+            <div id="archivedNoticesFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1rem; font-weight: 600;">📁 過去のお知らせ</h2>
+                    <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                </div>
+                <section class="card" id="archivedNoticesCard">
+                    <div class="card-content" style="padding-top: 0;">
+                        <div id="archivedNoticeList" class="notice-list"></div>
+                    </div>
+                </section>
             </div>
 
             <!-- 時系列ログ機能ページ -->
