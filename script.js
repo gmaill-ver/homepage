@@ -746,7 +746,10 @@ async function renderNotices() {
             <div class="notice-item">
                 <div class="notice-header">
                     <div class="notice-title">${notice.title}</div>
-                    <button class="notice-delete" onclick="deleteNotice('${notice.id}')">✕</button>
+                    <div class="notice-actions">
+                        <button class="notice-edit" onclick="editNotice('${notice.id}')">✏️</button>
+                        <button class="notice-delete" onclick="deleteNotice('${notice.id}')">✕</button>
+                    </div>
                 </div>
                 <div class="notice-content">${notice.content}</div>
                 <div class="notice-date">${(notice.date?.toDate ? notice.date.toDate() : new Date(notice.date)).toLocaleDateString('ja-JP')}</div>
@@ -763,7 +766,9 @@ async function renderNotices() {
     }
 }
 
-// お知らせを追加
+let editingNoticeId = null;
+
+// お知らせを追加/更新
 async function addNotice() {
     const title = document.getElementById('noticeTitle').value;
     const content = document.getElementById('noticeContent').value;
@@ -794,25 +799,55 @@ async function addNotice() {
             imageUrl = await storageRef.getDownloadURL();
         }
 
-        // Firestoreに保存
-        await db.collection('notices').add({
-            title: title,
-            content: content,
-            date: firebase.firestore.FieldValue.serverTimestamp(),
-            image: imageUrl
-        });
+        if (editingNoticeId) {
+            // 編集モード：更新
+            const updateData = { title, content };
+            if (imageUrl) updateData.image = imageUrl;
+            await db.collection('notices').doc(editingNoticeId).update(updateData);
+            editingNoticeId = null;
+        } else {
+            // 新規追加
+            await db.collection('notices').add({
+                title: title,
+                content: content,
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                image: imageUrl
+            });
+        }
 
         // フォームをリセット
         document.getElementById('noticeTitle').value = '';
         document.getElementById('noticeContent').value = '';
         document.getElementById('noticeImage').value = '';
         document.getElementById('noticeImagePreview').innerHTML = '';
+        document.querySelector('#noticeModal h3').textContent = 'お知らせを追加';
+        document.getElementById('saveNoticeBtn').textContent = '追加';
 
         closeModal('noticeModal');
         renderNotices();
     } catch (error) {
-        console.error('お知らせ追加エラー:', error);
-        alert('お知らせの追加に失敗しました');
+        console.error('お知らせ保存エラー:', error);
+        alert('お知らせの保存に失敗しました');
+    }
+}
+
+// お知らせを編集
+async function editNotice(id) {
+    try {
+        const doc = await db.collection('notices').doc(id).get();
+        if (doc.exists) {
+            const notice = doc.data();
+            editingNoticeId = id;
+            document.getElementById('noticeTitle').value = notice.title;
+            document.getElementById('noticeContent').value = notice.content;
+            document.getElementById('noticeImagePreview').innerHTML = notice.image ?
+                `<img src="${notice.image}" alt="現在の画像" style="width: 100%; height: 10rem; object-fit: cover; border-radius: 0.5rem; margin-top: 0.5rem;">` : '';
+            document.querySelector('#noticeModal h3').textContent = 'お知らせを編集';
+            document.getElementById('saveNoticeBtn').textContent = '更新';
+            openModal('noticeModal');
+        }
+    } catch (error) {
+        console.error('お知らせ取得エラー:', error);
     }
 }
 
@@ -919,7 +954,10 @@ async function renderMessages() {
             <div class="message-item">
                 <div class="message-header">
                     <span class="message-from">${fromName}</span>
-                    <button class="message-delete" onclick="deleteMessage('${msg.id}')">✕</button>
+                    <div class="message-actions">
+                        <button class="message-edit" onclick="editMessage('${msg.id}')">✏️</button>
+                        <button class="message-delete" onclick="deleteMessage('${msg.id}')">✕</button>
+                    </div>
                 </div>
                 <div class="message-content">${msg.content}</div>
                 <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
@@ -935,7 +973,9 @@ async function renderMessages() {
     }
 }
 
-// メッセージを追加
+let editingMessageId = null;
+
+// メッセージを追加/更新
 async function addMessage() {
     const content = document.getElementById('messageContent').value;
 
@@ -945,18 +985,45 @@ async function addMessage() {
     }
 
     try {
-        await db.collection('messages').add({
-            from: currentMessagePerson,
-            content: content,
-            date: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        if (editingMessageId) {
+            // 編集モード：更新
+            await db.collection('messages').doc(editingMessageId).update({ content });
+            editingMessageId = null;
+        } else {
+            // 新規追加
+            await db.collection('messages').add({
+                from: currentMessagePerson,
+                content: content,
+                date: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
 
         document.getElementById('messageContent').value = '';
+        const toName = currentMessagePerson === 'ayu' ? 'ひで' : 'あゆ';
+        document.getElementById('messageModalTitle').textContent = `${toName}へメッセージ`;
+        document.getElementById('saveMessageBtn').textContent = '追加';
         closeModal('messageModal');
         renderMessages();
     } catch (error) {
-        console.error('メッセージ追加エラー:', error);
-        alert('メッセージの追加に失敗しました');
+        console.error('メッセージ保存エラー:', error);
+        alert('メッセージの保存に失敗しました');
+    }
+}
+
+// メッセージを編集
+async function editMessage(id) {
+    try {
+        const doc = await db.collection('messages').doc(id).get();
+        if (doc.exists) {
+            const msg = doc.data();
+            editingMessageId = id;
+            document.getElementById('messageContent').value = msg.content;
+            document.getElementById('messageModalTitle').textContent = 'メッセージを編集';
+            document.getElementById('saveMessageBtn').textContent = '更新';
+            openModal('messageModal');
+        }
+    } catch (error) {
+        console.error('メッセージ取得エラー:', error);
     }
 }
 
