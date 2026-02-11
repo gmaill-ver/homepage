@@ -7,17 +7,6 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // チャットルーム - ユーザーごとに個別のチャットルーム
-    match /chatrooms/{userId} {
-      // 自分のチャットルームのみアクセス可能
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
-
-      // メッセージサブコレクション
-      match /messages/{messageId} {
-        allow read, write: if isAuthenticated() && request.auth.uid == userId;
-      }
-    }
-
     // 既存のコレクション
     match /insurances/{docId} {
       allow read, write: if isAuthenticated();
