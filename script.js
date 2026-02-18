@@ -1148,6 +1148,7 @@ async function renderMessages() {
                     </div>
                 </div>
                 <div class="message-content">${msg.content}</div>
+                ${msg.image ? `<div class="message-image"><img src="${msg.image}" alt="画像" onclick="window.open('${msg.image}', '_blank')" style="max-width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; cursor: pointer;"></div>` : ''}
                 <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
             </div>
         `}).join('');
@@ -1258,28 +1259,46 @@ async function deleteArchivedMessage(id) {
 // メッセージを追加/更新
 async function addMessage() {
     const content = document.getElementById('messageContent').value;
+    const imageFile = document.getElementById('messageImage').files[0];
 
-    if (!content) {
-        alert('メッセージを入力してください');
+    if (!content && !imageFile) {
+        alert('メッセージまたは画像を入力してください');
         return;
     }
 
     try {
+        let imageUrl = null;
+
+        // 画像アップロード
+        if (imageFile) {
+            const compressed = await compressImage(imageFile, 1280, 1280, 0.7);
+            const fileName = `messages/${Date.now()}_${imageFile.name}`;
+            const ref = storage.ref(fileName);
+            await ref.put(compressed);
+            imageUrl = await ref.getDownloadURL();
+        }
+
         if (editingMessageId) {
             // 編集モード：更新
-            await db.collection('messages').doc(editingMessageId).update({ content, to: selectedMessageTo });
+            const updateData = { content, to: selectedMessageTo };
+            if (imageUrl) updateData.image = imageUrl;
+            await db.collection('messages').doc(editingMessageId).update(updateData);
             editingMessageId = null;
         } else {
             // 新規追加
-            await db.collection('messages').add({
+            const msgData = {
                 to: selectedMessageTo,
                 content: content,
                 date: firebase.firestore.FieldValue.serverTimestamp(),
                 archived: false
-            });
+            };
+            if (imageUrl) msgData.image = imageUrl;
+            await db.collection('messages').add(msgData);
         }
 
         document.getElementById('messageContent').value = '';
+        document.getElementById('messageImage').value = '';
+        document.getElementById('messageImagePreview').innerHTML = '';
         document.getElementById('messageModalTitle').textContent = '連絡を追加';
         document.getElementById('saveMessageBtn').textContent = '追加';
         closeModal('messageModal');
@@ -2617,12 +2636,27 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('messageModalTitle').textContent = '連絡を追加';
         document.getElementById('saveMessageBtn').textContent = '追加';
         document.getElementById('messageContent').value = '';
+        document.getElementById('messageImage').value = '';
+        document.getElementById('messageImagePreview').innerHTML = '';
         selectedMessageTo = 'hide';
         selectMessageTo('hide');
         openModal('messageModal');
     });
     document.getElementById('saveMessageBtn').addEventListener('click', addMessage);
     document.getElementById('closeMessageBtn').addEventListener('click', () => closeModal('messageModal'));
+    document.getElementById('messageImage').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const preview = document.getElementById('messageImagePreview');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                preview.innerHTML = `<img src="${ev.target.result}" style="max-width: 100%; border-radius: 0.5rem; margin-top: 0.5rem;">`;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.innerHTML = '';
+        }
+    });
 
     // 連絡先
     document.getElementById('addContactBtn').addEventListener('click', () => openModal('contactModal'));
