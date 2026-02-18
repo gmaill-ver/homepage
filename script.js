@@ -2749,6 +2749,68 @@ function toggleExpiryEditMode() {
     renderExpiryItems();
 }
 
+// 期限日付セレクト初期化
+function initExpiryDateSelects() {
+    const currentYear = new Date().getFullYear();
+    const yearRange = { start: 2000, end: currentYear + 30 };
+
+    ['expiryStartYear', 'expiryEndYear'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel.options.length > 1) return;
+        for (let y = yearRange.start; y <= yearRange.end; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y + '年';
+            sel.appendChild(opt);
+        }
+    });
+
+    ['expiryStartMonth', 'expiryEndMonth'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel.options.length > 1) return;
+        for (let m = 1; m <= 12; m++) {
+            const opt = document.createElement('option');
+            opt.value = String(m).padStart(2, '0');
+            opt.textContent = m + '月';
+            sel.appendChild(opt);
+        }
+    });
+
+    ['expiryStartDay', 'expiryEndDay'].forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel.options.length > 1) return;
+        for (let d = 1; d <= 31; d++) {
+            const opt = document.createElement('option');
+            opt.value = String(d).padStart(2, '0');
+            opt.textContent = d + '日';
+            sel.appendChild(opt);
+        }
+    });
+}
+
+// セレクトから日付文字列を取得
+function getExpiryDateFromSelects(prefix) {
+    const y = document.getElementById(prefix + 'Year').value;
+    const m = document.getElementById(prefix + 'Month').value;
+    const d = document.getElementById(prefix + 'Day').value;
+    if (!y || !m || !d) return '';
+    return `${y}-${m}-${d}`;
+}
+
+// 日付文字列をセレクトにセット
+function setExpiryDateToSelects(prefix, dateStr) {
+    if (!dateStr) {
+        document.getElementById(prefix + 'Year').value = '';
+        document.getElementById(prefix + 'Month').value = '';
+        document.getElementById(prefix + 'Day').value = '';
+        return;
+    }
+    const [y, m, d] = dateStr.split('-');
+    document.getElementById(prefix + 'Year').value = parseInt(y);
+    document.getElementById(prefix + 'Month').value = m;
+    document.getElementById(prefix + 'Day').value = d;
+}
+
 // 期限アイテム一覧を表示
 async function renderExpiryItems() {
     const expiryList = document.getElementById('expiryList');
@@ -2775,29 +2837,50 @@ async function renderExpiryItems() {
         today.setHours(0, 0, 0, 0);
 
         expiryList.innerHTML = items.map(item => {
-            const startDate = new Date(item.startDate);
             const expiryDate = new Date(item.expiryDate);
-            startDate.setHours(0, 0, 0, 0);
             expiryDate.setHours(0, 0, 0, 0);
-
-            const totalDays = Math.max((expiryDate - startDate) / (1000 * 60 * 60 * 24), 1);
             const remainingDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-            const remainingRatio = Math.max(0, Math.min(1, remainingDays / totalDays));
-            const percentage = Math.round(remainingRatio * 100);
 
+            let percentage = 50;
             let barClass = '';
             let statusText = '';
-            if (remainingDays <= 0) {
-                barClass = 'expired';
-                statusText = '期限切れ';
-            } else if (remainingRatio <= 0.1) {
-                barClass = 'danger';
-                statusText = `残り ${remainingDays} 日`;
-            } else if (remainingRatio <= 0.3) {
-                barClass = 'warning';
-                statusText = `残り ${remainingDays} 日`;
+
+            if (item.startDate) {
+                const startDate = new Date(item.startDate);
+                startDate.setHours(0, 0, 0, 0);
+                const totalDays = Math.max((expiryDate - startDate) / (1000 * 60 * 60 * 24), 1);
+                const remainingRatio = Math.max(0, Math.min(1, remainingDays / totalDays));
+                percentage = Math.round(remainingRatio * 100);
+
+                if (remainingDays <= 0) {
+                    barClass = 'expired';
+                    statusText = '期限切れ';
+                } else if (remainingRatio <= 0.1) {
+                    barClass = 'danger';
+                    statusText = `残り ${remainingDays} 日`;
+                } else if (remainingRatio <= 0.3) {
+                    barClass = 'warning';
+                    statusText = `残り ${remainingDays} 日`;
+                } else {
+                    statusText = `残り ${remainingDays} 日`;
+                }
             } else {
-                statusText = `残り ${remainingDays} 日`;
+                if (remainingDays <= 0) {
+                    barClass = 'expired';
+                    statusText = '期限切れ';
+                    percentage = 100;
+                } else if (remainingDays <= 30) {
+                    barClass = 'danger';
+                    statusText = `残り ${remainingDays} 日`;
+                    percentage = 10;
+                } else if (remainingDays <= 90) {
+                    barClass = 'warning';
+                    statusText = `残り ${remainingDays} 日`;
+                    percentage = 30;
+                } else {
+                    statusText = `残り ${remainingDays} 日`;
+                    percentage = Math.min(90, Math.round(remainingDays / 365 * 50) + 40);
+                }
             }
 
             const editBtns = expiryEditMode ? `
@@ -2831,11 +2914,12 @@ async function renderExpiryItems() {
 
 // 期限モーダルを開く（新規）
 function openExpiryModal() {
+    initExpiryDateSelects();
     document.getElementById('expiryModalTitle').textContent = '期限アイテムを追加';
     document.getElementById('expiryItemId').value = '';
     document.getElementById('expiryName').value = '';
-    document.getElementById('expiryStartDate').value = '';
-    document.getElementById('expiryDate').value = '';
+    setExpiryDateToSelects('expiryStart', '');
+    setExpiryDateToSelects('expiryEnd', '');
     openModal('expiryModal');
 }
 
@@ -2848,21 +2932,21 @@ function closeExpiryModal() {
 async function saveExpiryItem() {
     const id = document.getElementById('expiryItemId').value;
     const name = document.getElementById('expiryName').value.trim();
-    const startDate = document.getElementById('expiryStartDate').value;
-    const expiryDate = document.getElementById('expiryDate').value;
+    const startDate = getExpiryDateFromSelects('expiryStart');
+    const expiryDate = getExpiryDateFromSelects('expiryEnd');
 
-    if (!name || !startDate || !expiryDate) {
-        alert('名前・開始日・有効期限を入力してください');
+    if (!name || !expiryDate) {
+        alert('名前と有効期限を入力してください');
         return;
     }
 
-    if (new Date(startDate) >= new Date(expiryDate)) {
+    if (startDate && new Date(startDate) >= new Date(expiryDate)) {
         alert('有効期限は開始日より後の日付にしてください');
         return;
     }
 
     try {
-        const data = { name, startDate, expiryDate };
+        const data = { name, startDate: startDate || '', expiryDate };
 
         if (id) {
             await db.collection('expiryItems').doc(id).update(data);
@@ -2881,6 +2965,7 @@ async function saveExpiryItem() {
 // 期限アイテムを編集
 async function editExpiryItem(id) {
     try {
+        initExpiryDateSelects();
         const doc = await db.collection('expiryItems').doc(id).get();
         if (!doc.exists) return;
 
@@ -2888,8 +2973,8 @@ async function editExpiryItem(id) {
         document.getElementById('expiryModalTitle').textContent = '期限アイテムを編集';
         document.getElementById('expiryItemId').value = id;
         document.getElementById('expiryName').value = data.name;
-        document.getElementById('expiryStartDate').value = data.startDate;
-        document.getElementById('expiryDate').value = data.expiryDate;
+        setExpiryDateToSelects('expiryStart', data.startDate);
+        setExpiryDateToSelects('expiryEnd', data.expiryDate);
         openModal('expiryModal');
     } catch (error) {
         console.error('期限アイテム読み込みエラー:', error);

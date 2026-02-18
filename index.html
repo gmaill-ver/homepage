@@ -902,12 +902,20 @@
                 <input type="text" id="expiryName" placeholder="例: 運転免許証" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
             </div>
             <div style="margin-bottom: 0.75rem;">
-                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">開始日（発行日・更新日）</label>
-                <input type="date" id="expiryStartDate" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">開始日（任意）</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.375rem;">
+                    <select id="expiryStartYear" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">年</option></select>
+                    <select id="expiryStartMonth" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">月</option></select>
+                    <select id="expiryStartDay" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">日</option></select>
+                </div>
             </div>
             <div style="margin-bottom: 0.75rem;">
                 <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">有効期限</label>
-                <input type="date" id="expiryDate" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.375rem;">
+                    <select id="expiryEndYear" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">年</option></select>
+                    <select id="expiryEndMonth" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">月</option></select>
+                    <select id="expiryEndDay" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;"><option value="">日</option></select>
+                </div>
             </div>
             <div class="modal-actions">
                 <button onclick="saveExpiryItem()" class="btn-primary-blue">保存</button>
