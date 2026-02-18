@@ -2745,11 +2745,7 @@ async function renderExpiryItems() {
                 statusText = `残り ${remainingDays} 日`;
             }
 
-            const categoryIcons = {
-                '免許証': '🪪', 'マイナンバー': '🔢', 'クレカ': '💳',
-                '保険証': '🏥', 'パスポート': '✈️', 'その他': '📄'
-            };
-            const icon = categoryIcons[item.category] || '📄';
+            const icon = '📄';
 
             return `
                 <div class="expiry-item">
@@ -2783,7 +2779,7 @@ function openExpiryModal() {
     document.getElementById('expiryModalTitle').textContent = '期限アイテムを追加';
     document.getElementById('expiryItemId').value = '';
     document.getElementById('expiryName').value = '';
-    document.getElementById('expiryCategory').value = '免許証';
+    document.getElementById('expiryCategory').value = '';
     document.getElementById('expiryStartDate').value = '';
     document.getElementById('expiryDate').value = '';
     openModal('expiryModal');
