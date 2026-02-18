@@ -1648,6 +1648,13 @@ function loadFeatureData(featureName) {
 // 保険情報機能 (Firestore)
 // ==========================================
 
+let insuranceEditMode = false;
+
+function toggleInsuranceEditMode() {
+    insuranceEditMode = !insuranceEditMode;
+    renderInsurances();
+}
+
 // 保険情報を表示
 async function renderInsurances() {
     const insuranceList = document.getElementById('insuranceList');
@@ -1680,10 +1687,10 @@ async function renderInsurances() {
                 ${insurance.number ? `<div class="insurance-info">🔢 ${insurance.number}</div>` : ''}
                 ${insurance.premium ? `<div class="insurance-info">💰 月額 ${Number(insurance.premium).toLocaleString()}円</div>` : ''}
                 ${insurance.notes ? `<div class="insurance-info" style="margin-top: 0.5rem;">📝 ${insurance.notes}</div>` : ''}
-                <div class="insurance-actions">
+                ${insuranceEditMode ? `<div class="insurance-actions">
                     <button class="insurance-edit" onclick="editInsurance('${insurance.id}')">編集</button>
                     <button class="insurance-delete" onclick="deleteInsurance('${insurance.id}')">削除</button>
-                </div>
+                </div>` : ''}
             </div>
         `).join('');
     } catch (error) {
