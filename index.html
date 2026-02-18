@@ -504,6 +504,7 @@
                     <h2 style="margin: 0; font-size: 1rem; font-weight: 600;">📅 期限管理</h2>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <button id="addExpiryBtn" class="btn-add" onclick="openExpiryModal()">➕</button>
+                        <button class="btn-icon-simple" onclick="toggleExpiryEditMode()" title="設定">⚙️</button>
                         <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
                     </div>
                 </div>
@@ -744,7 +745,7 @@
     <!-- 設定モーダル -->
     <div id="settingsModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h3>設定</h3>
+            <h3>アクセス設定</h3>
             
             <!-- 許可メールアドレス -->
             <div class="settings-section">

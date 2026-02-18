@@ -2694,6 +2694,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // 期限管理機能 (Firestore)
 // ==========================================
 
+let expiryEditMode = false;
+
+function toggleExpiryEditMode() {
+    expiryEditMode = !expiryEditMode;
+    renderExpiryItems();
+}
+
 // 期限アイテム一覧を表示
 async function renderExpiryItems() {
     const expiryList = document.getElementById('expiryList');
@@ -2745,14 +2752,17 @@ async function renderExpiryItems() {
                 statusText = `残り ${remainingDays} 日`;
             }
 
+            const editBtns = expiryEditMode ? `
+                        <div class="expiry-item-actions">
+                            <button class="btn-icon-simple" onclick="editExpiryItem('${item.id}')" title="編集">✏️</button>
+                            <button class="btn-icon-simple" onclick="deleteExpiryItem('${item.id}')" title="削除">🗑️</button>
+                        </div>` : '';
+
             return `
                 <div class="expiry-item">
                     <div class="expiry-item-header">
                         <div class="expiry-item-name">📄 ${item.name}</div>
-                        <div class="expiry-item-actions">
-                            <button class="btn-icon-simple" onclick="editExpiryItem('${item.id}')" title="編集">✏️</button>
-                            <button class="btn-icon-simple" onclick="deleteExpiryItem('${item.id}')" title="削除">🗑️</button>
-                        </div>
+                        ${editBtns}
                     </div>
                     <div class="expiry-item-meta">
                         <span class="expiry-date-range">〜 ${item.expiryDate}</span>
