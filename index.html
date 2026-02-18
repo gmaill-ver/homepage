@@ -184,6 +184,11 @@
                     <div class="feature-card-icon">💬</div>
                     <div class="feature-card-title">過去の連絡</div>
                 </div>
+
+                <div class="feature-card" onclick="showFeature('expiry')">
+                    <div class="feature-card-icon">📅</div>
+                    <div class="feature-card-title">期限管理</div>
+                </div>
             </div>
 
             <!-- チェックリスト機能ページ -->
@@ -491,6 +496,22 @@
                     </div>
                 </div>
             </section>
+            </div>
+
+            <!-- 期限管理機能ページ -->
+            <div id="expiryFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1rem; font-weight: 600;">📅 期限管理</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button id="addExpiryBtn" class="btn-add" onclick="openExpiryModal()">➕</button>
+                        <button class="back-btn" onclick="showCardGrid()" style="font-size: 1.25rem;">↩︎</button>
+                    </div>
+                </div>
+                <section class="card" id="expiryCard">
+                    <div class="card-content" style="padding-top: 0;">
+                        <div id="expiryList" class="expiry-list"></div>
+                    </div>
+                </section>
             </div>
 
             <!-- 買い物リスト機能ページ -->
@@ -872,6 +893,41 @@
             <div class="modal-actions">
                 <button id="saveMemoBtn" class="btn-primary-blue">保存</button>
                 <button id="closeMemoBtn" class="btn-secondary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 期限管理 追加/編集モーダル -->
+    <div id="expiryModal" class="modal" style="display: none;">
+        <div class="modal-content modal-small">
+            <h3 id="expiryModalTitle">期限アイテムを追加</h3>
+            <input type="hidden" id="expiryItemId">
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">名前</label>
+                <input type="text" id="expiryName" placeholder="例: 運転免許証" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">カテゴリ</label>
+                <select id="expiryCategory" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; background: white;">
+                    <option value="免許証">免許証</option>
+                    <option value="マイナンバー">マイナンバー</option>
+                    <option value="クレカ">クレカ</option>
+                    <option value="保険証">保険証</option>
+                    <option value="パスポート">パスポート</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">開始日（発行日・更新日）</label>
+                <input type="date" id="expiryStartDate" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+            </div>
+            <div style="margin-bottom: 0.75rem;">
+                <label style="display: block; margin-bottom: 0.25rem; font-weight: bold; color: #374151; font-size: 0.875rem;">有効期限</label>
+                <input type="date" id="expiryDate" style="width: 100%; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveExpiryItem()" class="btn-primary-blue">保存</button>
+                <button onclick="closeExpiryModal()" class="btn-secondary">キャンセル</button>
             </div>
         </div>
     </div>

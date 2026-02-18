@@ -1637,6 +1637,9 @@ function loadFeatureData(featureName) {
         case 'archivedMessages':
             renderArchivedMessages();
             break;
+        case 'expiry':
+            renderExpiryItems();
+            break;
     }
 }
 
@@ -2686,6 +2689,177 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') addChecklistItem();
     });
 });
+
+// ==========================================
+// 期限管理機能 (Firestore)
+// ==========================================
+
+// 期限アイテム一覧を表示
+async function renderExpiryItems() {
+    const expiryList = document.getElementById('expiryList');
+
+    try {
+        const snapshot = await db.collection('expiryItems').orderBy('expiryDate', 'asc').get();
+
+        const items = [];
+        snapshot.forEach(doc => {
+            items.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (items.length === 0) {
+            expiryList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <p>期限アイテムを追加してください</p>
+                </div>
+            `;
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        expiryList.innerHTML = items.map(item => {
+            const startDate = new Date(item.startDate);
+            const expiryDate = new Date(item.expiryDate);
+            startDate.setHours(0, 0, 0, 0);
+            expiryDate.setHours(0, 0, 0, 0);
+
+            const totalDays = Math.max((expiryDate - startDate) / (1000 * 60 * 60 * 24), 1);
+            const remainingDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+            const remainingRatio = Math.max(0, Math.min(1, remainingDays / totalDays));
+            const percentage = Math.round(remainingRatio * 100);
+
+            let barClass = '';
+            let statusText = '';
+            if (remainingDays <= 0) {
+                barClass = 'expired';
+                statusText = '期限切れ';
+            } else if (remainingRatio <= 0.1) {
+                barClass = 'danger';
+                statusText = `残り ${remainingDays} 日`;
+            } else if (remainingRatio <= 0.3) {
+                barClass = 'warning';
+                statusText = `残り ${remainingDays} 日`;
+            } else {
+                statusText = `残り ${remainingDays} 日`;
+            }
+
+            const categoryIcons = {
+                '免許証': '🪪', 'マイナンバー': '🔢', 'クレカ': '💳',
+                '保険証': '🏥', 'パスポート': '✈️', 'その他': '📄'
+            };
+            const icon = categoryIcons[item.category] || '📄';
+
+            return `
+                <div class="expiry-item">
+                    <div class="expiry-item-header">
+                        <div class="expiry-item-name">${icon} ${item.name}</div>
+                        <div class="expiry-item-actions">
+                            <button class="btn-icon-simple" onclick="editExpiryItem('${item.id}')" title="編集">✏️</button>
+                            <button class="btn-icon-simple" onclick="deleteExpiryItem('${item.id}')" title="削除">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="expiry-item-meta">
+                        <span class="expiry-category">${item.category}</span>
+                        <span class="expiry-date-range">${item.startDate} 〜 ${item.expiryDate}</span>
+                    </div>
+                    <div class="expiry-bar-container">
+                        <div class="expiry-bar ${barClass}" style="width: ${remainingDays <= 0 ? 100 : percentage}%"></div>
+                    </div>
+                    <div class="expiry-status-text ${barClass}">${statusText}</div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (error) {
+        console.error('期限アイテム取得エラー:', error);
+        expiryList.innerHTML = '<p style="color: red;">読み込みエラー</p>';
+    }
+}
+
+// 期限モーダルを開く（新規）
+function openExpiryModal() {
+    document.getElementById('expiryModalTitle').textContent = '期限アイテムを追加';
+    document.getElementById('expiryItemId').value = '';
+    document.getElementById('expiryName').value = '';
+    document.getElementById('expiryCategory').value = '免許証';
+    document.getElementById('expiryStartDate').value = '';
+    document.getElementById('expiryDate').value = '';
+    openModal('expiryModal');
+}
+
+// 期限モーダルを閉じる
+function closeExpiryModal() {
+    closeModal('expiryModal');
+}
+
+// 期限アイテムを保存（追加/編集）
+async function saveExpiryItem() {
+    const id = document.getElementById('expiryItemId').value;
+    const name = document.getElementById('expiryName').value.trim();
+    const category = document.getElementById('expiryCategory').value;
+    const startDate = document.getElementById('expiryStartDate').value;
+    const expiryDate = document.getElementById('expiryDate').value;
+
+    if (!name || !startDate || !expiryDate) {
+        alert('名前・開始日・有効期限を入力してください');
+        return;
+    }
+
+    if (new Date(startDate) >= new Date(expiryDate)) {
+        alert('有効期限は開始日より後の日付にしてください');
+        return;
+    }
+
+    try {
+        const data = { name, category, startDate, expiryDate };
+
+        if (id) {
+            await db.collection('expiryItems').doc(id).update(data);
+        } else {
+            await db.collection('expiryItems').add(data);
+        }
+
+        closeExpiryModal();
+        renderExpiryItems();
+    } catch (error) {
+        console.error('期限アイテム保存エラー:', error);
+        alert('保存に失敗しました');
+    }
+}
+
+// 期限アイテムを編集
+async function editExpiryItem(id) {
+    try {
+        const doc = await db.collection('expiryItems').doc(id).get();
+        if (!doc.exists) return;
+
+        const data = doc.data();
+        document.getElementById('expiryModalTitle').textContent = '期限アイテムを編集';
+        document.getElementById('expiryItemId').value = id;
+        document.getElementById('expiryName').value = data.name;
+        document.getElementById('expiryCategory').value = data.category;
+        document.getElementById('expiryStartDate').value = data.startDate;
+        document.getElementById('expiryDate').value = data.expiryDate;
+        openModal('expiryModal');
+    } catch (error) {
+        console.error('期限アイテム読み込みエラー:', error);
+    }
+}
+
+// 期限アイテムを削除
+async function deleteExpiryItem(id) {
+    if (!confirm('このアイテムを削除しますか？')) return;
+
+    try {
+        await db.collection('expiryItems').doc(id).delete();
+        renderExpiryItems();
+    } catch (error) {
+        console.error('期限アイテム削除エラー:', error);
+        alert('削除に失敗しました');
+    }
+}
 
 /*
 ==========================================
