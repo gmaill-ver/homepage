@@ -2745,19 +2745,16 @@ async function renderExpiryItems() {
                 statusText = `残り ${remainingDays} 日`;
             }
 
-            const icon = '📄';
-
             return `
                 <div class="expiry-item">
                     <div class="expiry-item-header">
-                        <div class="expiry-item-name">${icon} ${item.name}</div>
+                        <div class="expiry-item-name">📄 ${item.name}</div>
                         <div class="expiry-item-actions">
                             <button class="btn-icon-simple" onclick="editExpiryItem('${item.id}')" title="編集">✏️</button>
                             <button class="btn-icon-simple" onclick="deleteExpiryItem('${item.id}')" title="削除">🗑️</button>
                         </div>
                     </div>
                     <div class="expiry-item-meta">
-                        <span class="expiry-category">${item.category}</span>
                         <span class="expiry-date-range">〜 ${item.expiryDate}</span>
                         <span class="expiry-status-text ${barClass}">${statusText}</span>
                     </div>
@@ -2779,7 +2776,6 @@ function openExpiryModal() {
     document.getElementById('expiryModalTitle').textContent = '期限アイテムを追加';
     document.getElementById('expiryItemId').value = '';
     document.getElementById('expiryName').value = '';
-    document.getElementById('expiryCategory').value = '';
     document.getElementById('expiryStartDate').value = '';
     document.getElementById('expiryDate').value = '';
     openModal('expiryModal');
@@ -2794,7 +2790,6 @@ function closeExpiryModal() {
 async function saveExpiryItem() {
     const id = document.getElementById('expiryItemId').value;
     const name = document.getElementById('expiryName').value.trim();
-    const category = document.getElementById('expiryCategory').value;
     const startDate = document.getElementById('expiryStartDate').value;
     const expiryDate = document.getElementById('expiryDate').value;
 
@@ -2809,7 +2804,7 @@ async function saveExpiryItem() {
     }
 
     try {
-        const data = { name, category, startDate, expiryDate };
+        const data = { name, startDate, expiryDate };
 
         if (id) {
             await db.collection('expiryItems').doc(id).update(data);
@@ -2835,7 +2830,6 @@ async function editExpiryItem(id) {
         document.getElementById('expiryModalTitle').textContent = '期限アイテムを編集';
         document.getElementById('expiryItemId').value = id;
         document.getElementById('expiryName').value = data.name;
-        document.getElementById('expiryCategory').value = data.category;
         document.getElementById('expiryStartDate').value = data.startDate;
         document.getElementById('expiryDate').value = data.expiryDate;
         openModal('expiryModal');
