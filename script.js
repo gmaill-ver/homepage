@@ -2758,12 +2758,12 @@ async function renderExpiryItems() {
                     </div>
                     <div class="expiry-item-meta">
                         <span class="expiry-category">${item.category}</span>
-                        <span class="expiry-date-range">${item.startDate} 〜 ${item.expiryDate}</span>
+                        <span class="expiry-date-range">〜 ${item.expiryDate}</span>
+                        <span class="expiry-status-text ${barClass}">${statusText}</span>
                     </div>
                     <div class="expiry-bar-container">
                         <div class="expiry-bar ${barClass}" style="width: ${remainingDays <= 0 ? 100 : percentage}%"></div>
                     </div>
-                    <div class="expiry-status-text ${barClass}">${statusText}</div>
                 </div>
             `;
         }).join('');
