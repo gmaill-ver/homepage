@@ -1794,6 +1794,13 @@ async function deleteInsurance(id) {
 // 家族のメモ機能
 // ==========================================
 
+let memoEditMode = false;
+
+function toggleMemoEditMode() {
+    memoEditMode = !memoEditMode;
+    renderMemos();
+}
+
 // メモ一覧を表示
 async function renderMemos() {
     const memoList = document.getElementById('memoList');
@@ -1823,10 +1830,10 @@ async function renderMemos() {
                     <div class="memo-date">${memo.createdAt ? new Date(memo.createdAt.seconds * 1000).toLocaleDateString('ja-JP') : ''}</div>
                 </div>
                 <div class="memo-content">${memo.content ? memo.content.replace(/\n/g, '<br>') : ''}</div>
-                <div class="memo-actions">
+                ${memoEditMode ? `<div class="memo-actions">
                     <button class="memo-edit" onclick="editMemo('${memo.id}')">編集</button>
                     <button class="memo-delete" onclick="deleteMemo('${memo.id}')">削除</button>
-                </div>
+                </div>` : ''}
             </div>
         `).join('');
     } catch (error) {
