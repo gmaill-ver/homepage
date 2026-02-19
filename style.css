@@ -1354,6 +1354,36 @@ body {
     text-align: right;
 }
 
+/* 年間一覧テーブル */
+.yearly-summary-table th,
+.yearly-summary-table td {
+    text-align: right;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+.yearly-summary-table th:first-child,
+.yearly-summary-table td:first-child {
+    text-align: left;
+}
+
+.yearly-summary-table .num {
+    font-variant-numeric: tabular-nums;
+}
+
+.yearly-summary-table .positive {
+    color: #065F46;
+}
+
+.yearly-summary-table .negative {
+    color: #B91C1C;
+}
+
+.yearly-total-row {
+    background: #F3F4F6;
+    font-weight: bold;
+}
+
 #saveExpensesBtn {
     background: #E5E7EB;
     color: #374151;

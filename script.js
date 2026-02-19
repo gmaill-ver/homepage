@@ -2332,6 +2332,35 @@ async function renderExpenseChart() {
             }
         }
 
+        // 年間一覧テーブルを描画
+        const tableContainer = document.getElementById('yearlyExpenseTable');
+        const monthLabels = months.map(m => `${parseInt(m.split('-')[1])}月`);
+        let tableHTML = `<table class="expenses-table yearly-summary-table">
+            <thead><tr><th>月</th><th>収入</th><th>支出</th><th>収支</th></tr></thead><tbody>`;
+        let yearTotalIncome = 0, yearTotalExpense = 0;
+        for (let i = 0; i < 12; i++) {
+            if (totalIncomeData[i] === 0 && totalExpenseData[i] === 0) continue;
+            yearTotalIncome += totalIncomeData[i];
+            yearTotalExpense += totalExpenseData[i];
+            const bal = balanceData[i];
+            const balClass = bal >= 0 ? 'positive' : 'negative';
+            tableHTML += `<tr>
+                <td>${monthLabels[i]}</td>
+                <td class="num">${totalIncomeData[i].toLocaleString()}</td>
+                <td class="num">${totalExpenseData[i].toLocaleString()}</td>
+                <td class="num ${balClass}">${bal >= 0 ? '+' : ''}${bal.toLocaleString()}</td>
+            </tr>`;
+        }
+        const yearBalance = yearTotalIncome - yearTotalExpense;
+        const yearBalClass = yearBalance >= 0 ? 'positive' : 'negative';
+        tableHTML += `</tbody><tfoot><tr class="total-row yearly-total-row">
+            <td>合計</td>
+            <td class="num">${yearTotalIncome.toLocaleString()}</td>
+            <td class="num">${yearTotalExpense.toLocaleString()}</td>
+            <td class="num ${yearBalClass}">${yearBalance >= 0 ? '+' : ''}${yearBalance.toLocaleString()}</td>
+        </tr></tfoot></table>`;
+        tableContainer.innerHTML = tableHTML;
+
         const ctx = document.getElementById('expenseSummaryChart');
 
         if (summaryChart) {
