@@ -1316,13 +1316,13 @@ body {
 }
 
 .income-total-row {
-    background: linear-gradient(to right, #34D399, #10B981);
-    color: white;
+    background: #D1FAE5;
+    color: #065F46;
 }
 
 .expense-total-row {
-    background: linear-gradient(to right, #F87171, #EF4444);
-    color: white;
+    background: #FEE2E2;
+    color: #B91C1C;
 }
 
 .balance-table {
@@ -1330,8 +1330,8 @@ body {
 }
 
 .balance-row {
-    background: linear-gradient(to right, #60A5FA, #3B82F6);
-    color: white;
+    background: #DBEAFE;
+    color: #1E40AF;
     font-size: 1.1rem;
     font-weight: bold;
 }
@@ -1352,6 +1352,18 @@ body {
 .balance-amount {
     font-size: 1.1rem;
     text-align: right;
+}
+
+#saveExpensesBtn {
+    background: #E5E7EB;
+    color: #374151;
+    box-shadow: none;
+}
+
+#saveExpensesBtn:hover {
+    background: #D1D5DB;
+    transform: none;
+    box-shadow: none;
 }
 
 /* ゲームページ */
