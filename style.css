@@ -1384,6 +1384,71 @@ body {
     font-weight: bold;
 }
 
+/* 年間一覧 月行クリック展開 */
+.yearly-month-row {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.yearly-month-row:hover {
+    background: #F0F7FF;
+}
+
+.yearly-month-row.expanded {
+    background: #EFF6FF;
+}
+
+.month-detail-row td {
+    padding: 0 !important;
+    background: #F9FAFB;
+}
+
+.month-detail-content {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.month-detail-section {
+    margin-bottom: 0.4rem;
+}
+
+.month-detail-section:last-child {
+    margin-bottom: 0;
+}
+
+.month-detail-label {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    margin-bottom: 0.2rem;
+}
+
+.income-label {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.expense-label {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.month-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.15rem 0.5rem;
+    color: #4B5563;
+}
+
+.month-detail-empty {
+    text-align: center;
+    color: #9CA3AF;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+}
+
 #saveExpensesBtn {
     background: #E5E7EB;
     color: #374151;

@@ -2292,6 +2292,7 @@ async function renderExpenseChart() {
         const totalExpenseData = [];
         const balanceData = [];
         const cumulativeBalanceData = [];
+        const monthlyRawData = []; // 月ごとの生データ
         let cumulativeBalance = 0;
 
         for (const month of months) {
@@ -2320,6 +2321,7 @@ async function renderExpenseChart() {
                 totalIncomeData.push(totalIncome);
                 totalExpenseData.push(totalExpense);
                 balanceData.push(monthBalance);
+                monthlyRawData.push({ income: data.income || {}, expenses: data.expenses || {} });
 
                 // 累積収支を計算
                 cumulativeBalance += monthBalance;
@@ -2328,6 +2330,7 @@ async function renderExpenseChart() {
                 totalIncomeData.push(0);
                 totalExpenseData.push(0);
                 balanceData.push(0);
+                monthlyRawData.push(null);
                 cumulativeBalanceData.push(cumulativeBalance);
             }
         }
@@ -2343,11 +2346,42 @@ async function renderExpenseChart() {
             yearTotalExpense += totalExpenseData[i];
             const bal = balanceData[i];
             const balClass = bal >= 0 ? 'positive' : 'negative';
-            tableHTML += `<tr>
+            tableHTML += `<tr class="yearly-month-row" onclick="toggleMonthDetail(this, ${i})">
                 <td>${monthLabels[i]}</td>
                 <td class="num">${totalIncomeData[i].toLocaleString()}</td>
                 <td class="num">${totalExpenseData[i].toLocaleString()}</td>
                 <td class="num ${balClass}">${bal >= 0 ? '+' : ''}${bal.toLocaleString()}</td>
+            </tr>`;
+
+            // 詳細行（初期非表示）
+            const raw = monthlyRawData[i];
+            let detailContent = '';
+            if (raw) {
+                const incomeEntries = Object.entries(raw.income).filter(([, v]) => v > 0);
+                const expenseEntries = Object.entries(raw.expenses).filter(([, v]) => v > 0);
+                if (incomeEntries.length > 0 || expenseEntries.length > 0) {
+                    if (incomeEntries.length > 0) {
+                        detailContent += '<div class="month-detail-section"><span class="month-detail-label income-label">収入</span>';
+                        for (const [name, val] of incomeEntries) {
+                            detailContent += `<div class="month-detail-item"><span>${name}</span><span class="positive">${val.toLocaleString()}円</span></div>`;
+                        }
+                        detailContent += '</div>';
+                    }
+                    if (expenseEntries.length > 0) {
+                        detailContent += '<div class="month-detail-section"><span class="month-detail-label expense-label">支出</span>';
+                        for (const [name, val] of expenseEntries) {
+                            detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${val.toLocaleString()}円</span></div>`;
+                        }
+                        detailContent += '</div>';
+                    }
+                } else {
+                    detailContent = '<div class="month-detail-empty">データなし</div>';
+                }
+            } else {
+                detailContent = '<div class="month-detail-empty">データなし</div>';
+            }
+            tableHTML += `<tr class="month-detail-row" style="display:none;">
+                <td colspan="4"><div class="month-detail-content">${detailContent}</div></td>
             </tr>`;
         }
         const yearBalance = yearTotalIncome - yearTotalExpense;
@@ -2426,6 +2460,16 @@ async function renderExpenseChart() {
         });
     } catch (error) {
         console.error('グラフ表示エラー:', error);
+    }
+}
+
+// 月詳細行のトグル
+function toggleMonthDetail(rowEl, index) {
+    const detailRow = rowEl.nextElementSibling;
+    if (detailRow && detailRow.classList.contains('month-detail-row')) {
+        const isVisible = detailRow.style.display !== 'none';
+        detailRow.style.display = isVisible ? 'none' : 'table-row';
+        rowEl.classList.toggle('expanded', !isVisible);
     }
 }
 
