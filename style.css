@@ -1248,96 +1248,110 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.expenses-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+/* Excel風テーブル */
+.expenses-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #E5E7EB;
 }
 
-.expense-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.expense-item label {
+.expenses-table thead th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: #374151;
+    background: #F9FAFB;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.expenses-table tbody td {
+    padding: 0.35rem 0.75rem;
+    border-bottom: 1px solid #F3F4F6;
     font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
 }
 
-.expense-item input {
-    padding: 0.75rem;
-    border: 2px solid #E5E7EB;
-    border-radius: 0.5rem;
-    font-size: 1rem;
+.expenses-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.expenses-table .item-label {
+    font-weight: 500;
+    color: #374151;
+    white-space: nowrap;
+    width: 40%;
+}
+
+.expenses-table .item-input {
+    width: 60%;
+}
+
+.expenses-table .item-input input {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    text-align: right;
+    background: transparent;
     transition: border-color 0.2s;
+    box-sizing: border-box;
 }
 
-.expense-item input:focus {
+.expenses-table .item-input input:focus {
     outline: none;
     border-color: #60A5FA;
+    background: #F0F7FF;
 }
 
-.income-section, .expense-section {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: #F9FAFB;
-    border-radius: 0.75rem;
-}
-
-.income-section h3, .expense-section h3 {
-    margin-bottom: 1rem;
-    color: #374151;
-    font-size: 1.125rem;
-}
-
-.expenses-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    border-radius: 0.5rem;
-    font-size: 1.125rem;
+.expenses-table tfoot td {
+    padding: 0.6rem 0.75rem;
     font-weight: bold;
+    font-size: 0.95rem;
+    border-top: 2px solid #E5E7EB;
 }
 
-.income-total {
+.income-total-row {
     background: linear-gradient(to right, #34D399, #10B981);
     color: white;
 }
 
-.expense-total {
+.expense-total-row {
     background: linear-gradient(to right, #F87171, #EF4444);
     color: white;
 }
 
-.balance-section {
+.balance-table {
     margin-bottom: 1rem;
 }
 
-.balance-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
+.balance-row {
     background: linear-gradient(to right, #60A5FA, #3B82F6);
-    border-radius: 0.75rem;
     color: white;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: bold;
 }
 
+.balance-row td {
+    padding: 0.75rem !important;
+}
+
+.balance-row td:last-child {
+    text-align: right;
+}
+
 .total-amount {
-    font-size: 1.5rem;
+    font-size: 1rem;
+    text-align: right;
 }
 
 .balance-amount {
-    font-size: 1.75rem;
+    font-size: 1.1rem;
+    text-align: right;
 }
 
 /* ゲームページ */

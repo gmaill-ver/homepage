@@ -2117,18 +2117,18 @@ function renderExpenseInputs() {
 
     // 収入入力欄
     incomeContainer.innerHTML = incomeItems.map((item, index) => `
-        <div class="expense-item">
-            <label>${item}</label>
-            <input type="number" id="income_${index}" placeholder="0" min="0" data-item="${item}">
-        </div>
+        <tr>
+            <td class="item-label">${item}</td>
+            <td class="item-input"><input type="number" id="income_${index}" placeholder="0" min="0" data-item="${item}"></td>
+        </tr>
     `).join('');
 
     // 支出入力欄
     expenseContainer.innerHTML = expenseItems.map((item, index) => `
-        <div class="expense-item">
-            <label>${item}</label>
-            <input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}">
-        </div>
+        <tr>
+            <td class="item-label">${item}</td>
+            <td class="item-input"><input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}"></td>
+        </tr>
     `).join('');
 
     // イベントリスナーを追加

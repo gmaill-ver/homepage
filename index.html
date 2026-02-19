@@ -306,32 +306,42 @@
                     </div>
 
                     <!-- 収入セクション -->
-                    <div class="income-section">
-                        <h3>💵 収入</h3>
-                        <div id="incomeInputs" class="expenses-grid"></div>
-                        <div class="expenses-total income-total">
-                            <span>収入合計</span>
-                            <span id="totalIncome" class="total-amount">0 円</span>
-                        </div>
-                    </div>
+                    <table class="expenses-table income-table">
+                        <thead>
+                            <tr><th colspan="2">💵 収入</th></tr>
+                        </thead>
+                        <tbody id="incomeInputs"></tbody>
+                        <tfoot>
+                            <tr class="total-row income-total-row">
+                                <td>収入合計</td>
+                                <td id="totalIncome" class="total-amount">0 円</td>
+                            </tr>
+                        </tfoot>
+                    </table>
 
                     <!-- 支出セクション -->
-                    <div class="expense-section">
-                        <h3>💸 支出</h3>
-                        <div id="expenseInputs" class="expenses-grid"></div>
-                        <div class="expenses-total expense-total">
-                            <span>支出合計</span>
-                            <span id="totalExpenses" class="total-amount">0 円</span>
-                        </div>
-                    </div>
+                    <table class="expenses-table expense-table">
+                        <thead>
+                            <tr><th colspan="2">💸 支出</th></tr>
+                        </thead>
+                        <tbody id="expenseInputs"></tbody>
+                        <tfoot>
+                            <tr class="total-row expense-total-row">
+                                <td>支出合計</td>
+                                <td id="totalExpenses" class="total-amount">0 円</td>
+                            </tr>
+                        </tfoot>
+                    </table>
 
                     <!-- 収支 -->
-                    <div class="balance-section">
-                        <div class="balance-total">
-                            <span>収支</span>
-                            <span id="totalBalance" class="balance-amount">0 円</span>
-                        </div>
-                    </div>
+                    <table class="expenses-table balance-table">
+                        <tbody>
+                            <tr class="balance-row">
+                                <td>収支</td>
+                                <td id="totalBalance" class="balance-amount">0 円</td>
+                            </tr>
+                        </tbody>
+                    </table>
 
                     <button id="saveExpensesBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月のデータを保存</button>
 
