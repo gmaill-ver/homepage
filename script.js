@@ -2339,7 +2339,6 @@ async function renderExpenseChart() {
             <thead><tr><th>月</th><th>収入</th><th>支出</th><th>収支</th></tr></thead><tbody>`;
         let yearTotalIncome = 0, yearTotalExpense = 0;
         for (let i = 0; i < 12; i++) {
-            if (totalIncomeData[i] === 0 && totalExpenseData[i] === 0) continue;
             yearTotalIncome += totalIncomeData[i];
             yearTotalExpense += totalExpenseData[i];
             const bal = balanceData[i];
