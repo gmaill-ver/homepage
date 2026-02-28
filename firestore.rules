@@ -72,6 +72,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // 献立
+    match /menus/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // デフォルトでアクセス拒否
     match /{document=**} {
       allow read, write: if false;

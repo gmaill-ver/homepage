@@ -1947,15 +1947,30 @@ async function deleteMemo(id) {
 
 let currentMenuYear = new Date().getFullYear();
 let currentMenuMonth = new Date().getMonth();
+let dishList = [];
+let menuInitialized = false;
 
 function initializeMenu() {
+    if (!menuInitialized) {
+        document.getElementById('prevMenuMonth').addEventListener('click', previousMenuMonth);
+        document.getElementById('nextMenuMonth').addEventListener('click', nextMenuMonth);
+        document.getElementById('saveMenuBtn').addEventListener('click', saveMenu);
+        document.getElementById('manageDishListBtn').addEventListener('click', () => {
+            renderDishItemsList();
+            openModal('dishListModal');
+        });
+        document.getElementById('addDishItemBtn').addEventListener('click', addDishItem);
+        document.getElementById('dishItemName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addDishItem();
+        });
+        document.getElementById('closeDishListBtn').addEventListener('click', () => closeModal('dishListModal'));
+        menuInitialized = true;
+    }
     updateMenuMonthDisplay();
-    renderMenuInputs();
-    loadMenuData();
-
-    document.getElementById('prevMenuMonth').addEventListener('click', previousMenuMonth);
-    document.getElementById('nextMenuMonth').addEventListener('click', nextMenuMonth);
-    document.getElementById('saveMenuBtn').addEventListener('click', saveMenu);
+    loadDishList().then(() => {
+        renderMenuInputs();
+        loadMenuData();
+    });
 }
 
 function updateMenuMonthDisplay() {
@@ -1990,7 +2005,12 @@ function renderMenuInputs() {
     const daysInMonth = new Date(currentMenuYear, currentMenuMonth + 1, 0).getDate();
     const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
-    let html = '';
+    let html = '<datalist id="dishDatalist">';
+    dishList.forEach(dish => {
+        html += `<option value="${dish}">`;
+    });
+    html += '</datalist>';
+
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentMenuYear, currentMenuMonth, day);
         const dayName = dayNames[date.getDay()];
@@ -1998,10 +2018,67 @@ function renderMenuInputs() {
         const dayClass = isWeekend ? ' weekend' : '';
         html += `<div class="menu-day-row${dayClass}">
             <label class="menu-day-label">${day}日 (${dayName})</label>
-            <input type="text" id="menu-day-${day}" class="menu-day-input" placeholder="夜ご飯のメニュー">
+            <input type="text" id="menu-day-${day}" class="menu-day-input" list="dishDatalist" placeholder="メニューを選択・入力">
         </div>`;
     }
     container.innerHTML = html;
+}
+
+async function loadDishList() {
+    try {
+        const doc = await db.collection('settings').doc('dishList').get();
+        if (doc.exists) {
+            dishList = doc.data().items || [];
+        } else {
+            dishList = [];
+        }
+    } catch (error) {
+        console.error('料理リスト読み込みエラー:', error);
+        dishList = [];
+    }
+}
+
+async function saveDishList() {
+    try {
+        await db.collection('settings').doc('dishList').set({ items: dishList });
+    } catch (error) {
+        console.error('料理リスト保存エラー:', error);
+    }
+}
+
+function renderDishItemsList() {
+    const list = document.getElementById('dishItemsList');
+    list.innerHTML = dishList.map((item, index) => `
+        <div class="email-item">
+            <span>${item}</span>
+            <button class="email-remove" onclick="removeDishItem(${index})">✕</button>
+        </div>
+    `).join('');
+}
+
+async function addDishItem() {
+    const input = document.getElementById('dishItemName');
+    const name = input.value.trim();
+    if (!name) return;
+    if (dishList.includes(name)) {
+        alert('この料理は既に登録されています');
+        return;
+    }
+    dishList.push(name);
+    dishList.sort();
+    await saveDishList();
+    input.value = '';
+    renderDishItemsList();
+    renderMenuInputs();
+    loadMenuData();
+}
+
+async function removeDishItem(index) {
+    dishList.splice(index, 1);
+    await saveDishList();
+    renderDishItemsList();
+    renderMenuInputs();
+    loadMenuData();
 }
 
 async function loadMenuData() {
