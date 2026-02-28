@@ -189,6 +189,11 @@
                     <div class="feature-card-icon">📅</div>
                     <div class="feature-card-title">期限管理</div>
                 </div>
+
+                <div class="feature-card" onclick="showFeature('menu')">
+                    <div class="feature-card-icon">🍽</div>
+                    <div class="feature-card-title">献立</div>
+                </div>
             </div>
 
             <!-- チェックリスト機能ページ -->
@@ -517,6 +522,24 @@
                 <section class="card" id="expiryCard">
                     <div class="card-content" style="padding-top: 0;">
                         <div id="expiryList" class="expiry-list"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 献立機能ページ -->
+            <div id="menuFeaturePage" class="feature-page" style="display: none;">
+                <div class="feature-page-header" style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0; font-size: 1rem; font-weight: 600;">🍽 献立</h2>
+                </div>
+                <section class="card" id="menuCard">
+                    <div class="card-content" style="padding-top: 0;">
+                        <div class="expense-month-selector">
+                            <button id="prevMenuMonth" class="month-btn">◀</button>
+                            <div id="currentMenuMonth" class="month-display"></div>
+                            <button id="nextMenuMonth" class="month-btn">▶</button>
+                        </div>
+                        <div id="menuList"></div>
+                        <button id="saveMenuBtn" class="btn-primary" style="width: 100%; margin-top: 1rem;">この月の献立を保存</button>
                     </div>
                 </section>
             </div>

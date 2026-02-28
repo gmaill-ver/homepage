@@ -1659,6 +1659,9 @@ function loadFeatureData(featureName) {
         case 'expiry':
             renderExpiryItems();
             break;
+        case 'menu':
+            initializeMenu();
+            break;
     }
 }
 
@@ -1935,6 +1938,108 @@ async function deleteMemo(id) {
     } catch (error) {
         console.error('メモ削除エラー:', error);
         alert('メモの削除に失敗しました');
+    }
+}
+
+// ==========================================
+// 献立管理機能
+// ==========================================
+
+let currentMenuYear = new Date().getFullYear();
+let currentMenuMonth = new Date().getMonth();
+
+function initializeMenu() {
+    updateMenuMonthDisplay();
+    renderMenuInputs();
+    loadMenuData();
+
+    document.getElementById('prevMenuMonth').addEventListener('click', previousMenuMonth);
+    document.getElementById('nextMenuMonth').addEventListener('click', nextMenuMonth);
+    document.getElementById('saveMenuBtn').addEventListener('click', saveMenu);
+}
+
+function updateMenuMonthDisplay() {
+    document.getElementById('currentMenuMonth').textContent =
+        `${currentMenuYear}年 ${currentMenuMonth + 1}月`;
+}
+
+function previousMenuMonth() {
+    currentMenuMonth--;
+    if (currentMenuMonth < 0) {
+        currentMenuMonth = 11;
+        currentMenuYear--;
+    }
+    updateMenuMonthDisplay();
+    renderMenuInputs();
+    loadMenuData();
+}
+
+function nextMenuMonth() {
+    currentMenuMonth++;
+    if (currentMenuMonth > 11) {
+        currentMenuMonth = 0;
+        currentMenuYear++;
+    }
+    updateMenuMonthDisplay();
+    renderMenuInputs();
+    loadMenuData();
+}
+
+function renderMenuInputs() {
+    const container = document.getElementById('menuList');
+    const daysInMonth = new Date(currentMenuYear, currentMenuMonth + 1, 0).getDate();
+    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+
+    let html = '';
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentMenuYear, currentMenuMonth, day);
+        const dayName = dayNames[date.getDay()];
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const dayClass = isWeekend ? ' weekend' : '';
+        html += `<div class="menu-day-row${dayClass}">
+            <label class="menu-day-label">${day}日 (${dayName})</label>
+            <input type="text" id="menu-day-${day}" class="menu-day-input" placeholder="夜ご飯のメニュー">
+        </div>`;
+    }
+    container.innerHTML = html;
+}
+
+async function loadMenuData() {
+    const yearMonth = `${currentMenuYear}-${String(currentMenuMonth + 1).padStart(2, '0')}`;
+    try {
+        const doc = await db.collection('menus').doc(yearMonth).get();
+        if (doc.exists) {
+            const data = doc.data();
+            Object.keys(data).forEach(day => {
+                const input = document.getElementById(`menu-day-${day}`);
+                if (input) {
+                    input.value = data[day];
+                }
+            });
+        }
+    } catch (error) {
+        console.error('献立データ読み込みエラー:', error);
+    }
+}
+
+async function saveMenu() {
+    const yearMonth = `${currentMenuYear}-${String(currentMenuMonth + 1).padStart(2, '0')}`;
+    const daysInMonth = new Date(currentMenuYear, currentMenuMonth + 1, 0).getDate();
+    const data = {};
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const input = document.getElementById(`menu-day-${day}`);
+        if (input && input.value.trim()) {
+            data[String(day)] = input.value.trim();
+        }
+    }
+
+    try {
+        await db.collection('menus').doc(yearMonth).set(data);
+        alert(`${currentMenuYear}年${currentMenuMonth + 1}月の献立を保存しました`);
+    } catch (error) {
+        console.error('献立保存エラー:', error);
+        alert('保存に失敗しました');
     }
 }
 

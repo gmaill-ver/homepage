@@ -1964,3 +1964,31 @@ body {
 .expiry-status-text.expired {
     color: #6B7280;
 }
+
+/* 献立 */
+.menu-day-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid #F3F4F6;
+}
+
+.menu-day-row.weekend {
+    background: #FFF7ED;
+}
+
+.menu-day-label {
+    min-width: 5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.menu-day-input {
+    flex: 1;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+}
