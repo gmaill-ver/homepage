@@ -2009,7 +2009,7 @@ function renderMenuInputs() {
     dishList.forEach(dish => {
         html += `<option value="${dish}">`;
     });
-    html += '</datalist>';
+    html += '</datalist><div class="menu-grid">';
 
     for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(currentMenuYear, currentMenuMonth, day);
@@ -2018,9 +2018,10 @@ function renderMenuInputs() {
         const dayClass = isWeekend ? ' weekend' : '';
         html += `<div class="menu-day-row${dayClass}">
             <label class="menu-day-label">${day}日 (${dayName})</label>
-            <input type="text" id="menu-day-${day}" class="menu-day-input" list="dishDatalist" placeholder="メニューを選択・入力">
+            <input type="text" id="menu-day-${day}" class="menu-day-input" list="dishDatalist" placeholder="メニュー">
         </div>`;
     }
+    html += '</div>';
     container.innerHTML = html;
 }
 

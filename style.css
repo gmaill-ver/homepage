@@ -1966,12 +1966,19 @@ body {
 }
 
 /* 献立 */
+.menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.375rem;
+}
+
 .menu-day-row {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.375rem 0;
-    border-bottom: 1px solid #F3F4F6;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.375rem;
+    border: 1px solid #F3F4F6;
+    border-radius: 0.375rem;
 }
 
 .menu-day-row.weekend {
@@ -1979,16 +1986,15 @@ body {
 }
 
 .menu-day-label {
-    min-width: 5rem;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #374151;
 }
 
 .menu-day-input {
-    flex: 1;
-    padding: 0.375rem 0.5rem;
+    width: 100%;
+    padding: 0.25rem 0.375rem;
     border: 1px solid #E5E7EB;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
 }
