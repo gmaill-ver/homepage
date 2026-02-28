@@ -2009,19 +2009,30 @@ function renderMenuInputs() {
     dishList.forEach(dish => {
         html += `<option value="${dish}">`;
     });
-    html += '</datalist><div class="menu-grid">';
+    html += '</datalist>';
 
-    for (let day = 1; day <= daysInMonth; day++) {
+    const half = Math.ceil(daysInMonth / 2);
+
+    function dayHtml(day) {
         const date = new Date(currentMenuYear, currentMenuMonth, day);
         const dayName = dayNames[date.getDay()];
         const isWeekend = date.getDay() === 0 || date.getDay() === 6;
         const dayClass = isWeekend ? ' weekend' : '';
-        html += `<div class="menu-day-row${dayClass}">
-            <label class="menu-day-label">${day}日 (${dayName})</label>
+        return `<div class="menu-day-row${dayClass}">
+            <label class="menu-day-label">${day}日(${dayName})</label>
             <input type="text" id="menu-day-${day}" class="menu-day-input" list="dishDatalist" placeholder="メニュー">
         </div>`;
     }
-    html += '</div>';
+
+    html += '<div class="menu-grid"><div class="menu-column">';
+    for (let day = 1; day <= half; day++) {
+        html += dayHtml(day);
+    }
+    html += '</div><div class="menu-column">';
+    for (let day = half + 1; day <= daysInMonth; day++) {
+        html += dayHtml(day);
+    }
+    html += '</div></div>';
     container.innerHTML = html;
 }
 
