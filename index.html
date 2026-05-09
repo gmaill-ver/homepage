@@ -339,7 +339,17 @@
                     </table>
 
                     <!-- 年間一覧テーブル -->
-                    <div id="yearlyExpenseTable" class="expense-chart-container" style="margin-top: 2rem;"></div>
+                    <div class="expense-chart-container" style="margin-top: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0;">📅 年間一覧</h3>
+                            <div class="expense-month-selector">
+                                <button id="prevChartYear" class="month-btn">◀</button>
+                                <div id="currentChartYear" class="month-display"></div>
+                                <button id="nextChartYear" class="month-btn">▶</button>
+                            </div>
+                        </div>
+                        <div id="yearlyExpenseTable"></div>
+                    </div>
 
                     <!-- カテゴリ別月次一覧 -->
                     <div id="categoryMonthlySection" class="expense-chart-container" style="margin-top: 2rem; display: none;">
@@ -350,14 +360,7 @@
 
                     <!-- 折れ線グラフ -->
                     <div class="expense-chart-container">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; margin-bottom: 1rem;">
-                            <h3>📊 収支推移</h3>
-                            <div class="expense-month-selector">
-                                <button id="prevChartYear" class="month-btn">◀</button>
-                                <div id="currentChartYear" class="month-display"></div>
-                                <button id="nextChartYear" class="month-btn">▶</button>
-                            </div>
-                        </div>
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">📊 収支推移</h3>
                         <canvas id="expenseSummaryChart" style="max-height: 300px;"></canvas>
                     </div>
 
