@@ -2195,10 +2195,12 @@ function renderExpenseItemsList() {
         const name = itemName(item);
         const fixed = itemFixed(item);
         return `<div class="email-item expense-item-manage">
-            <span class="item-manage-name">${name}</span>
-            <input type="number" class="fixed-input" placeholder="固定額" value="${fixed ?? ''}"
-                   onchange="setItemFixed('income',${index},this.value)" title="毎月自動入力する固定額">
-            <button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>
+            <div class="item-manage-name">${name}</div>
+            <div class="item-manage-controls">
+                <input type="number" class="fixed-input" placeholder="固定額(任意)" value="${fixed ?? ''}"
+                       onchange="setItemFixed('income',${index},this.value)">
+                <button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>
+            </div>
         </div>`;
     }).join('');
 
@@ -2210,10 +2212,12 @@ function renderExpenseItemsList() {
         const hasSubs = subs.length > 0;
         let html = `<div class="expense-item-manage-group">
             <div class="email-item expense-item-manage">
-                <span class="item-manage-name">${name}</span>
-                ${!hasSubs ? `<input type="number" class="fixed-input" placeholder="固定額" value="${fixed ?? ''}"
-                    onchange="setItemFixed('expense',${index},this.value)" title="毎月自動入力する固定額">` : ''}
-                <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
+                <div class="item-manage-name">${name}</div>
+                <div class="item-manage-controls">
+                    ${!hasSubs ? `<input type="number" class="fixed-input" placeholder="固定額(任意)" value="${fixed ?? ''}"
+                        onchange="setItemFixed('expense',${index},this.value)">` : ''}
+                    <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
+                </div>
             </div>`;
         if (hasSubs) {
             html += `<div class="sub-list">`;

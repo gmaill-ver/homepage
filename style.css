@@ -1522,17 +1522,21 @@ body {
 
 /* 管理モーダル: 項目管理 */
 .expense-item-manage {
-    gap: 0.4rem;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
 }
 
 .item-manage-name {
-    flex: 1;
     font-size: 0.875rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
+    font-weight: 500;
+    color: #374151;
+}
+
+.item-manage-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .fixed-input {
