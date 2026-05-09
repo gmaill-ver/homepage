@@ -2361,56 +2361,34 @@ function renderExpenseInputs() {
         const name = itemName(item);
         const fixed = itemFixed(item);
         const subs = itemSubs(item);
-        if (subs.length > 0) {
-            expenseHTML += `<tr class="parent-item-row">
-                <td class="item-label">${name}</td>
-                <td class="item-input item-computed">合計 <span id="expense_${index}_total" class="computed-total">0</span>円</td>
+        // 親カテゴリは subs の有無に関わらず直接入力
+        expenseHTML += `<tr class="${subs.length > 0 ? 'parent-item-row' : ''}">
+            <td class="item-label">${name}${fixed != null ? ' <span class="fixed-badge">固定</span>' : ''}</td>
+            <td class="item-input"><input type="number" id="expense_${index}" placeholder="0" min="0"></td>
+        </tr>`;
+        // サブ項目は参考入力（合計には含めない）
+        subs.forEach((sub, si) => {
+            expenseHTML += `<tr class="sub-item-row">
+                <td class="item-label sub-label">└ ${sub}</td>
+                <td class="item-input"><input type="number" id="expense_${index}_sub_${si}" placeholder="0" min="0" class="sub-input-ref"></td>
             </tr>`;
-            subs.forEach((sub, si) => {
-                expenseHTML += `<tr class="sub-item-row">
-                    <td class="item-label sub-label">└ ${sub}</td>
-                    <td class="item-input"><input type="number" id="expense_${index}_sub_${si}" placeholder="0" min="0"></td>
-                </tr>`;
-            });
-        } else {
-            expenseHTML += `<tr>
-                <td class="item-label">${name}${fixed != null ? ' <span class="fixed-badge">固定</span>' : ''}</td>
-                <td class="item-input"><input type="number" id="expense_${index}" placeholder="0" min="0"></td>
-            </tr>`;
-        }
+        });
     });
     expenseContainer.innerHTML = expenseHTML;
 
-    // イベントリスナーを追加
+    // イベントリスナー（親・サブともに自動保存トリガー）
     incomeItems.forEach((item, index) => {
         document.getElementById(`income_${index}`)?.addEventListener('input', onExpenseInput);
     });
     expenseItems.forEach((item, index) => {
-        const subs = itemSubs(item);
-        if (subs.length > 0) {
-            subs.forEach((sub, si) => {
-                document.getElementById(`expense_${index}_sub_${si}`)?.addEventListener('input', () => {
-                    updateParentTotal(index);
-                    onExpenseInput();
-                });
-            });
-        } else {
-            document.getElementById(`expense_${index}`)?.addEventListener('input', onExpenseInput);
-        }
+        document.getElementById(`expense_${index}`)?.addEventListener('input', onExpenseInput);
+        itemSubs(item).forEach((sub, si) => {
+            document.getElementById(`expense_${index}_sub_${si}`)?.addEventListener('input', onExpenseInput);
+        });
     });
 
     const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
     loadExpenseData(yearMonth);
-}
-
-// 親カテゴリの合計表示を更新
-function updateParentTotal(index) {
-    const subs = itemSubs(expenseItems[index]);
-    const total = subs.reduce((sum, sub, si) => {
-        return sum + (Number(document.getElementById(`expense_${index}_sub_${si}`)?.value) || 0);
-    }, 0);
-    const el = document.getElementById(`expense_${index}_total`);
-    if (el) el.textContent = total.toLocaleString();
 }
 
 // 指定月の費用データを読み込み
@@ -2427,17 +2405,19 @@ async function loadExpenseData(yearMonth) {
             expenseItems.forEach((item, index) => {
                 const name = itemName(item);
                 const subs = itemSubs(item);
-                if (subs.length > 0) {
-                    const subData = (typeof data.expenses?.[name] === 'object') ? data.expenses[name] : {};
-                    subs.forEach((sub, si) => {
-                        const input = document.getElementById(`expense_${index}_sub_${si}`);
-                        if (input) input.value = subData[sub] ?? '';
-                    });
-                    updateParentTotal(index);
-                } else {
-                    const input = document.getElementById(`expense_${index}`);
-                    if (input) input.value = data.expenses?.[name] ?? data[name] ?? '';
+                const stored = data.expenses?.[name] ?? data[name];
+                // 親の値を読み込み
+                const parentInput = document.getElementById(`expense_${index}`);
+                if (parentInput) {
+                    parentInput.value = (typeof stored === 'number') ? (stored || '') :
+                                        (typeof stored === 'object' && stored !== null) ? (stored._total ?? '') : '';
                 }
+                // サブ項目の値を読み込み
+                const subData = (typeof stored === 'object' && stored !== null) ? stored : {};
+                subs.forEach((sub, si) => {
+                    const input = document.getElementById(`expense_${index}_sub_${si}`);
+                    if (input) input.value = subData[sub] ?? '';
+                });
             });
         } else {
             // 未保存の月: 固定費を自動セット
@@ -2446,34 +2426,24 @@ async function loadExpenseData(yearMonth) {
                 if (input) input.value = itemFixed(item) ?? '';
             });
             expenseItems.forEach((item, index) => {
-                const subs = itemSubs(item);
-                if (subs.length > 0) {
-                    subs.forEach((sub, si) => {
-                        const input = document.getElementById(`expense_${index}_sub_${si}`);
-                        if (input) input.value = '';
-                    });
-                    updateParentTotal(index);
-                } else {
-                    const input = document.getElementById(`expense_${index}`);
-                    if (input) input.value = itemFixed(item) ?? '';
-                }
+                const input = document.getElementById(`expense_${index}`);
+                if (input) input.value = itemFixed(item) ?? '';
+                itemSubs(item).forEach((sub, si) => {
+                    const subInput = document.getElementById(`expense_${index}_sub_${si}`);
+                    if (subInput) subInput.value = '';
+                });
             });
         }
-        calculateExpenseTotal();
     } catch (error) {
         console.error('費用データ読み込みエラー:', error);
     }
 }
 
-// 入力時：合計更新 + デバウンス自動保存
+// 入力時：デバウンス自動保存
 function onExpenseInput() {
-    calculateExpenseTotal();
     clearTimeout(autoSaveTimer);
     autoSaveTimer = setTimeout(() => saveMonthlyExpenses(), 800);
 }
-
-// 合計を計算（表示用・将来の拡張用）
-function calculateExpenseTotal() {}
 
 // 月次費用を保存
 async function saveMonthlyExpenses() {
@@ -2488,15 +2458,16 @@ async function saveMonthlyExpenses() {
     expenseItems.forEach((item, index) => {
         const name = itemName(item);
         const subs = itemSubs(item);
+        const parentVal = Number(document.getElementById(`expense_${index}`)?.value) || 0;
         if (subs.length > 0) {
-            data.expenses[name] = {};
+            // { _total: 親の値, サブ名: サブの値, ... }
+            const obj = { _total: parentVal };
             subs.forEach((sub, si) => {
-                const input = document.getElementById(`expense_${index}_sub_${si}`);
-                data.expenses[name][sub] = Number(input?.value) || 0;
+                obj[sub] = Number(document.getElementById(`expense_${index}_sub_${si}`)?.value) || 0;
             });
+            data.expenses[name] = obj;
         } else {
-            const input = document.getElementById(`expense_${index}`);
-            if (input) data.expenses[name] = Number(input.value) || 0;
+            data.expenses[name] = parentVal;
         }
     });
 
@@ -2567,13 +2538,15 @@ async function renderExpenseChart() {
                     totalIncome = Object.values(data.income).reduce((a, b) => a + b, 0);
                 }
 
-                // 支出合計（サブ項目はオブジェクト形式で保存されるため再帰的に合算）
+                // 支出合計（サブ項目がある場合は _total を使用）
                 let totalExpense = 0;
                 if (data.expenses) {
                     for (const val of Object.values(data.expenses)) {
                         if (typeof val === 'number') totalExpense += val;
                         else if (typeof val === 'object' && val !== null) {
-                            totalExpense += Object.values(val).reduce((a, b) => a + b, 0);
+                            // _total があればそれを使用、なければ旧形式として合算
+                            totalExpense += (val._total != null) ? val._total :
+                                Object.entries(val).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
                         }
                     }
                 } else {
@@ -2642,11 +2615,12 @@ async function renderExpenseChart() {
                             if (typeof val === 'number') {
                                 detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${val.toLocaleString()}円</span></div>`;
                             } else if (typeof val === 'object' && val !== null) {
-                                const total = Object.values(val).reduce((a, b) => a + b, 0);
-                                if (total > 0) {
-                                    detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${total.toLocaleString()}円</span></div>`;
+                                const displayTotal = (val._total != null) ? val._total :
+                                    Object.entries(val).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
+                                if (displayTotal > 0) {
+                                    detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${displayTotal.toLocaleString()}円</span></div>`;
                                     for (const [subName, subVal] of Object.entries(val)) {
-                                        if (subVal > 0) {
+                                        if (subName !== '_total' && subVal > 0) {
                                             detailContent += `<div class="month-detail-sub">(${subName} ${subVal.toLocaleString()}円)</div>`;
                                         }
                                     }
@@ -2818,7 +2792,8 @@ function showCategoryMonthly(category, type) {
             const stored = isIncome ? raw.income?.[category] : raw.expenses?.[category];
             if (typeof stored === 'number') val = stored;
             else if (typeof stored === 'object' && stored !== null) {
-                val = Object.values(stored).reduce((a, b) => a + b, 0);
+                val = (stored._total != null) ? stored._total :
+                    Object.entries(stored).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
             }
         }
         total += val;

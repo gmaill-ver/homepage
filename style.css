@@ -1483,8 +1483,15 @@ body {
 /* 入力フォーム: サブ項目行 */
 .sub-item-row .sub-label {
     padding-left: 1.5rem;
-    color: #6B7280;
+    color: #9CA3AF;
     font-size: 0.85rem;
+}
+
+.sub-input-ref {
+    color: #9CA3AF !important;
+    border-color: #E5E7EB !important;
+    background: #FAFAFA !important;
+    font-size: 0.85rem !important;
 }
 
 /* 年間詳細: サブ項目の括弧表示 */
