@@ -2433,6 +2433,9 @@ async function loadExpenseData(yearMonth) {
                     if (subInput) subInput.value = '';
                 });
             });
+            // 固定費が1つでもあれば即保存して一覧に反映
+            const hasFixed = [...incomeItems, ...expenseItems].some(i => itemFixed(i) != null);
+            if (hasFixed) saveMonthlyExpenses();
         }
     } catch (error) {
         console.error('費用データ読み込みエラー:', error);
