@@ -1283,11 +1283,11 @@ body {
     font-weight: 500;
     color: #374151;
     white-space: nowrap;
-    width: 40%;
+    width: 1%;
 }
 
 .expenses-table .item-input {
-    width: 60%;
+    width: auto;
 }
 
 .expenses-table .item-input input {
