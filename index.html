@@ -852,7 +852,10 @@
     <!-- 費用項目管理モーダル -->
     <div id="expenseItemsModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
-            <h3>収入・支出項目を管理</h3>
+            <div class="modal-header-row">
+                <h3 style="margin: 0;">収入・支出項目を管理</h3>
+                <button onclick="closeModal('expenseItemsModal')" class="modal-close-btn">✕</button>
+            </div>
 
             <!-- 収入項目 -->
             <div style="margin-bottom: 2rem;">

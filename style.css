@@ -1496,6 +1496,30 @@ body {
     justify-content: space-between;
 }
 
+/* モーダルヘッダー行（タイトル＋閉じるボタン） */
+.modal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #9CA3AF;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    background: #F3F4F6;
+    color: #374151;
+}
+
 /* 管理モーダル: 項目管理 */
 .expense-item-manage {
     gap: 0.4rem;
@@ -1505,6 +1529,10 @@ body {
 .item-manage-name {
     flex: 1;
     font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .fixed-input {
