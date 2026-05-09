@@ -2407,12 +2407,8 @@ function calculateExpenseTotal() {
         }
     });
 
-    // 収支
-    const balance = totalIncome - totalExpense;
-
     document.getElementById('totalIncome').textContent = totalIncome.toLocaleString() + ' 円';
     document.getElementById('totalExpenses').textContent = totalExpense.toLocaleString() + ' 円';
-    document.getElementById('totalBalance').textContent = balance.toLocaleString() + ' 円';
 }
 
 // 月次費用を保存
