@@ -2750,7 +2750,12 @@ function renderCategoryChips() {
     expenseItems.forEach(item => {
         const name = itemName(item);
         const escaped = name.replace(/"/g, '&quot;');
+        const subs = itemSubs(item);
         html += `<button class="category-chip expense-chip" data-category="${escaped}" data-type="expense">${name}</button>`;
+        subs.forEach(sub => {
+            const escapedSub = sub.replace(/"/g, '&quot;');
+            html += `<button class="category-chip expense-chip expense-sub-chip" data-category="${escapedSub}" data-type="expense-sub" data-parent="${escaped}">└ ${sub}</button>`;
+        });
     });
     container.innerHTML = html;
     section.style.display = (incomeItems.length + expenseItems.length) > 0 ? 'block' : 'none';
@@ -2758,23 +2763,28 @@ function renderCategoryChips() {
     container.onclick = e => {
         const chip = e.target.closest('.category-chip');
         if (!chip) return;
-        showCategoryMonthly(chip.dataset.category, chip.dataset.type);
+        showCategoryMonthly(chip.dataset.category, chip.dataset.type, chip.dataset.parent || null);
     };
 
     // 年切り替え後も選択中カテゴリを再表示
     if (selectedCategoryFilter) {
-        const activeChip = container.querySelector(`[data-category="${selectedCategoryFilter.name}"][data-type="${selectedCategoryFilter.type}"]`);
-        if (activeChip) activeChip.classList.add('active');
-        showCategoryMonthly(selectedCategoryFilter.name, selectedCategoryFilter.type);
+        const { name, type, parent } = selectedCategoryFilter;
+        const sel = parent
+            ? `[data-category="${name}"][data-type="${type}"][data-parent="${parent}"]`
+            : `[data-category="${name}"][data-type="${type}"]`;
+        container.querySelector(sel)?.classList.add('active');
+        showCategoryMonthly(name, type, parent);
     }
 }
 
 // カテゴリ別月次テーブルを表示
-function showCategoryMonthly(category, type) {
-    selectedCategoryFilter = { name: category, type };
+function showCategoryMonthly(category, type, parent = null) {
+    selectedCategoryFilter = { name: category, type, parent };
 
     document.querySelectorAll('#categoryChips .category-chip').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.category === category && btn.dataset.type === type);
+        const match = btn.dataset.category === category && btn.dataset.type === type
+            && (btn.dataset.parent || null) === parent;
+        btn.classList.toggle('active', match);
     });
 
     const tableContainer = document.getElementById('categoryMonthlyTable');
@@ -2782,6 +2792,7 @@ function showCategoryMonthly(category, type) {
 
     let total = 0;
     const isIncome = type === 'income';
+    const isSub = type === 'expense-sub';
     let tableHTML = `<table class="expenses-table yearly-summary-table">
         <thead><tr><th>月</th><th>${category}</th></tr></thead><tbody>`;
 
@@ -2789,11 +2800,17 @@ function showCategoryMonthly(category, type) {
         const raw = cachedMonthlyData[i];
         let val = 0;
         if (raw) {
-            const stored = isIncome ? raw.income?.[category] : raw.expenses?.[category];
-            if (typeof stored === 'number') val = stored;
-            else if (typeof stored === 'object' && stored !== null) {
-                val = (stored._total != null) ? stored._total :
-                    Object.entries(stored).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
+            if (isSub && parent) {
+                // サブカテゴリ: 親オブジェクトの中から取得
+                const parentData = raw.expenses?.[parent];
+                val = (typeof parentData === 'object' && parentData !== null) ? (parentData[category] || 0) : 0;
+            } else {
+                const stored = isIncome ? raw.income?.[category] : raw.expenses?.[category];
+                if (typeof stored === 'number') val = stored;
+                else if (typeof stored === 'object' && stored !== null) {
+                    val = (stored._total != null) ? stored._total :
+                        Object.entries(stored).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
+                }
             }
         }
         total += val;

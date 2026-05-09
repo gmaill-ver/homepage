@@ -1451,6 +1451,12 @@ body {
     border-color: #EF4444;
 }
 
+.expense-sub-chip {
+    font-size: 0.74rem;
+    opacity: 0.85;
+    padding-left: 0.5rem;
+}
+
 /* 固定費バッジ */
 .fixed-badge {
     display: inline-block;
