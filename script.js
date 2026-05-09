@@ -2621,7 +2621,7 @@ async function renderExpenseChart() {
                                     detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${displayTotal.toLocaleString()}円</span></div>`;
                                     for (const [subName, subVal] of Object.entries(val)) {
                                         if (subName !== '_total' && subVal > 0) {
-                                            detailContent += `<div class="month-detail-sub">(${subName} ${subVal.toLocaleString()}円)</div>`;
+                                            detailContent += `<div class="month-detail-item month-detail-sub"><span>- ${subName}</span><span>(${subVal.toLocaleString()}円)</span></div>`;
                                         }
                                     }
                                 }

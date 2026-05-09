@@ -1494,13 +1494,11 @@ body {
     font-size: 0.85rem !important;
 }
 
-/* 年間詳細: サブ項目の括弧表示 */
+/* 年間詳細: サブ項目 */
 .month-detail-sub {
-    padding: 0.1rem 1.25rem;
+    padding-left: 1em;
     font-size: 0.76rem;
     color: #9CA3AF;
-    display: flex;
-    justify-content: space-between;
 }
 
 /* モーダルヘッダー行（タイトル＋閉じるボタン） */
