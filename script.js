@@ -2146,6 +2146,7 @@ let cachedMonthlyData = []; // 年間グラフ描画時にキャッシュした1
 let selectedCategoryFilter = null; // カテゴリ別表示で選択中の {name, type}
 let autoSaveTimer = null; // 自動保存デバウンス用タイマー
 const expandedSubInputs = new Set(); // 管理モーダルでサブ追加入力を表示中の親インデックス
+let deleteMode = false; // 削除ボタンの表示状態
 
 // ── アイテムヘルパー ──────────────────────────────────
 function itemName(item)  { return typeof item === 'string' ? item : (item.name || ''); }
@@ -2199,7 +2200,7 @@ function renderExpenseItemsList() {
             <div class="item-manage-controls">
                 <input type="number" class="fixed-input" placeholder="固定額(任意)" value="${fixed ?? ''}"
                        onchange="setItemFixed('income',${index},this.value)">
-                <button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>
+                ${deleteMode ? `<button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>` : ''}
             </div>
         </div>`;
     }).join('');
@@ -2216,7 +2217,7 @@ function renderExpenseItemsList() {
                 <div class="item-manage-controls">
                     ${!hasSubs ? `<input type="number" class="fixed-input" placeholder="固定額(任意)" value="${fixed ?? ''}"
                         onchange="setItemFixed('expense',${index},this.value)">` : ''}
-                    <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
+                    ${deleteMode ? `<button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>` : ''}
                 </div>
             </div>`;
         if (hasSubs) {
@@ -2224,7 +2225,7 @@ function renderExpenseItemsList() {
             subs.forEach((sub, si) => {
                 html += `<div class="sub-item-manage">
                     <span class="sub-name">└ ${sub}</span>
-                    <button class="email-remove" onclick="removeSubItem(${index},${si})">✕</button>
+                    ${deleteMode ? `<button class="email-remove" onclick="removeSubItem(${index},${si})">✕</button>` : ''}
                 </div>`;
             });
             html += `<div class="sub-add-row">
@@ -2318,6 +2319,17 @@ async function addSubItem(parentIndex) {
     expandedSubInputs.delete(parentIndex);
     try { await saveExpenseItemSettings(); renderExpenseItemsList(); renderExpenseInputs(); }
     catch (e) { console.error('サブ項目追加エラー:', e); }
+}
+
+// 削除モードの切り替え
+function toggleDeleteMode() {
+    deleteMode = !deleteMode;
+    const btn = document.getElementById('toggleDeleteModeBtn');
+    if (btn) {
+        btn.textContent = deleteMode ? '完了' : '編集';
+        btn.classList.toggle('btn-edit-mode-active', deleteMode);
+    }
+    renderExpenseItemsList();
 }
 
 // サブ項目を削除
@@ -2949,6 +2961,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('prevChartYear').addEventListener('click', previousChartYear);
     document.getElementById('nextChartYear').addEventListener('click', nextChartYear);
     document.getElementById('manageExpenseItemsBtn').addEventListener('click', () => {
+        deleteMode = false;
         renderExpenseItemsList();
         openModal('expenseItemsModal');
     });

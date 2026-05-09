@@ -854,7 +854,10 @@
         <div class="modal-content modal-small">
             <div class="modal-header-row">
                 <h3 style="margin: 0;">収入・支出項目を管理</h3>
-                <button onclick="closeModal('expenseItemsModal')" class="modal-close-btn">✕</button>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <button id="toggleDeleteModeBtn" onclick="toggleDeleteMode()" class="btn-edit-mode">編集</button>
+                    <button onclick="closeModal('expenseItemsModal')" class="modal-close-btn">✕</button>
+                </div>
             </div>
 
             <!-- 収入項目 -->

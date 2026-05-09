@@ -1520,6 +1520,21 @@ body {
     color: #374151;
 }
 
+.btn-edit-mode {
+    background: none;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    color: #6B7280;
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+}
+
+.btn-edit-mode-active {
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
 /* 管理モーダル: 項目管理 */
 .expense-item-manage {
     flex-direction: column;
