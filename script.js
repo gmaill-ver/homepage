@@ -2407,8 +2407,6 @@ function calculateExpenseTotal() {
         }
     });
 
-    document.getElementById('totalIncome').textContent = totalIncome.toLocaleString() + ' 円';
-    document.getElementById('totalExpenses').textContent = totalExpense.toLocaleString() + ' 円';
 }
 
 // 月次費用を保存
@@ -2609,20 +2607,22 @@ async function renderExpenseChart() {
                 }),
                 datasets: [
                     {
-                        label: '収入合計',
+                        label: '収入',
                         data: totalIncomeData,
                         borderColor: '#10B981',
-                        backgroundColor: '#10B98120',
+                        backgroundColor: '#10B98150',
                         tension: 0.3,
-                        borderWidth: 3
+                        borderWidth: 2,
+                        fill: true
                     },
                     {
-                        label: '支出合計',
+                        label: '支出',
                         data: totalExpenseData,
                         borderColor: '#EF4444',
-                        backgroundColor: '#EF444420',
+                        backgroundColor: '#EF444450',
                         tension: 0.3,
-                        borderWidth: 3
+                        borderWidth: 2,
+                        fill: true
                     },
                     {
                         label: '累積収支',
@@ -2630,7 +2630,8 @@ async function renderExpenseChart() {
                         borderColor: '#8B5CF6',
                         backgroundColor: '#8B5CF620',
                         tension: 0.3,
-                        borderWidth: 4
+                        borderWidth: 3,
+                        fill: false
                     }
                 ]
             },

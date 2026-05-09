@@ -1315,20 +1315,7 @@ body {
     border-top: 2px solid #E5E7EB;
 }
 
-.income-total-row {
-    background: #D1FAE5;
-    color: #065F46;
-}
 
-.expense-total-row {
-    background: #FEE2E2;
-    color: #B91C1C;
-}
-
-.total-amount {
-    font-size: 1rem;
-    text-align: right;
-}
 
 /* 年間一覧テーブル */
 .yearly-summary-table th,
