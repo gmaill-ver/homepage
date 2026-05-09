@@ -2142,6 +2142,8 @@ let currentExpenseYear = new Date().getFullYear();
 let currentExpenseMonth = new Date().getMonth();
 let currentChartYear = new Date().getFullYear(); // グラフ表示用の年
 let summaryChart = null; // 収支合計グラフ
+let cachedMonthlyData = []; // 年間グラフ描画時にキャッシュした12ヶ月分生データ
+let selectedCategoryFilter = null; // カテゴリ別表示で選択中の {name, type}
 
 // 収入・支出項目を読み込み
 async function loadExpenseItems() {
@@ -2586,6 +2588,10 @@ async function renderExpenseChart() {
         </tr></tfoot></table>`;
         tableContainer.innerHTML = tableHTML;
 
+        // カテゴリ別表示用にデータをキャッシュしてチップを更新
+        cachedMonthlyData = monthlyRawData;
+        renderCategoryChips();
+
         const ctx = document.getElementById('expenseSummaryChart');
 
         if (summaryChart) {
@@ -2663,6 +2669,75 @@ function toggleMonthDetail(rowEl, index) {
         detailRow.style.display = isVisible ? 'none' : 'table-row';
         rowEl.classList.toggle('expanded', !isVisible);
     }
+}
+
+// カテゴリ選択チップを描画
+function renderCategoryChips() {
+    const section = document.getElementById('categoryMonthlySection');
+    const container = document.getElementById('categoryChips');
+    if (!container || !section) return;
+
+    let html = '';
+    incomeItems.forEach(item => {
+        const escaped = item.replace(/"/g, '&quot;');
+        html += `<button class="category-chip income-chip" data-category="${escaped}" data-type="income">${item}</button>`;
+    });
+    expenseItems.forEach(item => {
+        const escaped = item.replace(/"/g, '&quot;');
+        html += `<button class="category-chip expense-chip" data-category="${escaped}" data-type="expense">${item}</button>`;
+    });
+    container.innerHTML = html;
+    section.style.display = (incomeItems.length + expenseItems.length) > 0 ? 'block' : 'none';
+
+    container.onclick = e => {
+        const chip = e.target.closest('.category-chip');
+        if (!chip) return;
+        showCategoryMonthly(chip.dataset.category, chip.dataset.type);
+    };
+
+    // 年切り替え後も選択中カテゴリを再表示
+    if (selectedCategoryFilter) {
+        const activeChip = container.querySelector(`[data-category="${selectedCategoryFilter.name}"][data-type="${selectedCategoryFilter.type}"]`);
+        if (activeChip) activeChip.classList.add('active');
+        showCategoryMonthly(selectedCategoryFilter.name, selectedCategoryFilter.type);
+    }
+}
+
+// カテゴリ別月次テーブルを表示
+function showCategoryMonthly(category, type) {
+    selectedCategoryFilter = { name: category, type };
+
+    document.querySelectorAll('#categoryChips .category-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category && btn.dataset.type === type);
+    });
+
+    const tableContainer = document.getElementById('categoryMonthlyTable');
+    if (!tableContainer) return;
+
+    let total = 0;
+    const isIncome = type === 'income';
+    let tableHTML = `<table class="expenses-table yearly-summary-table">
+        <thead><tr><th>月</th><th>${category}</th></tr></thead><tbody>`;
+
+    for (let i = 0; i < 12; i++) {
+        const raw = cachedMonthlyData[i];
+        const val = raw ? (isIncome ? (raw.income?.[category] || 0) : (raw.expenses?.[category] || 0)) : 0;
+        total += val;
+        const colorClass = isIncome ? 'positive' : (val > 0 ? 'negative' : '');
+        const monthLabel = `${i + 1}月`;
+        tableHTML += `<tr>
+            <td>${monthLabel}</td>
+            <td class="num ${colorClass}">${val > 0 ? val.toLocaleString() + '円' : '-'}</td>
+        </tr>`;
+    }
+
+    const totalClass = isIncome ? 'positive' : (total > 0 ? 'negative' : '');
+    tableHTML += `</tbody><tfoot><tr class="total-row yearly-total-row">
+        <td>合計</td>
+        <td class="num ${totalClass}">${total.toLocaleString()}円</td>
+    </tr></tfoot></table>`;
+
+    tableContainer.innerHTML = tableHTML;
 }
 
 // グラフの前年へ

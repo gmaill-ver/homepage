@@ -1449,6 +1449,45 @@ body {
     font-size: 0.8rem;
 }
 
+/* カテゴリ選択チップ */
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.income-chip {
+    background: #D1FAE5;
+    color: #065F46;
+    border-color: #A7F3D0;
+}
+
+.income-chip:hover,
+.income-chip.active {
+    background: #10B981;
+    color: white;
+    border-color: #10B981;
+}
+
+.expense-chip {
+    background: #FEE2E2;
+    color: #991B1B;
+    border-color: #FECACA;
+}
+
+.expense-chip:hover,
+.expense-chip.active {
+    background: #EF4444;
+    color: white;
+    border-color: #EF4444;
+}
+
 #saveExpensesBtn {
     background: #E5E7EB;
     color: #374151;
