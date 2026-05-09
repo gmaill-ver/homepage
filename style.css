@@ -1451,6 +1451,142 @@ body {
     border-color: #EF4444;
 }
 
+/* 固定費バッジ */
+.fixed-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background: #DBEAFE;
+    color: #1D4ED8;
+    border-radius: 0.25rem;
+    padding: 0.05rem 0.3rem;
+    vertical-align: middle;
+}
+
+/* 入力フォーム: 親カテゴリ行 */
+.parent-item-row td {
+    background: #F3F4F6;
+    font-weight: 600;
+}
+
+.item-computed {
+    text-align: right;
+    font-size: 0.82rem;
+    color: #6B7280;
+}
+
+.computed-total {
+    font-weight: 700;
+    color: #374151;
+}
+
+/* 入力フォーム: サブ項目行 */
+.sub-item-row .sub-label {
+    padding-left: 1.5rem;
+    color: #6B7280;
+    font-size: 0.85rem;
+}
+
+/* 年間詳細: サブ項目の括弧表示 */
+.month-detail-sub {
+    padding: 0.1rem 1.25rem;
+    font-size: 0.76rem;
+    color: #9CA3AF;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* 管理モーダル: 項目管理 */
+.expense-item-manage {
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.item-manage-name {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+.fixed-input {
+    width: 80px;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #374151;
+    text-align: right;
+}
+
+.fixed-input-add {
+    width: 90px;
+    padding: 0.4rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+}
+
+.expense-item-manage-group {
+    margin-bottom: 0.5rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.expense-item-manage-group .email-item {
+    border-bottom: none;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+.sub-list {
+    background: #F9FAFB;
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #E5E7EB;
+}
+
+.sub-item-manage {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.2rem 0.25rem;
+    font-size: 0.82rem;
+    color: #4B5563;
+}
+
+.sub-name { flex: 1; }
+
+.sub-add-row {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.25rem 0;
+    margin-top: 0.15rem;
+}
+
+.sub-add-row input {
+    flex: 1;
+    padding: 0.25rem 0.4rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.sub-add-trigger {
+    padding: 0.25rem 0.5rem;
+    background: #F9FAFB;
+    border-top: 1px solid #E5E7EB;
+}
+
+.add-sub-btn {
+    background: none;
+    border: none;
+    color: #6B7280;
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0.15rem 0.25rem;
+}
+
+.add-sub-btn:hover { color: #374151; }
+
 /* ゲームページ */
 .game-container {
     max-width: 500px;

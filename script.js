@@ -2145,6 +2145,21 @@ let summaryChart = null; // 収支合計グラフ
 let cachedMonthlyData = []; // 年間グラフ描画時にキャッシュした12ヶ月分生データ
 let selectedCategoryFilter = null; // カテゴリ別表示で選択中の {name, type}
 let autoSaveTimer = null; // 自動保存デバウンス用タイマー
+const expandedSubInputs = new Set(); // 管理モーダルでサブ追加入力を表示中の親インデックス
+
+// ── アイテムヘルパー ──────────────────────────────────
+function itemName(item)  { return typeof item === 'string' ? item : (item.name || ''); }
+function itemFixed(item) { return (typeof item === 'object' && item?.fixed != null) ? item.fixed : null; }
+function itemSubs(item)  { return (typeof item === 'object' && Array.isArray(item?.subs)) ? item.subs : []; }
+function normalizeItem(item) {
+    if (typeof item === 'string') return { name: item, fixed: null, subs: [] };
+    return { name: item.name || '', fixed: item.fixed ?? null, subs: item.subs || [] };
+}
+
+// 設定をFirestoreに保存
+async function saveExpenseItemSettings() {
+    await db.collection('settings').doc('expenseItems').set({ incomeItems, expenseItems });
+}
 
 // 収入・支出項目を読み込み
 async function loadExpenseItems() {
@@ -2152,190 +2167,234 @@ async function loadExpenseItems() {
         const doc = await db.collection('settings').doc('expenseItems').get();
         if (doc.exists) {
             const data = doc.data();
-            incomeItems = data.incomeItems || [];
-            expenseItems = data.expenseItems || [];
-
-            // 旧形式からの移行
-            if (!data.incomeItems && data.items) {
-                expenseItems = data.items;
-            }
+            incomeItems = (data.incomeItems || []).map(normalizeItem);
+            expenseItems = (data.expenseItems || (data.items || [])).map(normalizeItem);
         } else {
-            // デフォルト項目
-            incomeItems = ['給与'];
-            expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
-            await db.collection('settings').doc('expenseItems').set({
-                incomeItems: incomeItems,
-                expenseItems: expenseItems
-            });
+            incomeItems = [{ name: '給与', fixed: null, subs: [] }];
+            expenseItems = [
+                { name: '電気代', fixed: null, subs: [] },
+                { name: 'ガス代', fixed: null, subs: [] },
+                { name: '住宅ローン', fixed: null, subs: [] },
+                { name: '管理費', fixed: null, subs: [] }
+            ];
+            await saveExpenseItemSettings();
         }
-
-        // デフォルト値がない場合
-        if (incomeItems.length === 0) {
-            incomeItems = ['給与'];
-        }
-        if (expenseItems.length === 0) {
-            expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
-        }
+        if (incomeItems.length === 0)  incomeItems  = [{ name: '給与', fixed: null, subs: [] }];
+        if (expenseItems.length === 0) expenseItems = [{ name: '電気代', fixed: null, subs: [] }];
     } catch (error) {
         console.error('項目読み込みエラー:', error);
-        incomeItems = ['給与'];
-        expenseItems = ['電気代', 'ガス代', '住宅ローン', '管理費'];
+        incomeItems  = [{ name: '給与', fixed: null, subs: [] }];
+        expenseItems = [{ name: '電気代', fixed: null, subs: [] }];
     }
 }
 
 // 収入・支出項目リストを表示（モーダル内）
 function renderExpenseItemsList() {
-    // 収入項目リスト
     const incomeList = document.getElementById('incomeItemsList');
-    incomeList.innerHTML = incomeItems.map((item, index) => `
-        <div class="email-item">
-            <span>${item}</span>
+    incomeList.innerHTML = incomeItems.map((item, index) => {
+        const name = itemName(item);
+        const fixed = itemFixed(item);
+        return `<div class="email-item expense-item-manage">
+            <span class="item-manage-name">${name}</span>
+            <input type="number" class="fixed-input" placeholder="固定額" value="${fixed ?? ''}"
+                   onchange="setItemFixed('income',${index},this.value)" title="毎月自動入力する固定額">
             <button class="email-remove" onclick="removeIncomeItem(${index})">✕</button>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 
-    // 支出項目リスト
     const expenseList = document.getElementById('expenseItemsList');
-    expenseList.innerHTML = expenseItems.map((item, index) => `
-        <div class="email-item">
-            <span>${item}</span>
-            <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
-        </div>
-    `).join('');
+    expenseList.innerHTML = expenseItems.map((item, index) => {
+        const name = itemName(item);
+        const fixed = itemFixed(item);
+        const subs = itemSubs(item);
+        const hasSubs = subs.length > 0;
+        let html = `<div class="expense-item-manage-group">
+            <div class="email-item expense-item-manage">
+                <span class="item-manage-name">${name}</span>
+                ${!hasSubs ? `<input type="number" class="fixed-input" placeholder="固定額" value="${fixed ?? ''}"
+                    onchange="setItemFixed('expense',${index},this.value)" title="毎月自動入力する固定額">` : ''}
+                <button class="email-remove" onclick="removeExpenseItem(${index})">✕</button>
+            </div>`;
+        if (hasSubs) {
+            html += `<div class="sub-list">`;
+            subs.forEach((sub, si) => {
+                html += `<div class="sub-item-manage">
+                    <span class="sub-name">└ ${sub}</span>
+                    <button class="email-remove" onclick="removeSubItem(${index},${si})">✕</button>
+                </div>`;
+            });
+            html += `<div class="sub-add-row">
+                <input type="text" id="subInput_${index}" placeholder="サブ項目名">
+                <button class="btn-small" onclick="addSubItem(${index})">+</button>
+            </div></div>`;
+        } else if (expandedSubInputs.has(index)) {
+            html += `<div class="sub-list"><div class="sub-add-row">
+                <input type="text" id="subInput_${index}" placeholder="サブ項目名">
+                <button class="btn-small" onclick="addSubItem(${index})">+</button>
+            </div></div>`;
+        } else {
+            html += `<div class="sub-add-trigger">
+                <button class="add-sub-btn" onclick="showSubInput(${index})">+ サブ項目追加</button>
+            </div>`;
+        }
+        html += `</div>`;
+        return html;
+    }).join('');
 }
 
 // 収入項目を追加
 async function addIncomeItem() {
     const input = document.getElementById('incomeItemName');
+    const fixedInput = document.getElementById('incomeItemFixed');
     const name = input.value.trim();
-
-    if (!name) {
-        alert('項目名を入力してください');
-        return;
-    }
-
-    if (incomeItems.includes(name)) {
-        alert('この項目は既に存在します');
-        return;
-    }
-
-    incomeItems.push(name);
-
+    if (!name) { alert('項目名を入力してください'); return; }
+    if (incomeItems.some(i => itemName(i) === name)) { alert('この項目は既に存在します'); return; }
+    incomeItems.push({ name, fixed: fixedInput?.value ? Number(fixedInput.value) : null, subs: [] });
     try {
-        await db.collection('settings').doc('expenseItems').set({
-            incomeItems: incomeItems,
-            expenseItems: expenseItems
-        });
-        input.value = '';
-        renderExpenseItemsList();
-        renderExpenseInputs();
-    } catch (error) {
-        console.error('収入項目追加エラー:', error);
-        alert('収入項目の追加に失敗しました');
-    }
+        await saveExpenseItemSettings();
+        input.value = ''; if (fixedInput) fixedInput.value = '';
+        renderExpenseItemsList(); renderExpenseInputs();
+    } catch (e) { console.error('収入項目追加エラー:', e); }
 }
 
 // 収入項目を削除
 async function removeIncomeItem(index) {
     if (!confirm('この項目を削除しますか？')) return;
-
     incomeItems.splice(index, 1);
-
-    try {
-        await db.collection('settings').doc('expenseItems').set({
-            incomeItems: incomeItems,
-            expenseItems: expenseItems
-        });
-        renderExpenseItemsList();
-        renderExpenseInputs();
-    } catch (error) {
-        console.error('収入項目削除エラー:', error);
-        alert('収入項目の削除に失敗しました');
-    }
+    try { await saveExpenseItemSettings(); renderExpenseItemsList(); renderExpenseInputs(); }
+    catch (e) { console.error('収入項目削除エラー:', e); }
 }
 
 // 支出項目を追加
 async function addExpenseItem() {
     const input = document.getElementById('expenseItemName');
+    const fixedInput = document.getElementById('expenseItemFixed');
     const name = input.value.trim();
-
-    if (!name) {
-        alert('項目名を入力してください');
-        return;
-    }
-
-    if (expenseItems.includes(name)) {
-        alert('この項目は既に存在します');
-        return;
-    }
-
-    expenseItems.push(name);
-
+    if (!name) { alert('項目名を入力してください'); return; }
+    if (expenseItems.some(i => itemName(i) === name)) { alert('この項目は既に存在します'); return; }
+    expenseItems.push({ name, fixed: fixedInput?.value ? Number(fixedInput.value) : null, subs: [] });
     try {
-        await db.collection('settings').doc('expenseItems').set({
-            incomeItems: incomeItems,
-            expenseItems: expenseItems
-        });
-        input.value = '';
-        renderExpenseItemsList();
-        renderExpenseInputs();
-    } catch (error) {
-        console.error('支出項目追加エラー:', error);
-        alert('支出項目の追加に失敗しました');
-    }
+        await saveExpenseItemSettings();
+        input.value = ''; if (fixedInput) fixedInput.value = '';
+        renderExpenseItemsList(); renderExpenseInputs();
+    } catch (e) { console.error('支出項目追加エラー:', e); }
 }
 
 // 支出項目を削除
 async function removeExpenseItem(index) {
     if (!confirm('この項目を削除しますか？')) return;
-
     expenseItems.splice(index, 1);
+    expandedSubInputs.delete(index);
+    try { await saveExpenseItemSettings(); renderExpenseItemsList(); renderExpenseInputs(); }
+    catch (e) { console.error('支出項目削除エラー:', e); }
+}
 
-    try {
-        await db.collection('settings').doc('expenseItems').set({
-            incomeItems: incomeItems,
-            expenseItems: expenseItems
-        });
-        renderExpenseItemsList();
-        renderExpenseInputs();
-    } catch (error) {
-        console.error('支出項目削除エラー:', error);
-        alert('支出項目の削除に失敗しました');
-    }
+// 固定額を設定
+async function setItemFixed(type, index, value) {
+    const items = type === 'income' ? incomeItems : expenseItems;
+    items[index].fixed = value === '' ? null : Number(value);
+    await saveExpenseItemSettings();
+}
+
+// サブ追加入力を表示
+function showSubInput(index) {
+    expandedSubInputs.add(index);
+    renderExpenseItemsList();
+    document.getElementById(`subInput_${index}`)?.focus();
+}
+
+// サブ項目を追加
+async function addSubItem(parentIndex) {
+    const input = document.getElementById(`subInput_${parentIndex}`);
+    const name = input?.value.trim();
+    if (!name) return;
+    expenseItems[parentIndex].subs = expenseItems[parentIndex].subs || [];
+    expenseItems[parentIndex].subs.push(name);
+    expenseItems[parentIndex].fixed = null;
+    expandedSubInputs.delete(parentIndex);
+    try { await saveExpenseItemSettings(); renderExpenseItemsList(); renderExpenseInputs(); }
+    catch (e) { console.error('サブ項目追加エラー:', e); }
+}
+
+// サブ項目を削除
+async function removeSubItem(parentIndex, subIndex) {
+    if (!confirm('このサブ項目を削除しますか？')) return;
+    expenseItems[parentIndex].subs.splice(subIndex, 1);
+    try { await saveExpenseItemSettings(); renderExpenseItemsList(); renderExpenseInputs(); }
+    catch (e) { console.error('サブ項目削除エラー:', e); }
 }
 
 // 収入・支出入力フォームを表示
 function renderExpenseInputs() {
     const incomeContainer = document.getElementById('incomeInputs');
     const expenseContainer = document.getElementById('expenseInputs');
-    const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
 
     // 収入入力欄
-    incomeContainer.innerHTML = incomeItems.map((item, index) => `
-        <tr>
-            <td class="item-label">${item}</td>
-            <td class="item-input"><input type="number" id="income_${index}" placeholder="0" min="0" data-item="${item}"></td>
-        </tr>
-    `).join('');
+    incomeContainer.innerHTML = incomeItems.map((item, index) => {
+        const name = itemName(item);
+        const fixed = itemFixed(item);
+        return `<tr>
+            <td class="item-label">${name}${fixed != null ? ' <span class="fixed-badge">固定</span>' : ''}</td>
+            <td class="item-input"><input type="number" id="income_${index}" placeholder="0" min="0"></td>
+        </tr>`;
+    }).join('');
 
     // 支出入力欄
-    expenseContainer.innerHTML = expenseItems.map((item, index) => `
-        <tr>
-            <td class="item-label">${item}</td>
-            <td class="item-input"><input type="number" id="expense_${index}" placeholder="0" min="0" data-item="${item}"></td>
-        </tr>
-    `).join('');
+    let expenseHTML = '';
+    expenseItems.forEach((item, index) => {
+        const name = itemName(item);
+        const fixed = itemFixed(item);
+        const subs = itemSubs(item);
+        if (subs.length > 0) {
+            expenseHTML += `<tr class="parent-item-row">
+                <td class="item-label">${name}</td>
+                <td class="item-input item-computed">合計 <span id="expense_${index}_total" class="computed-total">0</span>円</td>
+            </tr>`;
+            subs.forEach((sub, si) => {
+                expenseHTML += `<tr class="sub-item-row">
+                    <td class="item-label sub-label">└ ${sub}</td>
+                    <td class="item-input"><input type="number" id="expense_${index}_sub_${si}" placeholder="0" min="0"></td>
+                </tr>`;
+            });
+        } else {
+            expenseHTML += `<tr>
+                <td class="item-label">${name}${fixed != null ? ' <span class="fixed-badge">固定</span>' : ''}</td>
+                <td class="item-input"><input type="number" id="expense_${index}" placeholder="0" min="0"></td>
+            </tr>`;
+        }
+    });
+    expenseContainer.innerHTML = expenseHTML;
 
     // イベントリスナーを追加
     incomeItems.forEach((item, index) => {
-        document.getElementById(`income_${index}`).addEventListener('input', onExpenseInput);
+        document.getElementById(`income_${index}`)?.addEventListener('input', onExpenseInput);
     });
     expenseItems.forEach((item, index) => {
-        document.getElementById(`expense_${index}`).addEventListener('input', onExpenseInput);
+        const subs = itemSubs(item);
+        if (subs.length > 0) {
+            subs.forEach((sub, si) => {
+                document.getElementById(`expense_${index}_sub_${si}`)?.addEventListener('input', () => {
+                    updateParentTotal(index);
+                    onExpenseInput();
+                });
+            });
+        } else {
+            document.getElementById(`expense_${index}`)?.addEventListener('input', onExpenseInput);
+        }
     });
 
-    // 保存済みデータを読み込み
+    const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
     loadExpenseData(yearMonth);
+}
+
+// 親カテゴリの合計表示を更新
+function updateParentTotal(index) {
+    const subs = itemSubs(expenseItems[index]);
+    const total = subs.reduce((sum, sub, si) => {
+        return sum + (Number(document.getElementById(`expense_${index}_sub_${si}`)?.value) || 0);
+    }, 0);
+    const el = document.getElementById(`expense_${index}_total`);
+    if (el) el.textContent = total.toLocaleString();
 }
 
 // 指定月の費用データを読み込み
@@ -2345,34 +2404,45 @@ async function loadExpenseData(yearMonth) {
 
         if (doc.exists) {
             const data = doc.data();
-
-            // 収入データを読み込み
             incomeItems.forEach((item, index) => {
                 const input = document.getElementById(`income_${index}`);
-                if (input) {
-                    input.value = data.income?.[item] || '';
-                }
+                if (input) input.value = data.income?.[itemName(item)] ?? '';
             });
-
-            // 支出データを読み込み
             expenseItems.forEach((item, index) => {
-                const input = document.getElementById(`expense_${index}`);
-                if (input) {
-                    input.value = data.expenses?.[item] || data[item] || ''; // 旧形式も対応
+                const name = itemName(item);
+                const subs = itemSubs(item);
+                if (subs.length > 0) {
+                    const subData = (typeof data.expenses?.[name] === 'object') ? data.expenses[name] : {};
+                    subs.forEach((sub, si) => {
+                        const input = document.getElementById(`expense_${index}_sub_${si}`);
+                        if (input) input.value = subData[sub] ?? '';
+                    });
+                    updateParentTotal(index);
+                } else {
+                    const input = document.getElementById(`expense_${index}`);
+                    if (input) input.value = data.expenses?.[name] ?? data[name] ?? '';
                 }
             });
         } else {
-            // データがない場合は空にする
+            // 未保存の月: 固定費を自動セット
             incomeItems.forEach((item, index) => {
                 const input = document.getElementById(`income_${index}`);
-                if (input) input.value = '';
+                if (input) input.value = itemFixed(item) ?? '';
             });
             expenseItems.forEach((item, index) => {
-                const input = document.getElementById(`expense_${index}`);
-                if (input) input.value = '';
+                const subs = itemSubs(item);
+                if (subs.length > 0) {
+                    subs.forEach((sub, si) => {
+                        const input = document.getElementById(`expense_${index}_sub_${si}`);
+                        if (input) input.value = '';
+                    });
+                    updateParentTotal(index);
+                } else {
+                    const input = document.getElementById(`expense_${index}`);
+                    if (input) input.value = itemFixed(item) ?? '';
+                }
             });
         }
-
         calculateExpenseTotal();
     } catch (error) {
         console.error('費用データ読み込みエラー:', error);
@@ -2386,50 +2456,31 @@ function onExpenseInput() {
     autoSaveTimer = setTimeout(() => saveMonthlyExpenses(), 800);
 }
 
-// 合計を計算
-function calculateExpenseTotal() {
-    let totalIncome = 0;
-    let totalExpense = 0;
-
-    // 収入合計
-    incomeItems.forEach((item, index) => {
-        const input = document.getElementById(`income_${index}`);
-        if (input) {
-            totalIncome += Number(input.value) || 0;
-        }
-    });
-
-    // 支出合計
-    expenseItems.forEach((item, index) => {
-        const input = document.getElementById(`expense_${index}`);
-        if (input) {
-            totalExpense += Number(input.value) || 0;
-        }
-    });
-
-}
+// 合計を計算（表示用・将来の拡張用）
+function calculateExpenseTotal() {}
 
 // 月次費用を保存
 async function saveMonthlyExpenses() {
     const yearMonth = `${currentExpenseYear}-${String(currentExpenseMonth + 1).padStart(2, '0')}`;
-    const data = {
-        income: {},
-        expenses: {}
-    };
+    const data = { income: {}, expenses: {} };
 
-    // 収入データ
     incomeItems.forEach((item, index) => {
         const input = document.getElementById(`income_${index}`);
-        if (input) {
-            data.income[item] = Number(input.value) || 0;
-        }
+        if (input) data.income[itemName(item)] = Number(input.value) || 0;
     });
 
-    // 支出データ
     expenseItems.forEach((item, index) => {
-        const input = document.getElementById(`expense_${index}`);
-        if (input) {
-            data.expenses[item] = Number(input.value) || 0;
+        const name = itemName(item);
+        const subs = itemSubs(item);
+        if (subs.length > 0) {
+            data.expenses[name] = {};
+            subs.forEach((sub, si) => {
+                const input = document.getElementById(`expense_${index}_sub_${si}`);
+                data.expenses[name][sub] = Number(input?.value) || 0;
+            });
+        } else {
+            const input = document.getElementById(`expense_${index}`);
+            if (input) data.expenses[name] = Number(input.value) || 0;
         }
     });
 
@@ -2500,12 +2551,16 @@ async function renderExpenseChart() {
                     totalIncome = Object.values(data.income).reduce((a, b) => a + b, 0);
                 }
 
-                // 支出合計
+                // 支出合計（サブ項目はオブジェクト形式で保存されるため再帰的に合算）
                 let totalExpense = 0;
                 if (data.expenses) {
-                    totalExpense = Object.values(data.expenses).reduce((a, b) => a + b, 0);
+                    for (const val of Object.values(data.expenses)) {
+                        if (typeof val === 'number') totalExpense += val;
+                        else if (typeof val === 'object' && val !== null) {
+                            totalExpense += Object.values(val).reduce((a, b) => a + b, 0);
+                        }
+                    }
                 } else {
-                    // 旧形式対応
                     totalExpense = Object.entries(data)
                         .filter(([key]) => !['income', 'expenses'].includes(key))
                         .reduce((sum, [, value]) => sum + (typeof value === 'number' ? value : 0), 0);
@@ -2552,7 +2607,11 @@ async function renderExpenseChart() {
             let detailContent = '';
             if (raw) {
                 const incomeEntries = Object.entries(raw.income).filter(([, v]) => v > 0);
-                const expenseEntries = Object.entries(raw.expenses).filter(([, v]) => v > 0);
+                const expenseEntries = Object.entries(raw.expenses).filter(([, v]) => {
+                    if (typeof v === 'number') return v > 0;
+                    if (typeof v === 'object' && v !== null) return Object.values(v).some(x => x > 0);
+                    return false;
+                });
                 if (incomeEntries.length > 0 || expenseEntries.length > 0) {
                     if (incomeEntries.length > 0) {
                         detailContent += '<div class="month-detail-section"><span class="month-detail-label income-label">収入</span>';
@@ -2564,7 +2623,19 @@ async function renderExpenseChart() {
                     if (expenseEntries.length > 0) {
                         detailContent += '<div class="month-detail-section"><span class="month-detail-label expense-label">支出</span>';
                         for (const [name, val] of expenseEntries) {
-                            detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${val.toLocaleString()}円</span></div>`;
+                            if (typeof val === 'number') {
+                                detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${val.toLocaleString()}円</span></div>`;
+                            } else if (typeof val === 'object' && val !== null) {
+                                const total = Object.values(val).reduce((a, b) => a + b, 0);
+                                if (total > 0) {
+                                    detailContent += `<div class="month-detail-item"><span>${name}</span><span class="negative">${total.toLocaleString()}円</span></div>`;
+                                    for (const [subName, subVal] of Object.entries(val)) {
+                                        if (subVal > 0) {
+                                            detailContent += `<div class="month-detail-sub">(${subName} ${subVal.toLocaleString()}円)</div>`;
+                                        }
+                                    }
+                                }
+                            }
                         }
                         detailContent += '</div>';
                     }
@@ -2682,12 +2753,14 @@ function renderCategoryChips() {
 
     let html = '';
     incomeItems.forEach(item => {
-        const escaped = item.replace(/"/g, '&quot;');
-        html += `<button class="category-chip income-chip" data-category="${escaped}" data-type="income">${item}</button>`;
+        const name = itemName(item);
+        const escaped = name.replace(/"/g, '&quot;');
+        html += `<button class="category-chip income-chip" data-category="${escaped}" data-type="income">${name}</button>`;
     });
     expenseItems.forEach(item => {
-        const escaped = item.replace(/"/g, '&quot;');
-        html += `<button class="category-chip expense-chip" data-category="${escaped}" data-type="expense">${item}</button>`;
+        const name = itemName(item);
+        const escaped = name.replace(/"/g, '&quot;');
+        html += `<button class="category-chip expense-chip" data-category="${escaped}" data-type="expense">${name}</button>`;
     });
     container.innerHTML = html;
     section.style.display = (incomeItems.length + expenseItems.length) > 0 ? 'block' : 'none';
@@ -2724,7 +2797,14 @@ function showCategoryMonthly(category, type) {
 
     for (let i = 0; i < 12; i++) {
         const raw = cachedMonthlyData[i];
-        const val = raw ? (isIncome ? (raw.income?.[category] || 0) : (raw.expenses?.[category] || 0)) : 0;
+        let val = 0;
+        if (raw) {
+            const stored = isIncome ? raw.income?.[category] : raw.expenses?.[category];
+            if (typeof stored === 'number') val = stored;
+            else if (typeof stored === 'object' && stored !== null) {
+                val = Object.values(stored).reduce((a, b) => a + b, 0);
+            }
+        }
         total += val;
         const colorClass = isIncome ? 'positive' : (val > 0 ? 'negative' : '');
         const monthLabel = `${i + 1}月`;
