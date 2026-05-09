@@ -2143,7 +2143,7 @@ let currentExpenseMonth = new Date().getMonth();
 let currentChartYear = new Date().getFullYear(); // グラフ表示用の年
 let summaryChart = null; // 収支合計グラフ
 let cachedMonthlyData = []; // 年間グラフ描画時にキャッシュした12ヶ月分生データ
-let selectedCategoryFilter = null; // カテゴリ別表示で選択中の {name, type}
+let selectedCategories = []; // カテゴリ別表示で選択中の [{name, type, parent}] 最大3個
 let autoSaveTimer = null; // 自動保存デバウンス用タイマー
 const expandedSubInputs = new Set(); // 管理モーダルでサブ追加入力を表示中の親インデックス
 let deleteMode = false; // 削除ボタンの表示状態
@@ -2802,69 +2802,81 @@ function renderCategoryChips() {
     container.onclick = e => {
         const chip = e.target.closest('.category-chip');
         if (!chip) return;
-        showCategoryMonthly(chip.dataset.category, chip.dataset.type, chip.dataset.parent || null);
+        const name = chip.dataset.category;
+        const type = chip.dataset.type;
+        const parent = chip.dataset.parent || null;
+        const idx = selectedCategories.findIndex(c => c.name === name && c.type === type && c.parent === parent);
+        if (idx >= 0) {
+            selectedCategories.splice(idx, 1);
+        } else {
+            if (selectedCategories.length >= 3) selectedCategories.shift();
+            selectedCategories.push({ name, type, parent });
+        }
+        renderCategoryTable();
     };
 
     // 年切り替え後も選択中カテゴリを再表示
-    if (selectedCategoryFilter) {
-        const { name, type, parent } = selectedCategoryFilter;
-        const sel = parent
-            ? `[data-category="${name}"][data-type="${type}"][data-parent="${parent}"]`
-            : `[data-category="${name}"][data-type="${type}"]`;
-        container.querySelector(sel)?.classList.add('active');
-        showCategoryMonthly(name, type, parent);
-    }
+    renderCategoryTable();
 }
 
-// カテゴリ別月次テーブルを表示
-function showCategoryMonthly(category, type, parent = null) {
-    selectedCategoryFilter = { name: category, type, parent };
+function getCategoryValue(raw, name, type, parent) {
+    if (!raw) return 0;
+    const isSub = type === 'expense-sub';
+    const isIncome = type === 'income';
+    if (isSub && parent) {
+        const parentData = raw.expenses?.[parent];
+        return (typeof parentData === 'object' && parentData !== null) ? (parentData[name] || 0) : 0;
+    }
+    const stored = isIncome ? raw.income?.[name] : raw.expenses?.[name];
+    if (typeof stored === 'number') return stored;
+    if (typeof stored === 'object' && stored !== null) {
+        return (stored._total != null) ? stored._total :
+            Object.entries(stored).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
+    }
+    return 0;
+}
 
+// カテゴリ別月次テーブルを表示（最大3カテゴリ同時）
+function renderCategoryTable() {
+    // チップのactive更新
     document.querySelectorAll('#categoryChips .category-chip').forEach(btn => {
-        const match = btn.dataset.category === category && btn.dataset.type === type
-            && (btn.dataset.parent || null) === parent;
-        btn.classList.toggle('active', match);
+        const active = selectedCategories.some(c =>
+            c.name === btn.dataset.category && c.type === btn.dataset.type
+            && c.parent === (btn.dataset.parent || null));
+        btn.classList.toggle('active', active);
     });
 
     const tableContainer = document.getElementById('categoryMonthlyTable');
     if (!tableContainer) return;
 
-    let total = 0;
-    const isIncome = type === 'income';
-    const isSub = type === 'expense-sub';
+    if (selectedCategories.length === 0) {
+        tableContainer.innerHTML = '';
+        return;
+    }
+
+    const headerCols = selectedCategories.map(c => `<th>${c.name}</th>`).join('');
     let tableHTML = `<table class="expenses-table yearly-summary-table">
-        <thead><tr><th>月</th><th>${category}</th></tr></thead><tbody>`;
+        <thead><tr><th>月</th>${headerCols}</tr></thead><tbody>`;
+
+    const totals = new Array(selectedCategories.length).fill(0);
 
     for (let i = 0; i < 12; i++) {
         const raw = cachedMonthlyData[i];
-        let val = 0;
-        if (raw) {
-            if (isSub && parent) {
-                // サブカテゴリ: 親オブジェクトの中から取得
-                const parentData = raw.expenses?.[parent];
-                val = (typeof parentData === 'object' && parentData !== null) ? (parentData[category] || 0) : 0;
-            } else {
-                const stored = isIncome ? raw.income?.[category] : raw.expenses?.[category];
-                if (typeof stored === 'number') val = stored;
-                else if (typeof stored === 'object' && stored !== null) {
-                    val = (stored._total != null) ? stored._total :
-                        Object.entries(stored).reduce((s, [k, v]) => s + (typeof v === 'number' ? v : 0), 0);
-                }
-            }
-        }
-        total += val;
-        const colorClass = isIncome ? 'positive' : (val > 0 ? 'negative' : '');
-        const monthLabel = `${i + 1}月`;
-        tableHTML += `<tr>
-            <td>${monthLabel}</td>
-            <td class="num ${colorClass}">${val > 0 ? val.toLocaleString() + '円' : '-'}</td>
-        </tr>`;
+        const cells = selectedCategories.map((c, ci) => {
+            const val = getCategoryValue(raw, c.name, c.type, c.parent);
+            totals[ci] += val;
+            const colorClass = c.type === 'income' ? 'positive' : (val > 0 ? 'negative' : '');
+            return `<td class="num ${colorClass}">${val > 0 ? val.toLocaleString() + '円' : '-'}</td>`;
+        }).join('');
+        tableHTML += `<tr><td>${i + 1}月</td>${cells}</tr>`;
     }
 
-    const totalClass = isIncome ? 'positive' : (total > 0 ? 'negative' : '');
+    const totalCells = selectedCategories.map((c, ci) => {
+        const colorClass = c.type === 'income' ? 'positive' : (totals[ci] > 0 ? 'negative' : '');
+        return `<td class="num ${colorClass}">${totals[ci].toLocaleString()}円</td>`;
+    }).join('');
     tableHTML += `</tbody><tfoot><tr class="total-row yearly-total-row">
-        <td>合計</td>
-        <td class="num ${totalClass}">${total.toLocaleString()}円</td>
+        <td>合計</td>${totalCells}
     </tr></tfoot></table>`;
 
     tableContainer.innerHTML = tableHTML;
