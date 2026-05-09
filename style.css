@@ -1496,7 +1496,7 @@ body {
 
 /* 年間詳細: サブ項目 */
 .month-detail-sub {
-    padding-left: 1em;
+    padding-left: 2em;
     font-size: 0.76rem;
     color: #9CA3AF;
 }
