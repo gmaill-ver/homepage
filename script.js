@@ -2442,6 +2442,23 @@ async function loadExpenseData(yearMonth) {
     }
 }
 
+// 固定費のみのデータオブジェクトを生成
+function buildFixedData() {
+    const data = { income: {}, expenses: {} };
+    incomeItems.forEach(item => {
+        const fixed = itemFixed(item);
+        if (fixed != null) data.income[itemName(item)] = fixed;
+    });
+    expenseItems.forEach(item => {
+        const fixed = itemFixed(item);
+        const subs = itemSubs(item);
+        if (fixed != null) {
+            data.expenses[itemName(item)] = subs.length > 0 ? { _total: fixed } : fixed;
+        }
+    });
+    return data;
+}
+
 // 入力時：デバウンス自動保存
 function onExpenseInput() {
     clearTimeout(autoSaveTimer);
@@ -2568,11 +2585,30 @@ async function renderExpenseChart() {
                 cumulativeBalance += monthBalance;
                 cumulativeBalanceData.push(cumulativeBalance);
             } else {
-                totalIncomeData.push(0);
-                totalExpenseData.push(0);
-                balanceData.push(0);
-                monthlyRawData.push(null);
-                cumulativeBalanceData.push(cumulativeBalance);
+                // データなし月: 固定費があれば保存して反映
+                const fixedData = buildFixedData();
+                const hasFixed = Object.keys(fixedData.income).length > 0 || Object.keys(fixedData.expenses).length > 0;
+                if (hasFixed) {
+                    db.collection('monthlyExpenses').doc(month).set(fixedData).catch(() => {});
+                    let fi = 0, fe = 0;
+                    for (const v of Object.values(fixedData.income)) fi += v;
+                    for (const v of Object.values(fixedData.expenses)) {
+                        fe += typeof v === 'number' ? v : (v._total ?? 0);
+                    }
+                    const mb = fi - fe;
+                    totalIncomeData.push(fi);
+                    totalExpenseData.push(fe);
+                    balanceData.push(mb);
+                    monthlyRawData.push(fixedData);
+                    cumulativeBalance += mb;
+                    cumulativeBalanceData.push(cumulativeBalance);
+                } else {
+                    totalIncomeData.push(0);
+                    totalExpenseData.push(0);
+                    balanceData.push(0);
+                    monthlyRawData.push(null);
+                    cumulativeBalanceData.push(cumulativeBalance);
+                }
             }
         }
 
