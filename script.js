@@ -2144,6 +2144,7 @@ let currentChartYear = new Date().getFullYear(); // グラフ表示用の年
 let summaryChart = null; // 収支合計グラフ
 let cachedMonthlyData = []; // 年間グラフ描画時にキャッシュした12ヶ月分生データ
 let selectedCategoryFilter = null; // カテゴリ別表示で選択中の {name, type}
+let autoSaveTimer = null; // 自動保存デバウンス用タイマー
 
 // 収入・支出項目を読み込み
 async function loadExpenseItems() {
@@ -2327,10 +2328,10 @@ function renderExpenseInputs() {
 
     // イベントリスナーを追加
     incomeItems.forEach((item, index) => {
-        document.getElementById(`income_${index}`).addEventListener('input', calculateExpenseTotal);
+        document.getElementById(`income_${index}`).addEventListener('input', onExpenseInput);
     });
     expenseItems.forEach((item, index) => {
-        document.getElementById(`expense_${index}`).addEventListener('input', calculateExpenseTotal);
+        document.getElementById(`expense_${index}`).addEventListener('input', onExpenseInput);
     });
 
     // 保存済みデータを読み込み
@@ -2376,6 +2377,13 @@ async function loadExpenseData(yearMonth) {
     } catch (error) {
         console.error('費用データ読み込みエラー:', error);
     }
+}
+
+// 入力時：合計更新 + デバウンス自動保存
+function onExpenseInput() {
+    calculateExpenseTotal();
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => saveMonthlyExpenses(), 800);
 }
 
 // 合計を計算
@@ -2433,11 +2441,9 @@ async function saveMonthlyExpenses() {
 
     try {
         await db.collection('monthlyExpenses').doc(yearMonth).set(data);
-        alert(`${currentExpenseYear}年${currentExpenseMonth + 1}月の費用を保存しました`);
         renderExpenseChart();
     } catch (error) {
         console.error('月次費用保存エラー:', error);
-        alert('月次費用の保存に失敗しました');
     }
 }
 
@@ -2857,7 +2863,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('closeMemoBtn').addEventListener('click', () => closeModal('memoModal'));
 
     // 月次費用
-    document.getElementById('saveExpensesBtn').addEventListener('click', saveMonthlyExpenses);
     document.getElementById('prevExpenseMonth').addEventListener('click', previousExpenseMonth);
     document.getElementById('nextExpenseMonth').addEventListener('click', nextExpenseMonth);
     document.getElementById('prevChartYear').addEventListener('click', previousChartYear);

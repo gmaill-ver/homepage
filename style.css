@@ -1488,18 +1488,6 @@ body {
     border-color: #EF4444;
 }
 
-#saveExpensesBtn {
-    background: #E5E7EB;
-    color: #374151;
-    box-shadow: none;
-}
-
-#saveExpensesBtn:hover {
-    background: #D1D5DB;
-    transform: none;
-    box-shadow: none;
-}
-
 /* ゲームページ */
 .game-container {
     max-width: 500px;
