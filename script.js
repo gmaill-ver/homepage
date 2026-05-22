@@ -1725,6 +1725,9 @@ function loadFeatureData(featureName) {
         case 'menu':
             initializeMenu();
             break;
+        case 'birthday':
+            renderBirthdays();
+            break;
     }
 }
 
@@ -2963,6 +2966,130 @@ async function initializeMonthlyExpenses() {
     updateExpenseMonthDisplay();
     renderExpenseInputs();
     renderExpenseChart();
+}
+
+// ==========================================
+// 誕生日管理
+// ==========================================
+
+function daysUntilBirthday(month, day) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const year = today.getFullYear();
+    let next = new Date(year, month - 1, day);
+    if (next < today) next = new Date(year + 1, month - 1, day);
+    return Math.round((next - today) / 86400000);
+}
+
+async function renderBirthdays() {
+    const list = document.getElementById('birthdayList');
+    if (!list) return;
+    list.innerHTML = '<div class="loading-state">読み込み中...</div>';
+    try {
+        const snapshot = await db.collection('birthdays').get();
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        if (items.length === 0) {
+            list.innerHTML = '<div class="empty-state"><p>誕生日を追加してください</p></div>';
+            return;
+        }
+        items.sort((a, b) => daysUntilBirthday(a.month, a.day) - daysUntilBirthday(b.month, b.day));
+        list.innerHTML = items.map(item => {
+            const days = daysUntilBirthday(item.month, item.day);
+            let badgeClass = 'birthday-badge-normal';
+            let badgeText = `あと ${days}日`;
+            if (days === 0) { badgeClass = 'birthday-badge-today'; badgeText = '🎉 今日！'; }
+            else if (days <= 7) badgeClass = 'birthday-badge-soon';
+            else if (days <= 30) badgeClass = 'birthday-badge-near';
+            return `
+            <div class="birthday-item">
+                <div class="birthday-info">
+                    <span class="birthday-name">${item.name}</span>
+                    ${item.note ? `<span class="birthday-note">${item.note}</span>` : ''}
+                    <span class="birthday-date">${item.month}月 ${item.day}日</span>
+                </div>
+                <div class="birthday-right">
+                    <span class="birthday-badge ${badgeClass}">${badgeText}</span>
+                    <div class="birthday-actions">
+                        <button class="btn-icon-tiny" onclick="openBirthdayModal('${item.id}')">✏️</button>
+                        <button class="btn-icon-tiny" onclick="deleteBirthday('${item.id}')">🗑️</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        console.error('誕生日読み込みエラー:', e);
+        list.innerHTML = '<div class="empty-state"><p>読み込みに失敗しました</p></div>';
+    }
+}
+
+function updateBirthdayDayOptions(month, selectedDay) {
+    const daySelect = document.getElementById('birthdayDay');
+    if (!daySelect) return;
+    const days = month ? new Date(2000, month, 0).getDate() : 31;
+    daySelect.innerHTML = '<option value="">日</option>' +
+        Array.from({ length: days }, (_, i) => {
+            const d = i + 1;
+            return `<option value="${d}" ${d == selectedDay ? 'selected' : ''}>${d}日</option>`;
+        }).join('');
+}
+
+async function openBirthdayModal(id = null) {
+    document.getElementById('birthdayId').value = id || '';
+    document.getElementById('birthdayName').value = '';
+    document.getElementById('birthdayNote').value = '';
+    document.getElementById('birthdayMonth').value = '';
+    document.getElementById('birthdayModalTitle').textContent = id ? '誕生日を編集' : '誕生日を追加';
+    document.getElementById('saveBirthdayBtn').textContent = id ? '更新' : '追加';
+    updateBirthdayDayOptions(null, null);
+
+    document.getElementById('birthdayMonth').onchange = function() {
+        updateBirthdayDayOptions(this.value, document.getElementById('birthdayDay').value);
+    };
+
+    if (id) {
+        const doc = await db.collection('birthdays').doc(id).get();
+        if (doc.exists) {
+            const d = doc.data();
+            document.getElementById('birthdayName').value = d.name || '';
+            document.getElementById('birthdayNote').value = d.note || '';
+            document.getElementById('birthdayMonth').value = d.month || '';
+            updateBirthdayDayOptions(d.month, d.day);
+        }
+    }
+    openModal('birthdayModal');
+}
+
+async function saveBirthday() {
+    const id = document.getElementById('birthdayId').value;
+    const name = document.getElementById('birthdayName').value.trim();
+    const month = parseInt(document.getElementById('birthdayMonth').value);
+    const day = parseInt(document.getElementById('birthdayDay').value);
+    const note = document.getElementById('birthdayNote').value.trim();
+    if (!name || !month || !day) { alert('名前・月・日を入力してください'); return; }
+    const data = { name, month, day, note };
+    try {
+        if (id) {
+            await db.collection('birthdays').doc(id).update(data);
+        } else {
+            await db.collection('birthdays').add(data);
+        }
+        closeModal('birthdayModal');
+        renderBirthdays();
+    } catch (e) {
+        console.error('誕生日保存エラー:', e);
+        alert('保存に失敗しました');
+    }
+}
+
+async function deleteBirthday(id) {
+    if (!confirm('削除しますか？')) return;
+    try {
+        await db.collection('birthdays').doc(id).delete();
+        renderBirthdays();
+    } catch (e) {
+        console.error('誕生日削除エラー:', e);
+    }
 }
 
 // ==========================================

@@ -2148,6 +2148,65 @@ body {
 }
 
 /* 期限管理 */
+/* 誕生日管理 */
+.birthday-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #F3F4F6;
+}
+.birthday-item:last-child { border-bottom: none; }
+
+.birthday-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.birthday-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+.birthday-note {
+    font-size: 0.75rem;
+    color: #9CA3AF;
+}
+.birthday-date {
+    font-size: 0.8rem;
+    color: #6B7280;
+}
+.birthday-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3rem;
+}
+.birthday-badge {
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+}
+.birthday-badge-today  { background: #FEF9C3; color: #92400E; }
+.birthday-badge-soon   { background: #FEE2E2; color: #B91C1C; }
+.birthday-badge-near   { background: #FEF3C7; color: #B45309; }
+.birthday-badge-normal { background: #EFF6FF; color: #1D4ED8; }
+
+.birthday-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+.btn-icon-tiny {
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    opacity: 0.5;
+    padding: 0.1rem 0.2rem;
+}
+.btn-icon-tiny:hover { opacity: 1; }
+
 .expiry-list {
     display: flex;
     flex-direction: column;
