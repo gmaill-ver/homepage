@@ -3028,7 +3028,7 @@ async function renderBirthdays() {
         const rows = items.map(item => {
             const days = daysUntilBirthday(item.month, item.day);
             let badgeClass = 'birthday-badge-normal';
-            let badgeText = `あと${days}日`;
+            let badgeText = `${days}日`;
             if (days === 0) { badgeClass = 'birthday-badge-today'; badgeText = '今日🎉'; }
             else if (days <= 7) badgeClass = 'birthday-badge-soon';
             else if (days <= 30) badgeClass = 'birthday-badge-near';
