@@ -1176,6 +1176,10 @@ async function renderMessages() {
             const senderLabel = sender === 'hide' ? '🌊 ひでより'
                 : sender === 'ayu' ? '🌸 あゆより'
                 : (msg.to === 'ayu' ? '🌸 あゆへ' : '🌊 ひでへ');
+            const isSender = deviceUser && deviceUser === sender;
+            const seenArea = msg.seen
+                ? `<span class="message-seen-badge">👀 みた</span>`
+                : (!isSender ? `<button class="message-seen-btn" onclick="markMessageSeen('${msg.id}')">みた</button>` : '<span class="message-unseen-label">未確認</span>');
             return `
             <div class="message-item ${colorClass}">
                 <div class="message-header">
@@ -1187,7 +1191,10 @@ async function renderMessages() {
                 </div>
                 <div class="message-content">${msg.content}</div>
                 ${msg.image ? `<div class="message-image"><img src="${msg.image}" alt="画像" onclick="window.open('${msg.image}', '_blank')" style="max-width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; cursor: pointer;"></div>` : ''}
-                <div class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="message-footer">
+                    <span class="message-date">${(msg.date?.toDate ? msg.date.toDate() : new Date(msg.date)).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    ${seenArea}
+                </div>
             </div>
         `}).join('');
     } catch (error) {
@@ -1260,6 +1267,19 @@ async function renderArchivedMessages() {
                 <p>読み込みに失敗しました</p>
             </div>
         `;
+    }
+}
+
+// 連絡を「みた」にする
+async function markMessageSeen(id) {
+    try {
+        await db.collection('messages').doc(id).update({
+            seen: true,
+            seenAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        renderMessages();
+    } catch (error) {
+        console.error('みた更新エラー:', error);
     }
 }
 

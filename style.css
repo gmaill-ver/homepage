@@ -830,9 +830,41 @@ body {
     white-space: pre-wrap;
 }
 
+.message-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+}
+
 .message-date {
     font-size: 0.75rem;
     color: #9CA3AF;
+}
+
+.message-seen-btn {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    border: 1.5px solid #D1D5DB;
+    background: #F9FAFB;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.message-seen-btn:active {
+    background: #E5E7EB;
+}
+
+.message-seen-badge {
+    font-size: 0.75rem;
+    color: #10B981;
+    font-weight: bold;
+}
+
+.message-unseen-label {
+    font-size: 0.7rem;
+    color: #D1D5DB;
 }
 
 .btn-add-message {
