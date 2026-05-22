@@ -2984,11 +2984,12 @@ function daysUntilBirthday(month, day) {
 function toWareki(year) {
     if (!year) return '';
     year = parseInt(year);
-    if (year >= 2019) return `令和${year - 2018}年`;
-    if (year >= 1989) return `平成${year - 1988}年`;
-    if (year >= 1926) return `昭和${year - 1925}年`;
-    if (year >= 1912) return `大正${year - 1911}年`;
-    if (year >= 1868) return `明治${year - 1867}年`;
+    const n = x => x === 1 ? '元' : x;
+    if (year >= 2019) return `令和${n(year - 2018)}年`;
+    if (year >= 1989) return `平成${n(year - 1988)}年`;
+    if (year >= 1926) return `昭和${n(year - 1925)}年`;
+    if (year >= 1912) return `大正${n(year - 1911)}年`;
+    if (year >= 1868) return `明治${n(year - 1867)}年`;
     return '';
 }
 
@@ -3035,8 +3036,8 @@ async function renderBirthdays() {
             const age = calcAge(item.year, item.month, item.day);
             const ageStr = age != null ? `${age}歳` : '-';
             const detailStr = item.year
-                ? `${item.year}年（${toWareki(item.year).replace('年','')}）生まれ${item.note ? '　' + item.note : ''}`
-                : `生年不明${item.note ? '　' + item.note : ''}`;
+                ? `${item.year}年（${toWareki(item.year)}）${item.note ? '　' + item.note : ''}`
+                : (item.note || '生年不明');
             return `
             <tr class="bday-main-row" onclick="toggleBirthdayDetail('${item.id}')">
                 <td class="bday-col-name">${item.name}</td>
