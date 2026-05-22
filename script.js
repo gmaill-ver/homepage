@@ -1092,15 +1092,49 @@ document.addEventListener('DOMContentLoaded', function() {
 // 連絡機能 (Firestore) - 掲示板形式
 // ==========================================
 
-let selectedMessageTo = 'hide'; // 宛先（hide or ayu）
+let selectedMessageTo = 'ayu'; // 宛先（自動設定）
 let editingMessageId = null;
+let deviceUser = localStorage.getItem('familyDeviceUser'); // 'hide' or 'ayu'
 
-// 宛先選択
+// 宛先選択（内部用）
 function selectMessageTo(to) {
     selectedMessageTo = to;
-    document.querySelectorAll('.message-to-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.to === to);
-    });
+}
+
+// 端末ユーザーを設定
+function setDeviceUser(user) {
+    deviceUser = user;
+    localStorage.setItem('familyDeviceUser', user);
+    selectedMessageTo = user === 'hide' ? 'ayu' : 'hide';
+    updateMessageIdentityRow();
+}
+
+// 端末ユーザーをリセット（変更用）
+function clearDeviceUser() {
+    deviceUser = null;
+    localStorage.removeItem('familyDeviceUser');
+    updateMessageIdentityRow();
+}
+
+// モーダルの送信者表示を更新
+function updateMessageIdentityRow() {
+    const row = document.getElementById('messageIdentityRow');
+    if (!row) return;
+    if (!deviceUser) {
+        row.innerHTML = `<div class="identity-setup">
+            <span class="identity-setup-label">あなたは？</span>
+            <button class="message-to-btn" onclick="setDeviceUser('hide')">🌊 ひで</button>
+            <button class="message-to-btn" onclick="setDeviceUser('ayu')">🌸 あゆ</button>
+        </div>`;
+    } else {
+        const emoji = deviceUser === 'hide' ? '🌊' : '🌸';
+        const name = deviceUser === 'hide' ? 'ひで' : 'あゆ';
+        const cls = deviceUser === 'hide' ? 'from-hide' : 'from-ayu';
+        row.innerHTML = `<div class="identity-badge ${cls}">
+            ${emoji} ${name}より
+            <button class="identity-change-btn" onclick="clearDeviceUser()">変更</button>
+        </div>`;
+    }
 }
 
 // メッセージを表示（アーカイブされていないもの）
@@ -1136,12 +1170,16 @@ async function renderMessages() {
         }
 
         messageList.innerHTML = messages.map(msg => {
-            const toName = msg.to === 'ayu' ? 'あゆ' : 'ひで';
-            const toClass = msg.to === 'ayu' ? 'to-ayu' : 'to-hide';
+            const sender = msg.from || null;
+            const colorClass = sender === 'hide' ? 'from-hide' : sender === 'ayu' ? 'from-ayu'
+                : (msg.to === 'ayu' ? 'to-ayu' : 'to-hide');
+            const senderLabel = sender === 'hide' ? '🌊 ひでより'
+                : sender === 'ayu' ? '🌸 あゆより'
+                : (msg.to === 'ayu' ? '🌸 あゆへ' : '🌊 ひでへ');
             return `
-            <div class="message-item ${toClass}">
+            <div class="message-item ${colorClass}">
                 <div class="message-header">
-                    <span class="message-to-label">${msg.to === 'ayu' ? '🌸' : '🌊'} ${toName}へ</span>
+                    <span class="message-to-label">${senderLabel}</span>
                     <div class="message-actions">
                         <button class="message-edit" onclick="editMessage('${msg.id}')">✏️</button>
                         <button class="message-archive" onclick="archiveMessage('${msg.id}')" title="その他に移動">📁</button>
@@ -1196,12 +1234,16 @@ async function renderArchivedMessages() {
         }
 
         messageList.innerHTML = messages.map(msg => {
-            const toName = msg.to === 'ayu' ? 'あゆ' : 'ひで';
-            const toClass = msg.to === 'ayu' ? 'to-ayu' : 'to-hide';
+            const sender = msg.from || null;
+            const colorClass = sender === 'hide' ? 'from-hide' : sender === 'ayu' ? 'from-ayu'
+                : (msg.to === 'ayu' ? 'to-ayu' : 'to-hide');
+            const senderLabel = sender === 'hide' ? '🌊 ひでより'
+                : sender === 'ayu' ? '🌸 あゆより'
+                : (msg.to === 'ayu' ? '🌸 あゆへ' : '🌊 ひでへ');
             return `
-            <div class="message-item ${toClass}">
+            <div class="message-item ${colorClass}">
                 <div class="message-header">
-                    <span class="message-to-label">${msg.to === 'ayu' ? '🌸' : '🌊'} ${toName}へ</span>
+                    <span class="message-to-label">${senderLabel}</span>
                     <div class="message-actions">
                         <button class="message-restore" onclick="restoreMessage('${msg.id}')" title="ホームに戻す">↩️</button>
                         <button class="message-delete" onclick="deleteArchivedMessage('${msg.id}')" title="完全に削除">🗑️</button>
@@ -1287,6 +1329,7 @@ async function addMessage() {
         } else {
             // 新規追加
             const msgData = {
+                from: deviceUser || null,
                 to: selectedMessageTo,
                 content: content,
                 date: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2945,8 +2988,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('messageContent').value = '';
         document.getElementById('messageImage').value = '';
         document.getElementById('messageImagePreview').innerHTML = '';
-        selectedMessageTo = 'hide';
-        selectMessageTo('hide');
+        selectedMessageTo = deviceUser === 'ayu' ? 'hide' : 'ayu';
+        updateMessageIdentityRow();
         openModal('messageModal');
     });
     document.getElementById('saveMessageBtn').addEventListener('click', addMessage);

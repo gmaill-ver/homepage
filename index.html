@@ -813,11 +813,7 @@
     <div id="messageModal" class="modal" style="display: none;">
         <div class="modal-content modal-small">
             <h3 id="messageModalTitle">連絡を追加</h3>
-            <div class="message-to-select">
-                <label>宛先：</label>
-                <button type="button" class="message-to-btn active" data-to="hide" onclick="selectMessageTo('hide')">🌊 ひで</button>
-                <button type="button" class="message-to-btn" data-to="ayu" onclick="selectMessageTo('ayu')">🌸 あゆ</button>
-            </div>
+            <div id="messageIdentityRow" class="message-identity-row"></div>
             <textarea id="messageContent" placeholder="メッセージを入力"></textarea>
             <input type="file" id="messageImage" accept="image/*">
             <div id="messageImagePreview"></div>
