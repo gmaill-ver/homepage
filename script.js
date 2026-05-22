@@ -2992,6 +2992,17 @@ function toWareki(year) {
     return '';
 }
 
+function toWarekiShort(year) {
+    if (!year) return '';
+    year = parseInt(year);
+    if (year >= 2019) return `R${year - 2018}`;
+    if (year >= 1989) return `H${year - 1988}`;
+    if (year >= 1926) return `S${year - 1925}`;
+    if (year >= 1912) return `T${year - 1911}`;
+    if (year >= 1868) return `M${year - 1867}`;
+    return '';
+}
+
 function calcAge(birthYear, month, day) {
     if (!birthYear) return null;
     const today = new Date();
@@ -3022,11 +3033,10 @@ async function renderBirthdays() {
             else if (days <= 7) badgeClass = 'birthday-badge-soon';
             else if (days <= 30) badgeClass = 'birthday-badge-near';
             const age = calcAge(item.year, item.month, item.day);
-            const warekiStr = item.year ? toWareki(item.year) : '';
-            const ageStr = age != null ? `${age}歳` : '';
-            const yearStr = warekiStr || ageStr
-                ? [warekiStr, ageStr].filter(Boolean).join('・')
-                : '';
+            const shortW = toWarekiShort(item.year);
+            const yearStr = item.year
+                ? `${item.year}/${shortW}${age != null ? `・${age}歳` : ''}`
+                : (age != null ? `${age}歳` : '');
             return `<tr>
                 <td class="bday-col-name">${item.name}${item.note ? `<span class="bday-note-inline">${item.note}</span>` : ''}</td>
                 <td class="bday-col-date">${item.month}/${item.day}</td>

@@ -2155,6 +2155,18 @@ body {
 .birthday-table .bday-col-days  { text-align: right; white-space: nowrap; }
 .birthday-table .bday-col-actions { text-align: right; white-space: nowrap; padding-left: 0; }
 
+.btn-outline-dark {
+    padding: 0.5rem 1rem;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: #1F2937;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-outline-dark:active { background: #F3F4F6; }
+
 .birthday-manage-row {
     display: flex;
     align-items: center;
