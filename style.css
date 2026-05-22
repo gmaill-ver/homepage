@@ -2155,6 +2155,24 @@ body {
 .birthday-table .bday-col-days  { text-align: right; white-space: nowrap; }
 .birthday-table .bday-col-actions { text-align: right; white-space: nowrap; padding-left: 0; }
 
+.birthday-manage-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #F3F4F6;
+}
+.birthday-manage-row:last-child { border-bottom: none; }
+.birthday-manage-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+.birthday-manage-name { font-size: 0.875rem; font-weight: 600; color: #1F2937; }
+.birthday-manage-date { font-size: 0.75rem; color: #6B7280; }
+.birthday-manage-actions { display: flex; gap: 0.25rem; flex-shrink: 0; }
+
 .bday-note-inline {
     font-size: 0.68rem;
     color: #9CA3AF;

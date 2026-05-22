@@ -3032,15 +3032,11 @@ async function renderBirthdays() {
                 <td class="bday-col-date">${item.month}/${item.day}</td>
                 <td class="bday-col-year">${yearStr}</td>
                 <td class="bday-col-days"><span class="birthday-badge ${badgeClass}">${badgeText}</span></td>
-                <td class="bday-col-actions">
-                    <button class="btn-icon-tiny" onclick="openBirthdayModal('${item.id}')">✏️</button>
-                    <button class="btn-icon-tiny" onclick="deleteBirthday('${item.id}')">🗑️</button>
-                </td>
             </tr>`;
         }).join('');
         list.innerHTML = `<table class="expenses-table yearly-summary-table birthday-table">
             <thead><tr>
-                <th>名前</th><th>誕生日</th><th>生年・年齢</th><th>まで</th><th></th>
+                <th>名前</th><th>誕生日</th><th>生年・年齢</th><th>まで</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
@@ -3059,6 +3055,52 @@ function updateBirthdayDayOptions(month, selectedDay) {
             const d = i + 1;
             return `<option value="${d}" ${d == selectedDay ? 'selected' : ''}>${d}日</option>`;
         }).join('');
+}
+
+async function openBirthdayManageModal() {
+    openModal('birthdayManageModal');
+    const manageList = document.getElementById('birthdayManageList');
+    manageList.innerHTML = '<div class="loading-state">読み込み中...</div>';
+    try {
+        const snapshot = await db.collection('birthdays').get();
+        const items = [];
+        snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+        if (items.length === 0) {
+            manageList.innerHTML = '<div class="empty-state" style="padding:1rem 0;"><p>登録なし</p></div>';
+            return;
+        }
+        items.sort((a, b) => daysUntilBirthday(a.month, a.day) - daysUntilBirthday(b.month, b.day));
+        manageList.innerHTML = items.map(item => `
+            <div class="birthday-manage-row">
+                <div class="birthday-manage-info">
+                    <span class="birthday-manage-name">${item.name}</span>
+                    ${item.note ? `<span class="bday-note-inline">${item.note}</span>` : ''}
+                    <span class="birthday-manage-date">${item.month}月${item.day}日</span>
+                </div>
+                <div class="birthday-manage-actions">
+                    <button class="btn-icon-tiny" onclick="openBirthdayModal('${item.id}')">✏️</button>
+                    <button class="btn-icon-tiny" onclick="deleteBirthdayFromManage('${item.id}')">🗑️</button>
+                </div>
+            </div>`).join('');
+    } catch (e) {
+        manageList.innerHTML = '<div class="empty-state"><p>読み込みに失敗しました</p></div>';
+    }
+}
+
+function openBirthdayModalFromManage() {
+    closeModal('birthdayManageModal');
+    openBirthdayModal();
+}
+
+async function deleteBirthdayFromManage(id) {
+    if (!confirm('削除しますか？')) return;
+    try {
+        await db.collection('birthdays').doc(id).delete();
+        renderBirthdays();
+        openBirthdayManageModal();
+    } catch (e) {
+        console.error('誕生日削除エラー:', e);
+    }
 }
 
 async function openBirthdayModal(id = null) {
@@ -3113,6 +3155,8 @@ async function saveBirthday() {
         }
         closeModal('birthdayModal');
         renderBirthdays();
+        // 編集モードから来た場合は管理モーダルを再表示
+        if (id) openBirthdayManageModal();
     } catch (e) {
         console.error('誕生日保存エラー:', e);
         alert('保存に失敗しました');
