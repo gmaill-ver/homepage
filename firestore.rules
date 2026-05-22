@@ -77,6 +77,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // 誕生日管理
+    match /birthdays/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // デフォルトでアクセス拒否
     match /{document=**} {
       allow read, write: if false;
