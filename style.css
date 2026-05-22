@@ -2149,48 +2149,23 @@ body {
 
 /* 期限管理 */
 /* 誕生日管理 */
-.birthday-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.45rem 0;
-    border-bottom: 1px solid #F3F4F6;
-}
-.birthday-item:last-child { border-bottom: none; }
+.birthday-table .bday-col-name  { text-align: left; font-weight: 600; white-space: nowrap; }
+.birthday-table .bday-col-date  { text-align: center; white-space: nowrap; color: #374151; }
+.birthday-table .bday-col-year  { text-align: left; color: #6B7280; font-size: 0.72rem; }
+.birthday-table .bday-col-days  { text-align: right; white-space: nowrap; }
+.birthday-table .bday-col-actions { text-align: right; white-space: nowrap; padding-left: 0; }
 
-.birthday-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.05rem;
-}
-.birthday-name-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-}
-.birthday-name {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: #1F2937;
-}
-.birthday-note {
-    font-size: 0.7rem;
+.bday-note-inline {
+    font-size: 0.68rem;
     color: #9CA3AF;
+    margin-left: 0.3rem;
+    font-weight: normal;
 }
-.birthday-date {
-    font-size: 0.72rem;
-    color: #6B7280;
-}
-.birthday-right {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    flex-shrink: 0;
-}
+
 .birthday-badge {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: bold;
-    padding: 0.15rem 0.5rem;
+    padding: 0.15rem 0.45rem;
     border-radius: 1rem;
     white-space: nowrap;
 }
@@ -2198,11 +2173,6 @@ body {
 .birthday-badge-soon   { background: #FEE2E2; color: #B91C1C; }
 .birthday-badge-near   { background: #FEF3C7; color: #B45309; }
 .birthday-badge-normal { background: #EFF6FF; color: #1D4ED8; }
-
-.birthday-actions {
-    display: flex;
-    gap: 0.1rem;
-}
 .btn-icon-tiny {
     background: none;
     border: none;

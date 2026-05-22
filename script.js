@@ -3014,36 +3014,36 @@ async function renderBirthdays() {
             return;
         }
         items.sort((a, b) => daysUntilBirthday(a.month, a.day) - daysUntilBirthday(b.month, b.day));
-        list.innerHTML = items.map(item => {
+        const rows = items.map(item => {
             const days = daysUntilBirthday(item.month, item.day);
             let badgeClass = 'birthday-badge-normal';
-            let badgeText = `あと ${days}日`;
-            if (days === 0) { badgeClass = 'birthday-badge-today'; badgeText = '🎉 今日！'; }
+            let badgeText = `あと${days}日`;
+            if (days === 0) { badgeClass = 'birthday-badge-today'; badgeText = '今日🎉'; }
             else if (days <= 7) badgeClass = 'birthday-badge-soon';
             else if (days <= 30) badgeClass = 'birthday-badge-near';
-            const wareki = toWareki(item.year);
             const age = calcAge(item.year, item.month, item.day);
-            const yearLine = item.year
-                ? `<span class="birthday-year">${wareki}（${item.year}年）${age != null ? `・${age}歳` : ''}</span>`
+            const warekiStr = item.year ? toWareki(item.year) : '';
+            const ageStr = age != null ? `${age}歳` : '';
+            const yearStr = warekiStr || ageStr
+                ? [warekiStr, ageStr].filter(Boolean).join('・')
                 : '';
-            return `
-            <div class="birthday-item">
-                <div class="birthday-info">
-                    <div class="birthday-name-row">
-                        <span class="birthday-name">${item.name}</span>
-                        ${item.note ? `<span class="birthday-note">${item.note}</span>` : ''}
-                    </div>
-                    <span class="birthday-date">${item.month}月${item.day}日${yearLine ? '　' + yearLine.replace('<span class="birthday-year">', '').replace('</span>', '') : ''}</span>
-                </div>
-                <div class="birthday-right">
-                    <span class="birthday-badge ${badgeClass}">${badgeText}</span>
-                    <div class="birthday-actions">
-                        <button class="btn-icon-tiny" onclick="openBirthdayModal('${item.id}')">✏️</button>
-                        <button class="btn-icon-tiny" onclick="deleteBirthday('${item.id}')">🗑️</button>
-                    </div>
-                </div>
-            </div>`;
+            return `<tr>
+                <td class="bday-col-name">${item.name}${item.note ? `<span class="bday-note-inline">${item.note}</span>` : ''}</td>
+                <td class="bday-col-date">${item.month}/${item.day}</td>
+                <td class="bday-col-year">${yearStr}</td>
+                <td class="bday-col-days"><span class="birthday-badge ${badgeClass}">${badgeText}</span></td>
+                <td class="bday-col-actions">
+                    <button class="btn-icon-tiny" onclick="openBirthdayModal('${item.id}')">✏️</button>
+                    <button class="btn-icon-tiny" onclick="deleteBirthday('${item.id}')">🗑️</button>
+                </td>
+            </tr>`;
         }).join('');
+        list.innerHTML = `<table class="expenses-table yearly-summary-table birthday-table">
+            <thead><tr>
+                <th>名前</th><th>誕生日</th><th>生年・年齢</th><th>まで</th><th></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
     } catch (e) {
         console.error('誕生日読み込みエラー:', e);
         list.innerHTML = '<div class="empty-state"><p>読み込みに失敗しました</p></div>';
