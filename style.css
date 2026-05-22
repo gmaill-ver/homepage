@@ -2149,11 +2149,18 @@ body {
 
 /* 期限管理 */
 /* 誕生日管理 */
+.birthday-table .bday-main-row  { cursor: pointer; }
+.birthday-table .bday-main-row:hover { background: #F9FAFB; }
 .birthday-table .bday-col-name  { text-align: left; font-weight: 600; white-space: nowrap; }
 .birthday-table .bday-col-date  { text-align: center; white-space: nowrap; color: #374151; }
-.birthday-table .bday-col-year  { text-align: left; color: #6B7280; font-size: 0.72rem; }
+.birthday-table .bday-col-age   { text-align: center; white-space: nowrap; color: #374151; }
 .birthday-table .bday-col-days  { text-align: right; white-space: nowrap; }
-.birthday-table .bday-col-actions { text-align: right; white-space: nowrap; padding-left: 0; }
+.bday-detail-cell {
+    font-size: 0.78rem;
+    color: #6B7280;
+    padding: 0.3rem 0.75rem 0.5rem 1rem !important;
+    background: #F9FAFB;
+}
 
 .btn-outline-dark {
     padding: 0.5rem 1rem;

@@ -3033,20 +3033,24 @@ async function renderBirthdays() {
             else if (days <= 7) badgeClass = 'birthday-badge-soon';
             else if (days <= 30) badgeClass = 'birthday-badge-near';
             const age = calcAge(item.year, item.month, item.day);
-            const shortW = toWarekiShort(item.year);
-            const yearStr = item.year
-                ? `${item.year}/${shortW}${age != null ? `・${age}歳` : ''}`
-                : (age != null ? `${age}歳` : '');
-            return `<tr>
-                <td class="bday-col-name">${item.name}${item.note ? `<span class="bday-note-inline">${item.note}</span>` : ''}</td>
+            const ageStr = age != null ? `${age}歳` : '-';
+            const detailStr = item.year
+                ? `${item.year}年（${toWareki(item.year).replace('年','')}）生まれ${item.note ? '　' + item.note : ''}`
+                : `生年不明${item.note ? '　' + item.note : ''}`;
+            return `
+            <tr class="bday-main-row" onclick="toggleBirthdayDetail('${item.id}')">
+                <td class="bday-col-name">${item.name}</td>
                 <td class="bday-col-date">${item.month}/${item.day}</td>
-                <td class="bday-col-year">${yearStr}</td>
+                <td class="bday-col-age">${ageStr}</td>
                 <td class="bday-col-days"><span class="birthday-badge ${badgeClass}">${badgeText}</span></td>
+            </tr>
+            <tr class="bday-detail-row" id="bday-detail-${item.id}" style="display:none;">
+                <td colspan="4" class="bday-detail-cell">${detailStr}</td>
             </tr>`;
         }).join('');
         list.innerHTML = `<table class="expenses-table yearly-summary-table birthday-table">
             <thead><tr>
-                <th>名前</th><th>誕生日</th><th>生年・年齢</th><th>まで</th>
+                <th>名前</th><th>誕生日</th><th>年齢</th><th>残り</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
@@ -3054,6 +3058,12 @@ async function renderBirthdays() {
         console.error('誕生日読み込みエラー:', e);
         list.innerHTML = '<div class="empty-state"><p>読み込みに失敗しました</p></div>';
     }
+}
+
+function toggleBirthdayDetail(id) {
+    const row = document.getElementById(`bday-detail-${id}`);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
 function updateBirthdayDayOptions(month, selectedDay) {
