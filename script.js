@@ -2981,6 +2981,26 @@ function daysUntilBirthday(month, day) {
     return Math.round((next - today) / 86400000);
 }
 
+function toWareki(year) {
+    if (!year) return '';
+    year = parseInt(year);
+    if (year >= 2019) return `令和${year - 2018}年`;
+    if (year >= 1989) return `平成${year - 1988}年`;
+    if (year >= 1926) return `昭和${year - 1925}年`;
+    if (year >= 1912) return `大正${year - 1911}年`;
+    if (year >= 1868) return `明治${year - 1867}年`;
+    return '';
+}
+
+function calcAge(birthYear, month, day) {
+    if (!birthYear) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birthYear;
+    const hasBirthdayPassed = new Date(today.getFullYear(), month - 1, day) <= today;
+    if (!hasBirthdayPassed) age--;
+    return age;
+}
+
 async function renderBirthdays() {
     const list = document.getElementById('birthdayList');
     if (!list) return;
@@ -3001,12 +3021,19 @@ async function renderBirthdays() {
             if (days === 0) { badgeClass = 'birthday-badge-today'; badgeText = '🎉 今日！'; }
             else if (days <= 7) badgeClass = 'birthday-badge-soon';
             else if (days <= 30) badgeClass = 'birthday-badge-near';
+            const wareki = toWareki(item.year);
+            const age = calcAge(item.year, item.month, item.day);
+            const yearLine = item.year
+                ? `<span class="birthday-year">${wareki}（${item.year}年）${age != null ? `・${age}歳` : ''}</span>`
+                : '';
             return `
             <div class="birthday-item">
                 <div class="birthday-info">
-                    <span class="birthday-name">${item.name}</span>
-                    ${item.note ? `<span class="birthday-note">${item.note}</span>` : ''}
-                    <span class="birthday-date">${item.month}月 ${item.day}日</span>
+                    <div class="birthday-name-row">
+                        <span class="birthday-name">${item.name}</span>
+                        ${item.note ? `<span class="birthday-note">${item.note}</span>` : ''}
+                    </div>
+                    <span class="birthday-date">${item.month}月${item.day}日${yearLine ? '　' + yearLine.replace('<span class="birthday-year">', '').replace('</span>', '') : ''}</span>
                 </div>
                 <div class="birthday-right">
                     <span class="birthday-badge ${badgeClass}">${badgeText}</span>
@@ -3039,12 +3066,18 @@ async function openBirthdayModal(id = null) {
     document.getElementById('birthdayName').value = '';
     document.getElementById('birthdayNote').value = '';
     document.getElementById('birthdayMonth').value = '';
+    document.getElementById('birthdayYear').value = '';
+    document.getElementById('warekiDisplay').textContent = '';
     document.getElementById('birthdayModalTitle').textContent = id ? '誕生日を編集' : '誕生日を追加';
     document.getElementById('saveBirthdayBtn').textContent = id ? '更新' : '追加';
     updateBirthdayDayOptions(null, null);
 
     document.getElementById('birthdayMonth').onchange = function() {
         updateBirthdayDayOptions(this.value, document.getElementById('birthdayDay').value);
+    };
+    document.getElementById('birthdayYear').oninput = function() {
+        const w = toWareki(this.value);
+        document.getElementById('warekiDisplay').textContent = w ? `= ${w}` : '';
     };
 
     if (id) {
@@ -3054,6 +3087,8 @@ async function openBirthdayModal(id = null) {
             document.getElementById('birthdayName').value = d.name || '';
             document.getElementById('birthdayNote').value = d.note || '';
             document.getElementById('birthdayMonth').value = d.month || '';
+            document.getElementById('birthdayYear').value = d.year || '';
+            document.getElementById('warekiDisplay').textContent = d.year ? `= ${toWareki(d.year)}` : '';
             updateBirthdayDayOptions(d.month, d.day);
         }
     }
@@ -3065,9 +3100,11 @@ async function saveBirthday() {
     const name = document.getElementById('birthdayName').value.trim();
     const month = parseInt(document.getElementById('birthdayMonth').value);
     const day = parseInt(document.getElementById('birthdayDay').value);
+    const yearRaw = document.getElementById('birthdayYear').value.trim();
+    const year = yearRaw ? parseInt(yearRaw) : null;
     const note = document.getElementById('birthdayNote').value.trim();
     if (!name || !month || !day) { alert('名前・月・日を入力してください'); return; }
-    const data = { name, month, day, note };
+    const data = { name, month, day, note, year };
     try {
         if (id) {
             await db.collection('birthdays').doc(id).update(data);

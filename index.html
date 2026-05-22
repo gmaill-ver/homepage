@@ -883,6 +883,10 @@
                     <option value="">日</option>
                 </select>
             </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="number" id="birthdayYear" placeholder="西暦（任意）" inputmode="numeric" min="1900" max="2099" style="flex: 1;">
+                <span id="warekiDisplay" style="font-size: 0.85rem; color: #6B7280; white-space: nowrap; min-width: 6rem;"></span>
+            </div>
             <input type="text" id="birthdayNote" placeholder="メモ（例: 妻の母）">
             <div class="modal-actions">
                 <button id="saveBirthdayBtn" class="btn-primary-blue" onclick="saveBirthday()">追加</button>
