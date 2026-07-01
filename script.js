@@ -3964,9 +3964,10 @@ function initializeMedicalFormDefaults() {
     document.getElementById('medicalTime').value = timeStr;
 }
 
-// 時間をボタンで設定
+// 時間をボタンで設定（朝・昼・晩）
 function setMedicalTime(timeLabel) {
-    document.getElementById('medicalTime').value = timeLabel;
+    const timeInput = document.getElementById('medicalTime');
+    timeInput.value = timeLabel;
     console.log('✅ 時間を設定:', timeLabel);
 }
 
