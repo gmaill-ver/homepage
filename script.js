@@ -3810,8 +3810,28 @@ async function changeMedicalPersonButton(person) {
 
     if (person) {
         console.log('✅ 人物を選択:', person);
+        updatePersonButtonColors(person);  // ボタン色を更新
         await selectMedicalPerson(person);
     }
+}
+
+// 人物ボタンの色を更新
+function updatePersonButtonColors(activePerson) {
+    const container = document.getElementById('medicalPersonButtons');
+    const buttons = container.querySelectorAll('button');
+
+    buttons.forEach(button => {
+        const buttonText = button.textContent.trim();
+        if (buttonText === activePerson) {
+            button.style.background = '#667eea';
+            button.style.color = 'white';
+            button.style.borderColor = '#667eea';
+        } else {
+            button.style.background = 'white';
+            button.style.color = '#374151';
+            button.style.borderColor = '#E5E7EB';
+        }
+    });
 }
 
 // 設定モーダルを開く
@@ -3969,6 +3989,19 @@ function initializeMedicalFormDefaults() {
 
     // ボタンのハイライトを解除
     updateTimeLabelButtons('');
+}
+
+// 入力欄のサイズを自動調整
+function autoResizeInput(input) {
+    // 一旦、最小幅に戻す
+    input.style.width = 'auto';
+
+    // 入力されたテキストの長さに応じて幅を設定
+    const textLength = input.value.length || input.placeholder.length;
+    const estimatedWidth = Math.max(100, textLength * 8 + 20); // 文字数 × 8 + padding
+
+    input.style.width = estimatedWidth + 'px';
+    console.log('📝 入力欄の幅を調整:', estimatedWidth + 'px');
 }
 
 // 時間をボタンで設定（朝・昼・晩）

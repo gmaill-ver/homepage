@@ -332,7 +332,7 @@
                             <button id="btnEvening" onclick="setMedicalTimeLabel('晩')" style="padding: 0.5rem 0.75rem; border: 2px solid #E5E7EB; background: white; color: #374151; border-radius: 0.375rem; cursor: pointer; font-weight: 500; transition: all 0.2s;">晩</button>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <input type="text" id="medicalDisease" placeholder="病名（例：風邪）" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
+                            <input type="text" id="medicalDisease" placeholder="病名（例：風邪）" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: auto; min-width: 100px;" oninput="autoResizeInput(this)">
                             <input type="number" id="medicalTemp" placeholder="体温（℃）" step="0.1" min="35" max="42" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
                             <input type="text" id="medicalMeal" placeholder="食事（例：おかゆ）" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
                             <input type="text" id="medicalSymptoms" placeholder="症状（例：咳、頭痛）" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem;">
