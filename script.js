@@ -3869,7 +3869,6 @@ function updatePersonButtonColors(activePerson) {
 async function openMedicalSettingsModal() {
     document.getElementById('medicalSettingsModal').style.display = 'block';
     await loadMedicalPersons();
-    await loadMedicalRecordsForDelete();
 }
 
 // 設定モーダルを閉じる
@@ -3878,16 +3877,6 @@ function closeMedicalSettingsModal() {
 }
 
 // 人物管理タブに切り替え
-function switchSettingsTab(tab) {
-    document.getElementById('personManagerTab').style.display = tab === 'personManager' ? 'block' : 'none';
-    document.getElementById('recordManagerTab').style.display = tab === 'recordManager' ? 'block' : 'none';
-
-    document.getElementById('tab-personManager').style.borderBottomColor = tab === 'personManager' ? '#667eea' : 'transparent';
-    document.getElementById('tab-personManager').style.color = tab === 'personManager' ? '#667eea' : '#9CA3AF';
-    document.getElementById('tab-recordManager').style.borderBottomColor = tab === 'recordManager' ? '#667eea' : 'transparent';
-    document.getElementById('tab-recordManager').style.color = tab === 'recordManager' ? '#667eea' : '#9CA3AF';
-}
-
 // 人物一覧を読み込み
 async function loadMedicalPersons() {
     const personList = document.getElementById('personList');
