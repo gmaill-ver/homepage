@@ -3755,9 +3755,14 @@ async function addMedicalRecord() {
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
 
-    if (!date || !person || !disease) {
-        alert('日付、誰が、病名は必須です');
+    if (!date || !person) {
+        alert('日付と誰がは必須です');
         return;
+    }
+
+    // 病名を保存（次回入力時に復元）
+    if (disease) {
+        localStorage.setItem('lastMedicalDisease', disease);
     }
 
     try {
@@ -3986,6 +3991,13 @@ function initializeMedicalFormDefaults() {
     document.getElementById('medicalDate').value = dateStr;
     document.getElementById('medicalTime').value = timeStr;
     document.getElementById('medicalTimeLabel').value = ''; // 時間ラベルをクリア
+
+    // 病名の前回入力を復元
+    const lastDisease = localStorage.getItem('lastMedicalDisease');
+    if (lastDisease) {
+        document.getElementById('medicalDisease').value = lastDisease;
+        autoResizeInput(document.getElementById('medicalDisease'));
+    }
 
     // ボタンのハイライトを解除
     updateTimeLabelButtons('');
