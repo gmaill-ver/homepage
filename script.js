@@ -3724,6 +3724,7 @@ async function renderMedicalHistory() {
             const temp = record.temp ? record.temp + '℃' : '-';
             const symptoms = record.symptoms || '-';
             const meal = record.meal || '-';
+            const remarks = record.remarks || '-';
             return `
                 <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="openMedicalEditModal('${record.id}')">
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${dateStr}</td>
@@ -3732,6 +3733,7 @@ async function renderMedicalHistory() {
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${temp}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${symptoms}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${meal}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${remarks}</td>
                 </tr>
             `;
         }).join('');
@@ -3780,6 +3782,7 @@ async function addMedicalRecord() {
     const temp = document.getElementById('medicalTemp').value;
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
+    const remarks = document.getElementById('medicalRemarks').value.trim();
 
     if (!date || !person) {
         alert('日付と誰がは必須です');
@@ -3802,6 +3805,7 @@ async function addMedicalRecord() {
             temp: temp ? parseFloat(temp) : null,
             meal: meal || null,
             symptoms: symptoms || null,
+            remarks: remarks || null,
             createdAt: new Date()
         };
 
@@ -3814,6 +3818,7 @@ async function addMedicalRecord() {
         document.getElementById('medicalTemp').value = '';
         document.getElementById('medicalMeal').value = '';
         document.getElementById('medicalSymptoms').value = '';
+        document.getElementById('medicalRemarks').value = '';
 
         // テーブルを再レンダリング
         renderMedicalHistory();
@@ -4011,7 +4016,6 @@ function initializeMedicalFormDefaults() {
     const lastDisease = localStorage.getItem('lastMedicalDisease');
     if (lastDisease) {
         document.getElementById('medicalDisease').value = lastDisease;
-        autoResizeInput(document.getElementById('medicalDisease'));
     }
 
     // ボタンのハイライトを解除
@@ -4095,6 +4099,7 @@ async function openMedicalEditModal(recordId) {
         document.getElementById('editMedicalTemp').value = record.temp || '';
         document.getElementById('editMedicalMeal').value = record.meal || '';
         document.getElementById('editMedicalSymptoms').value = record.symptoms || '';
+        document.getElementById('editMedicalRemarks').value = record.remarks || '';
 
         updateEditTimeLabelButtons(document.getElementById('editMedicalTimeLabel').value);
         renderEditMedicalPersonButtons(record.person || '');
@@ -4188,6 +4193,7 @@ async function saveMedicalRecordEdit() {
     const temp = document.getElementById('editMedicalTemp').value;
     const meal = document.getElementById('editMedicalMeal').value.trim();
     const symptoms = document.getElementById('editMedicalSymptoms').value.trim();
+    const remarks = document.getElementById('editMedicalRemarks').value.trim();
 
     if (!date || !person) {
         alert('日付と誰がは必須です');
@@ -4203,7 +4209,8 @@ async function saveMedicalRecordEdit() {
             time: time || null,
             temp: temp ? parseFloat(temp) : null,
             meal: meal || null,
-            symptoms: symptoms || null
+            symptoms: symptoms || null,
+            remarks: remarks || null
         });
 
         closeMedicalEditModal();
