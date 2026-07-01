@@ -3758,9 +3758,7 @@ async function addMedicalRecord() {
     }
 
     try {
-        // 時間を標準化（朝→06:00、昼→12:00、晩→18:00）
-        time = normalizeTime(time);
-
+        // 時間はそのまま保存（朝・昼・晩またはHH:MM形式）
         const dateObj = new Date(date + 'T00:00:00');
         const recordData = {
             date: dateObj,
@@ -3966,17 +3964,10 @@ function initializeMedicalFormDefaults() {
     document.getElementById('medicalTime').value = timeStr;
 }
 
-// 時間を標準化（朝→06:00、昼→12:00、晩→18:00）
-function normalizeTime(timeStr) {
-    if (!timeStr) return null;
-
-    const timeMap = {
-        '朝': '06:00',
-        '昼': '12:00',
-        '晩': '18:00'
-    };
-
-    return timeMap[timeStr] || timeStr;
+// 時間をボタンで設定
+function setMedicalTime(timeLabel) {
+    document.getElementById('medicalTime').value = timeLabel;
+    console.log('✅ 時間を設定:', timeLabel);
 }
 
 /*
