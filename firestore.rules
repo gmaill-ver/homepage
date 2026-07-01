@@ -82,6 +82,11 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    // 病歴カード
+    match /medicalHistory/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // デフォルトでアクセス拒否
     match /{document=**} {
       allow read, write: if false;

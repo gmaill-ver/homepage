@@ -1701,6 +1701,9 @@ function loadFeatureData(featureName) {
         case 'insurance':
             renderInsurances();
             break;
+        case 'medicalHistory':
+            renderMedicalHistory();
+            break;
         case 'expenses':
             initializeMonthlyExpenses();
             break;
@@ -3591,6 +3594,116 @@ async function deleteExpiryItem(id) {
         console.error('期限アイテム削除エラー:', error);
         alert('削除に失敗しました');
     }
+}
+
+// ========== 病歴カード管理 ==========
+
+// 病歴を表示
+async function renderMedicalHistory() {
+    const tableBody = document.getElementById('medicalTableBody');
+
+    try {
+        const snapshot = await db.collection('medicalHistory')
+            .orderBy('date', 'desc')
+            .get();
+
+        const records = [];
+        snapshot.forEach(doc => {
+            records.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (records.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
+                        記録がありません
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tableBody.innerHTML = records.map(record => {
+            const dateStr = record.date ? record.date.toDate ? record.date.toDate().toLocaleDateString('ja-JP') : record.date : '-';
+            return `
+                <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="showMedicalDetail('${record.id}')">
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${dateStr}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.disease || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.time || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.temp ? record.temp + '℃' : '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.meal ? (record.meal.length > 10 ? record.meal.substring(0, 10) + '...' : record.meal) : '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.symptoms ? (record.symptoms.length > 10 ? record.symptoms.substring(0, 10) + '...' : record.symptoms) : '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">
+                        <button onclick="event.stopPropagation(); deleteMedicalRecord('${record.id}')" class="btn-icon-simple" title="削除">🗑️</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('病歴読み込みエラー:', error);
+        tableBody.innerHTML = `<tr><td colspan="7" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー</td></tr>`;
+    }
+}
+
+// 医療記録を追加
+async function addMedicalRecord() {
+    const date = document.getElementById('medicalDate').value;
+    const disease = document.getElementById('medicalDisease').value.trim();
+    const time = document.getElementById('medicalTime').value;
+    const temp = document.getElementById('medicalTemp').value;
+    const meal = document.getElementById('medicalMeal').value.trim();
+    const symptoms = document.getElementById('medicalSymptoms').value.trim();
+
+    if (!date || !disease) {
+        alert('日付と病名は必須です');
+        return;
+    }
+
+    try {
+        const dateObj = new Date(date + 'T00:00:00');
+
+        await db.collection('medicalHistory').add({
+            date: dateObj,
+            disease: disease,
+            time: time,
+            temp: temp ? parseFloat(temp) : null,
+            meal: meal,
+            symptoms: symptoms,
+            createdAt: new Date()
+        });
+
+        // フォームをリセット
+        document.getElementById('medicalDate').value = '';
+        document.getElementById('medicalDisease').value = '';
+        document.getElementById('medicalTime').value = '';
+        document.getElementById('medicalTemp').value = '';
+        document.getElementById('medicalMeal').value = '';
+        document.getElementById('medicalSymptoms').value = '';
+
+        // テーブルを再レンダリング
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('病歴追加エラー:', error);
+        alert('記録に失敗しました');
+    }
+}
+
+// 医療記録を削除
+async function deleteMedicalRecord(id) {
+    if (!confirm('この記録を削除しますか？')) return;
+
+    try {
+        await db.collection('medicalHistory').doc(id).delete();
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('病歴削除エラー:', error);
+        alert('削除に失敗しました');
+    }
+}
+
+// 医療記録の詳細表示
+function showMedicalDetail(id) {
+    alert('詳細表示機能は今後実装予定です');
 }
 
 /*
