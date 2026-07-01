@@ -3714,34 +3714,38 @@ async function renderMedicalHistory() {
         tableBody.innerHTML = `<tr><td colspan="5" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
     }
 
-    // 人物セレクトを更新
-    updateMedicalPersonSelect();
+    // 人物ボタンを更新
+    updateMedicalPersonButtons();
 }
 
-// 人物セレクトを更新
-function updateMedicalPersonSelect() {
-    const select = document.getElementById('medicalPersonSelect');
-    console.log('🔍 updateMedicalPersonSelect() 実行中、medicalPersonList:', medicalPersonList);
+// 人物ボタンを生成・更新
+function updateMedicalPersonButtons() {
+    const container = document.getElementById('medicalPersonButtons');
+    console.log('🔍 updateMedicalPersonButtons() 実行中、medicalPersonList:', medicalPersonList);
 
-    select.innerHTML = `<option value="">誰が</option>` +
-        medicalPersonList.map(person => `<option value="${person}">${person}</option>`).join('');
-
-    console.log('🔍 セレクトボックスのHTML:', select.innerHTML);
+    if (!medicalPersonList || medicalPersonList.length === 0) {
+        container.innerHTML = '<span style="color: #9CA3AF; font-size: 0.875rem;">人物を登録してください</span>';
+        return;
+    }
 
     // 保存された人物を復元
     const savedPerson = localStorage.getItem('selectedMedicalPerson');
-    if (savedPerson && medicalPersonList.includes(savedPerson)) {
-        select.value = savedPerson;
-        console.log('✅ 保存された人物を復元:', savedPerson);
-    } else {
-        console.log('ℹ️ 保存された人物がないまたは一覧にない');
-    }
+    const activePerson = savedPerson || medicalPersonList[0];
+
+    container.innerHTML = medicalPersonList.map(person => `
+        <button onclick="changeMedicalPersonButton('${person}')"
+                style="padding: 0.5rem 0.75rem; border: ${activePerson === person ? 'none' : '2px solid #E5E7EB'}; background: ${activePerson === person ? '#667eea' : 'white'}; color: ${activePerson === person ? 'white' : '#374151'}; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; font-weight: ${activePerson === person ? '600' : '400'};">
+            ${person}
+        </button>
+    `).join('');
+
+    console.log('✅ 人物ボタンを生成:', medicalPersonList);
 }
 
 // 医療記録を追加
 async function addMedicalRecord() {
     const date = document.getElementById('medicalDate').value;
-    const person = document.getElementById('medicalPersonSelect').value || selectedMedicalPerson;
+    const person = selectedMedicalPerson;
     const disease = document.getElementById('medicalDisease').value.trim();
     let time = document.getElementById('medicalTime').value.trim();
     const temp = document.getElementById('medicalTemp').value;
@@ -3799,16 +3803,13 @@ async function selectMedicalPerson(person) {
     console.log('✅ テーブル更新完了');
 }
 
-// セレクトボックスで人物を変更
-async function changeMedicalPerson() {
-    const person = document.getElementById('medicalPersonSelect').value;
-    console.log('🔄 changeMedicalPerson() 実行:', person);
+// ボタンで人物を変更
+async function changeMedicalPersonButton(person) {
+    console.log('🔄 changeMedicalPersonButton() 実行:', person);
 
     if (person) {
         console.log('✅ 人物を選択:', person);
         await selectMedicalPerson(person);
-    } else {
-        console.log('ℹ️ 人物が未選択');
     }
 }
 
