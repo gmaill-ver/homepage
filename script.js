@@ -3726,12 +3726,12 @@ async function renderMedicalHistory() {
             const meal = record.meal || '-';
             return `
                 <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="openMedicalEditModal('${record.id}')">
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${dateStr}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${record.disease || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${time}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${temp}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${symptoms}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${meal}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${dateStr}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${record.disease || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${time}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${temp}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${symptoms}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${meal}</td>
                 </tr>
             `;
         }).join('');
