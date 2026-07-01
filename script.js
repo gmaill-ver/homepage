@@ -3597,11 +3597,13 @@ async function deleteExpiryItem(id) {
 }
 
 // ========== 病歴カード管理 ==========
-let currentMedicalRecordId = null;
+let medicalPersonList = [];
+let selectedMedicalPerson = null;
 
 // 病歴を表示
 async function renderMedicalHistory() {
     const tableBody = document.getElementById('medicalTableBody');
+    const personTabsContainer = document.getElementById('medicalPersonTabs');
 
     try {
         console.log('📖 病歴読み込み開始...');
@@ -3610,122 +3612,72 @@ async function renderMedicalHistory() {
             .get();
 
         const records = [];
+        const personsSet = new Set();
+
         snapshot.forEach(doc => {
             records.push({ id: doc.id, ...doc.data() });
+            if (doc.data().person) personsSet.add(doc.data().person);
         });
+
+        medicalPersonList = Array.from(personsSet).sort();
+        if (!selectedMedicalPerson && medicalPersonList.length > 0) {
+            selectedMedicalPerson = medicalPersonList[0];
+        }
 
         console.log(`✅ ${records.length}件の記録を取得`);
 
-        if (records.length === 0) {
+        // 人物タブを生成
+        personTabsContainer.innerHTML = medicalPersonList.map(person => `
+            <button onclick="selectMedicalPerson('${person}')"
+                    style="padding: 0.5rem 1rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; background: ${selectedMedicalPerson === person ? '#667eea' : 'white'}; color: ${selectedMedicalPerson === person ? 'white' : '#374151'}; cursor: pointer; font-weight: ${selectedMedicalPerson === person ? '600' : '400'};">
+                ${person}
+            </button>
+        `).join('');
+
+        // 選択された人物の記録を表示
+        const filteredRecords = selectedMedicalPerson
+            ? records.filter(r => r.person === selectedMedicalPerson)
+            : [];
+
+        if (filteredRecords.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="4" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
-                        記録がありません
+                    <td colspan="5" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
+                        ${selectedMedicalPerson ? `${selectedMedicalPerson}の病歴がありません` : '人物を選択してください'}
                     </td>
                 </tr>
             `;
             return;
         }
 
-        tableBody.innerHTML = records.map(record => {
+        tableBody.innerHTML = filteredRecords.map(record => {
             const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
             const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
-            const person = record.person || '-';
+            const temp = record.temp ? record.temp + '℃' : '-';
             return `
-                <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="showMedicalDetail('${record.id}')">
+                <tr style="border-bottom: 1px solid #E5E7EB;">
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${dateStr}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${person}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.disease || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">
-                        <button onclick="event.stopPropagation(); showMedicalDetail('${record.id}')" class="btn-icon-simple" title="詳細">⚙️</button>
-                    </td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${temp}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.meal || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.symptoms || '-'}</td>
                 </tr>
             `;
         }).join('');
     } catch (error) {
         console.error('❌ 病歴読み込みエラー:', error);
-        tableBody.innerHTML = `<tr><td colspan="4" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
     }
+
+    // 人物セレクトを更新
+    updateMedicalPersonSelect();
 }
 
-// 医療記録の詳細表示
-async function showMedicalDetail(id) {
-    try {
-        const doc = await db.collection('medicalHistory').doc(id).get();
-        if (!doc.exists) {
-            alert('記録が見つかりません');
-            return;
-        }
-
-        const record = doc.data();
-        const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
-        const dateStr = dateObj.toLocaleDateString('ja-JP');
-
-        currentMedicalRecordId = id;
-
-        const detailContent = `
-            <div style="background: #F9FAFB; padding: 1rem; border-radius: 0.375rem;">
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">日付</div>
-                    <div style="font-weight: 600; color: #111827;">${dateStr}</div>
-                </div>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">誰が</div>
-                    <div style="font-weight: 600; color: #111827;">${record.person || '-'}</div>
-                </div>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">病名</div>
-                    <div style="font-weight: 600; color: #111827;">${record.disease || '-'}</div>
-                </div>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">時間</div>
-                    <div style="color: #111827;">${record.time || '-'}</div>
-                </div>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">体温</div>
-                    <div style="color: #111827;">${record.temp ? record.temp + '℃' : '-'}</div>
-                </div>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="color: #6B7280; font-size: 0.875rem;">食事</div>
-                    <div style="color: #111827;">${record.meal || '-'}</div>
-                </div>
-                <div>
-                    <div style="color: #6B7280; font-size: 0.875rem;">症状</div>
-                    <div style="color: #111827;">${record.symptoms || '-'}</div>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('medicalDetailTitle').textContent = `${record.disease || '病歴詳細'} - ${record.person || ''}`;
-        document.getElementById('medicalDetailContent').innerHTML = detailContent;
-        document.getElementById('medicalDetailModal').style.display = 'flex';
-        document.getElementById('medicalDetailModal').style.justifyContent = 'center';
-    } catch (error) {
-        console.error('❌ 詳細読み込みエラー:', error);
-        alert('詳細情報の取得に失敗しました');
-    }
-}
-
-// 詳細表示モーダルを閉じる
-function closeMedicalDetailModal() {
-    document.getElementById('medicalDetailModal').style.display = 'none';
-    currentMedicalRecordId = null;
-}
-
-// モーダルから削除
-async function deleteMedicalRecordFromModal() {
-    if (!currentMedicalRecordId) return;
-    if (!confirm('この記録を削除しますか？')) return;
-
-    try {
-        await db.collection('medicalHistory').doc(currentMedicalRecordId).delete();
-        console.log('✅ 削除成功:', currentMedicalRecordId);
-        closeMedicalDetailModal();
-        renderMedicalHistory();
-    } catch (error) {
-        console.error('❌ 削除エラー:', error);
-        alert('削除に失敗しました');
-    }
+// 人物セレクトを更新
+function updateMedicalPersonSelect() {
+    const select = document.getElementById('medicalPerson');
+    select.innerHTML = `<option value="">誰が（選択してください）</option>` +
+        medicalPersonList.map(person => `<option value="${person}">${person}</option>`).join('');
 }
 
 // 医療記録を追加
@@ -3738,10 +3690,8 @@ async function addMedicalRecord() {
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
 
-    console.log('🩺 病歴追加開始:', { date, person, disease, time, temp, meal, symptoms });
-
-    if (!date || !disease) {
-        alert('日付と病名は必須です');
+    if (!date || !person || !disease) {
+        alert('日付、誰が、病名は必須です');
         return;
     }
 
@@ -3749,7 +3699,7 @@ async function addMedicalRecord() {
         const dateObj = new Date(date + 'T00:00:00');
         const recordData = {
             date: dateObj,
-            person: person || null,
+            person: person,
             disease: disease,
             time: time || null,
             temp: temp ? parseFloat(temp) : null,
@@ -3758,10 +3708,8 @@ async function addMedicalRecord() {
             createdAt: new Date()
         };
 
-        console.log('📤 Firestore送信データ:', recordData);
-
         const docRef = await db.collection('medicalHistory').add(recordData);
-        console.log('✅ Firestore保存成功:', docRef.id);
+        console.log('✅ 病歴保存成功:', docRef.id);
 
         // フォームをリセット
         document.getElementById('medicalDate').value = '';
@@ -3772,8 +3720,6 @@ async function addMedicalRecord() {
         document.getElementById('medicalMeal').value = '';
         document.getElementById('medicalSymptoms').value = '';
 
-        alert('記録を保存しました！');
-
         // テーブルを再レンダリング
         renderMedicalHistory();
     } catch (error) {
@@ -3782,9 +3728,142 @@ async function addMedicalRecord() {
     }
 }
 
-// 設定モーダルの切り替え（実装）
-function toggleMedicalSettingsModal() {
-    // 現在は使用していないが、将来的な拡張用に保持
+// 人物を選択
+function selectMedicalPerson(person) {
+    selectedMedicalPerson = person;
+    renderMedicalHistory();
+}
+
+// 設定モーダルを開く
+async function openMedicalSettingsModal() {
+    document.getElementById('medicalSettingsModal').style.display = 'block';
+    await loadMedicalPersons();
+    await loadMedicalRecordsForDelete();
+}
+
+// 設定モーダルを閉じる
+function closeMedicalSettingsModal() {
+    document.getElementById('medicalSettingsModal').style.display = 'none';
+}
+
+// 人物管理タブに切り替え
+function switchSettingsTab(tab) {
+    document.getElementById('personManagerTab').style.display = tab === 'personManager' ? 'block' : 'none';
+    document.getElementById('recordManagerTab').style.display = tab === 'recordManager' ? 'block' : 'none';
+
+    document.getElementById('tab-personManager').style.borderBottomColor = tab === 'personManager' ? '#667eea' : 'transparent';
+    document.getElementById('tab-personManager').style.color = tab === 'personManager' ? '#667eea' : '#9CA3AF';
+    document.getElementById('tab-recordManager').style.borderBottomColor = tab === 'recordManager' ? '#667eea' : 'transparent';
+    document.getElementById('tab-recordManager').style.color = tab === 'recordManager' ? '#667eea' : '#9CA3AF';
+}
+
+// 人物一覧を読み込み
+async function loadMedicalPersons() {
+    const personList = document.getElementById('personList');
+    personList.innerHTML = medicalPersonList.map(person => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #F3F4F6; border-radius: 0.375rem; margin-bottom: 0.5rem;">
+            <span style="font-weight: 500;">${person}</span>
+            <button onclick="deleteMedicalPerson('${person}')" style="background: #EF4444; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.75rem;">削除</button>
+        </div>
+    `).join('');
+}
+
+// 新しい人物を追加
+async function addNewPerson() {
+    const name = document.getElementById('newPersonName').value.trim();
+    if (!name) {
+        alert('人物名を入力してください');
+        return;
+    }
+
+    if (medicalPersonList.includes(name)) {
+        alert('この人物は既に登録されています');
+        return;
+    }
+
+    medicalPersonList.push(name);
+    medicalPersonList.sort();
+    document.getElementById('newPersonName').value = '';
+
+    updateMedicalPersonSelect();
+    await loadMedicalPersons();
+    renderMedicalHistory();
+}
+
+// 人物を削除
+async function deleteMedicalPerson(person) {
+    if (!confirm(`${person}に関連する全ての病歴が削除されます。よろしいですか？`)) return;
+
+    try {
+        const snapshot = await db.collection('medicalHistory').where('person', '==', person).get();
+        const batch = db.batch();
+
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+
+        medicalPersonList = medicalPersonList.filter(p => p !== person);
+        selectedMedicalPerson = medicalPersonList.length > 0 ? medicalPersonList[0] : null;
+
+        updateMedicalPersonSelect();
+        await loadMedicalPersons();
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('❌ 人物削除エラー:', error);
+        alert('削除に失敗しました');
+    }
+}
+
+// 削除対象の病歴を読み込み
+async function loadMedicalRecordsForDelete() {
+    const deleteList = document.getElementById('recordDeleteList');
+
+    try {
+        const snapshot = await db.collection('medicalHistory').orderBy('date', 'desc').get();
+        const records = [];
+        snapshot.forEach(doc => {
+            records.push({ id: doc.id, ...doc.data() });
+        });
+
+        if (records.length === 0) {
+            deleteList.innerHTML = '<div style="color: #9CA3AF; padding: 1rem; text-align: center;">病歴がありません</div>';
+            return;
+        }
+
+        deleteList.innerHTML = records.map(record => {
+            const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
+            const dateStr = dateObj.toLocaleDateString('ja-JP');
+            return `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 0.375rem; margin-bottom: 0.5rem;">
+                    <div>
+                        <div style="font-weight: 500; color: #111827;">${record.person || '-'} / ${record.disease}</div>
+                        <div style="font-size: 0.8rem; color: #6B7280;">${dateStr}</div>
+                    </div>
+                    <button onclick="deleteMedicalRecordFromSettings('${record.id}')" style="background: #EF4444; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 0.375rem; cursor: pointer; font-size: 0.75rem;">削除</button>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('❌ 病歴読み込みエラー:', error);
+        deleteList.innerHTML = '<div style="color: #EF4444;">読み込みエラー</div>';
+    }
+}
+
+// 設定から病歴を削除
+async function deleteMedicalRecordFromSettings(id) {
+    if (!confirm('この病歴を削除しますか？')) return;
+
+    try {
+        await db.collection('medicalHistory').doc(id).delete();
+        console.log('✅ 病歴削除成功:', id);
+        await loadMedicalRecordsForDelete();
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('❌ 削除エラー:', error);
+        alert('削除に失敗しました');
+    }
 }
 
 /*
