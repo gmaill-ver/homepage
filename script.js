@@ -3652,19 +3652,17 @@ async function renderMedicalHistory() {
         });
 
         medicalPersonList = Array.from(personsSet).sort();
-        if (!selectedMedicalPerson && medicalPersonList.length > 0) {
+
+        // 保存された人物を復元、またはリストの最初の人物を選択
+        const savedPerson = localStorage.getItem('selectedMedicalPerson');
+        if (savedPerson && medicalPersonList.includes(savedPerson)) {
+            selectedMedicalPerson = savedPerson;
+        } else if (!selectedMedicalPerson && medicalPersonList.length > 0) {
             selectedMedicalPerson = medicalPersonList[0];
+            localStorage.setItem('selectedMedicalPerson', selectedMedicalPerson);
         }
 
-        console.log(`✅ ${records.length}件の記録を取得、人物数: ${medicalPersonList.length}`);
-
-        // 人物タブを生成
-        personTabsContainer.innerHTML = medicalPersonList.map(person => `
-            <button onclick="selectMedicalPerson('${person}')"
-                    style="padding: 0.5rem 1rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; background: ${selectedMedicalPerson === person ? '#667eea' : 'white'}; color: ${selectedMedicalPerson === person ? 'white' : '#374151'}; cursor: pointer; font-weight: ${selectedMedicalPerson === person ? '600' : '400'};">
-                ${person}
-            </button>
-        `).join('');
+        console.log(`✅ ${records.length}件の記録を取得、人物数: ${medicalPersonList.length}、選択人物: ${selectedMedicalPerson}`);
 
         // 選択された人物の記録を表示
         const filteredRecords = selectedMedicalPerson
@@ -3711,15 +3709,21 @@ async function renderMedicalHistory() {
 
 // 人物セレクトを更新
 function updateMedicalPersonSelect() {
-    const select = document.getElementById('medicalPerson');
-    select.innerHTML = `<option value="">誰が（選択してください）</option>` +
+    const select = document.getElementById('medicalPersonSelect');
+    select.innerHTML = `<option value="">誰が</option>` +
         medicalPersonList.map(person => `<option value="${person}">${person}</option>`).join('');
+
+    // 保存された人物を復元
+    const savedPerson = localStorage.getItem('selectedMedicalPerson');
+    if (savedPerson && medicalPersonList.includes(savedPerson)) {
+        select.value = savedPerson;
+    }
 }
 
 // 医療記録を追加
 async function addMedicalRecord() {
     const date = document.getElementById('medicalDate').value;
-    const person = document.getElementById('medicalPerson').value.trim();
+    const person = document.getElementById('medicalPersonSelect').value || selectedMedicalPerson;
     const disease = document.getElementById('medicalDisease').value.trim();
     let time = document.getElementById('medicalTime').value.trim();
     const temp = document.getElementById('medicalTemp').value;
@@ -3752,7 +3756,6 @@ async function addMedicalRecord() {
 
         // フォームをリセット（日付と時間は現在値で再初期化）
         initializeMedicalFormDefaults();
-        document.getElementById('medicalPerson').value = '';
         document.getElementById('medicalDisease').value = '';
         document.getElementById('medicalTemp').value = '';
         document.getElementById('medicalMeal').value = '';
@@ -3769,7 +3772,16 @@ async function addMedicalRecord() {
 // 人物を選択
 function selectMedicalPerson(person) {
     selectedMedicalPerson = person;
+    localStorage.setItem('selectedMedicalPerson', person);
     renderMedicalHistory();
+}
+
+// セレクトボックスで人物を変更
+function changeMedicalPerson() {
+    const person = document.getElementById('medicalPersonSelect').value;
+    if (person) {
+        selectMedicalPerson(person);
+    }
 }
 
 // 設定モーダルを開く
