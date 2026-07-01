@@ -3699,7 +3699,7 @@ async function renderMedicalHistory() {
             const symptoms = record.symptoms || '-';
             const meal = record.meal || '-';
             return `
-                <tr style="border-bottom: 1px solid #E5E7EB;">
+                <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="openMedicalEditModal('${record.id}')">
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${dateStr}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${record.disease || '-'}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${time}</td>
@@ -4020,15 +4020,193 @@ function autoResizeInput(input) {
 function setMedicalTimeLabel(label) {
     const timeInput = document.getElementById('medicalTime');
     const timeLabelInput = document.getElementById('medicalTimeLabel');
+    const currentLabel = timeLabelInput.value;
 
-    // timeInput をクリアして、timeLabelInput に値を設定
-    timeInput.value = '';
-    timeLabelInput.value = label;
+    // 同じボタンをもう一度押したら解除
+    if (currentLabel === label) {
+        timeInput.value = '';
+        timeLabelInput.value = '';
+        updateTimeLabelButtons('');
+        console.log('✅ 時間ラベルを解除');
+    } else {
+        timeInput.value = '';
+        timeLabelInput.value = label;
+        updateTimeLabelButtons(label);
+        console.log('✅ 時間ラベルを設定:', label);
+    }
+}
 
-    console.log('✅ 時間ラベルを設定:', label);
+// 時間入力をクリック時に朝昼夜ボタンをクリア
+document.addEventListener('DOMContentLoaded', function() {
+    const timeInput = document.getElementById('medicalTime');
+    if (timeInput) {
+        timeInput.addEventListener('focus', function() {
+            document.getElementById('medicalTimeLabel').value = '';
+            updateTimeLabelButtons('');
+        });
+    }
+});
 
-    // ボタンの色を更新
-    updateTimeLabelButtons(label);
+// 病歴編集モーダルを開く
+let currentEditRecordId = null;
+async function openMedicalEditModal(recordId) {
+    try {
+        const doc = await db.collection('medicalHistory').doc(recordId).get();
+        if (!doc.exists) {
+            alert('記録が見つかりません');
+            return;
+        }
+
+        const record = doc.data();
+        currentEditRecordId = recordId;
+
+        const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
+        const dateStr = dateObj.getFullYear() + '-' +
+                       String(dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(dateObj.getDate()).padStart(2, '0');
+
+        document.getElementById('editMedicalDate').value = dateStr;
+        document.getElementById('editMedicalPerson').value = record.person || '';
+        document.getElementById('editMedicalDisease').value = record.disease || '';
+        document.getElementById('editMedicalTime').value = '';
+        document.getElementById('editMedicalTimeLabel').value = record.time && (record.time === '朝' || record.time === '昼' || record.time === '晩') ? record.time : '';
+
+        if (record.time && !(record.time === '朝' || record.time === '昼' || record.time === '晩')) {
+            document.getElementById('editMedicalTime').value = record.time;
+        }
+
+        document.getElementById('editMedicalTemp').value = record.temp || '';
+        document.getElementById('editMedicalMeal').value = record.meal || '';
+        document.getElementById('editMedicalSymptoms').value = record.symptoms || '';
+
+        updateEditTimeLabelButtons(document.getElementById('editMedicalTimeLabel').value);
+        renderEditMedicalPersonButtons();
+
+        document.getElementById('medicalEditModal').style.display = 'block';
+    } catch (error) {
+        console.error('❌ 編集モーダル開く時エラー:', error);
+        alert('エラーが発生しました');
+    }
+}
+
+// 編集モーダルを閉じる
+function closeMedicalEditModal() {
+    document.getElementById('medicalEditModal').style.display = 'none';
+    currentEditRecordId = null;
+}
+
+// 編集モーダルで時間ラベルを設定
+function setEditMedicalTimeLabel(label) {
+    const timeInput = document.getElementById('editMedicalTime');
+    const timeLabelInput = document.getElementById('editMedicalTimeLabel');
+    const currentLabel = timeLabelInput.value;
+
+    if (currentLabel === label) {
+        timeInput.value = '';
+        timeLabelInput.value = '';
+        updateEditTimeLabelButtons('');
+    } else {
+        timeInput.value = '';
+        timeLabelInput.value = label;
+        updateEditTimeLabelButtons(label);
+    }
+}
+
+// 編集モーダルの時間ラベルボタン色を更新
+function updateEditTimeLabelButtons(activeLabel) {
+    const btnMorning = document.getElementById('editBtnMorning');
+    const btnNoon = document.getElementById('editBtnNoon');
+    const btnEvening = document.getElementById('editBtnEvening');
+
+    const buttons = {
+        '朝': btnMorning,
+        '昼': btnNoon,
+        '晩': btnEvening
+    };
+
+    [btnMorning, btnNoon, btnEvening].forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#374151';
+        btn.style.borderColor = '#E5E7EB';
+    });
+
+    if (buttons[activeLabel]) {
+        buttons[activeLabel].style.background = '#667eea';
+        buttons[activeLabel].style.color = 'white';
+        buttons[activeLabel].style.borderColor = '#667eea';
+    }
+}
+
+// 編集モーダルの人物ボタンを生成
+function renderEditMedicalPersonButtons() {
+    const container = document.getElementById('editMedicalPersonButtons');
+    const person = document.getElementById('editMedicalPerson').value;
+
+    container.innerHTML = medicalPersonList.map(p => `
+        <button onclick="setEditMedicalPerson('${p}')"
+                style="padding: 0.5rem 1rem; border: 2px solid ${person === p ? '#667eea' : '#E5E7EB'}; background: ${person === p ? '#667eea' : 'white'}; color: ${person === p ? 'white' : '#374151'}; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; font-weight: ${person === p ? '600' : '400'};">
+            ${p}
+        </button>
+    `).join('');
+}
+
+// 編集モーダルで人物を選択
+function setEditMedicalPerson(person) {
+    document.getElementById('editMedicalPerson').value = person;
+    renderEditMedicalPersonButtons();
+}
+
+// 病歴編集を保存
+async function saveMedicalRecordEdit() {
+    if (!currentEditRecordId) return;
+
+    const date = document.getElementById('editMedicalDate').value;
+    const person = document.getElementById('editMedicalPerson').value;
+    const disease = document.getElementById('editMedicalDisease').value.trim();
+    const timeLabel = document.getElementById('editMedicalTimeLabel').value.trim();
+    const time = timeLabel || document.getElementById('editMedicalTime').value.trim();
+    const temp = document.getElementById('editMedicalTemp').value;
+    const meal = document.getElementById('editMedicalMeal').value.trim();
+    const symptoms = document.getElementById('editMedicalSymptoms').value.trim();
+
+    if (!date || !person) {
+        alert('日付と誰がは必須です');
+        return;
+    }
+
+    try {
+        const dateObj = new Date(date + 'T00:00:00');
+        await db.collection('medicalHistory').doc(currentEditRecordId).update({
+            date: dateObj,
+            person: person,
+            disease: disease || null,
+            time: time || null,
+            temp: temp ? parseFloat(temp) : null,
+            meal: meal || null,
+            symptoms: symptoms || null
+        });
+
+        closeMedicalEditModal();
+        renderMedicalHistory();
+        alert('保存しました');
+    } catch (error) {
+        console.error('❌ 保存エラー:', error);
+        alert('保存に失敗しました');
+    }
+}
+
+// 編集モーダルから削除
+async function deleteMedicalRecordFromEditModal() {
+    if (!currentEditRecordId || !confirm('この記録を削除しますか？')) return;
+
+    try {
+        await db.collection('medicalHistory').doc(currentEditRecordId).delete();
+        closeMedicalEditModal();
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('❌ 削除エラー:', error);
+        alert('削除に失敗しました');
+    }
 }
 
 // 時間ラベルボタンの色を更新
