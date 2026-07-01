@@ -28,7 +28,7 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    match /settings/{docId} {
+    match /settings/{docId=**} {
       allow read, write: if isAuthenticated();
     }
 

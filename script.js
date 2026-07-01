@@ -3600,19 +3600,50 @@ async function deleteExpiryItem(id) {
 let medicalPersonList = [];
 let selectedMedicalPerson = null;
 
+// Firestoreから人物リストを読み込む
+async function loadMedicalPersonsFromFirestore() {
+    try {
+        const doc = await db.collection('settings').doc('medicalPersons').get();
+        if (doc.exists) {
+            medicalPersonList = doc.data().persons || [];
+        } else {
+            medicalPersonList = [];
+        }
+        console.log('✅ 人物リスト読み込み:', medicalPersonList);
+    } catch (error) {
+        console.error('❌ 人物リスト読み込みエラー:', error);
+        medicalPersonList = [];
+    }
+}
+
+// Firestoreに人物リストを保存
+async function saveMedicalPersonsToFirestore() {
+    try {
+        await db.collection('settings').doc('medicalPersons').set({
+            persons: medicalPersonList
+        });
+        console.log('✅ 人物リスト保存完了');
+    } catch (error) {
+        console.error('❌ 人物リスト保存エラー:', error);
+    }
+}
+
 // 病歴を表示
 async function renderMedicalHistory() {
     const tableBody = document.getElementById('medicalTableBody');
     const personTabsContainer = document.getElementById('medicalPersonTabs');
 
     try {
+        // Firestoreから人物リストを読み込む
+        await loadMedicalPersonsFromFirestore();
+
         console.log('📖 病歴読み込み開始...');
         const snapshot = await db.collection('medicalHistory')
             .orderBy('date', 'desc')
             .get();
 
         const records = [];
-        const personsSet = new Set();
+        const personsSet = new Set(medicalPersonList);
 
         snapshot.forEach(doc => {
             records.push({ id: doc.id, ...doc.data() });
@@ -3624,7 +3655,7 @@ async function renderMedicalHistory() {
             selectedMedicalPerson = medicalPersonList[0];
         }
 
-        console.log(`✅ ${records.length}件の記録を取得`);
+        console.log(`✅ ${records.length}件の記録を取得、人物数: ${medicalPersonList.length}`);
 
         // 人物タブを生成
         personTabsContainer.innerHTML = medicalPersonList.map(person => `
@@ -3783,6 +3814,10 @@ async function addNewPerson() {
 
     medicalPersonList.push(name);
     medicalPersonList.sort();
+
+    // Firestoreに保存
+    await saveMedicalPersonsToFirestore();
+
     document.getElementById('newPersonName').value = '';
 
     updateMedicalPersonSelect();
@@ -3806,6 +3841,9 @@ async function deleteMedicalPerson(person) {
 
         medicalPersonList = medicalPersonList.filter(p => p !== person);
         selectedMedicalPerson = medicalPersonList.length > 0 ? medicalPersonList[0] : null;
+
+        // Firestoreに保存
+        await saveMedicalPersonsToFirestore();
 
         updateMedicalPersonSelect();
         await loadMedicalPersons();
