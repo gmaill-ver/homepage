@@ -3684,14 +3684,18 @@ async function renderMedicalHistory() {
         tableBody.innerHTML = filteredRecords.map(record => {
             const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
             const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
+            const time = record.time || '-';
             const temp = record.temp ? record.temp + '℃' : '-';
+            const symptoms = record.symptoms || '-';
+            const meal = record.meal || '-';
             return `
                 <tr style="border-bottom: 1px solid #E5E7EB;">
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${dateStr}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.disease || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${dateStr}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${record.disease || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${time}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${temp}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.meal || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.symptoms || '-'}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${symptoms}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">${meal}</td>
                 </tr>
             `;
         }).join('');
