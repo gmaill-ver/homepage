@@ -3603,6 +3603,7 @@ async function renderMedicalHistory() {
     const tableBody = document.getElementById('medicalTableBody');
 
     try {
+        console.log('📖 病歴読み込み開始...');
         const snapshot = await db.collection('medicalHistory')
             .orderBy('date', 'desc')
             .get();
@@ -3611,6 +3612,8 @@ async function renderMedicalHistory() {
         snapshot.forEach(doc => {
             records.push({ id: doc.id, ...doc.data() });
         });
+
+        console.log(`✅ ${records.length}件の記録を取得`);
 
         if (records.length === 0) {
             tableBody.innerHTML = `
@@ -3640,8 +3643,8 @@ async function renderMedicalHistory() {
             `;
         }).join('');
     } catch (error) {
-        console.error('病歴読み込みエラー:', error);
-        tableBody.innerHTML = `<tr><td colspan="7" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー</td></tr>`;
+        console.error('❌ 病歴読み込みエラー:', error);
+        tableBody.innerHTML = `<tr><td colspan="7" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
     }
 }
 
@@ -3654,6 +3657,8 @@ async function addMedicalRecord() {
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
 
+    console.log('🩺 病歴追加開始:', { date, disease, time, temp, meal, symptoms });
+
     if (!date || !disease) {
         alert('日付と病名は必須です');
         return;
@@ -3661,16 +3666,20 @@ async function addMedicalRecord() {
 
     try {
         const dateObj = new Date(date + 'T00:00:00');
-
-        await db.collection('medicalHistory').add({
+        const recordData = {
             date: dateObj,
             disease: disease,
-            time: time,
+            time: time || null,
             temp: temp ? parseFloat(temp) : null,
-            meal: meal,
-            symptoms: symptoms,
+            meal: meal || null,
+            symptoms: symptoms || null,
             createdAt: new Date()
-        });
+        };
+
+        console.log('📤 Firestore送信データ:', recordData);
+
+        const docRef = await db.collection('medicalHistory').add(recordData);
+        console.log('✅ Firestore保存成功:', docRef.id);
 
         // フォームをリセット
         document.getElementById('medicalDate').value = '';
@@ -3680,11 +3689,13 @@ async function addMedicalRecord() {
         document.getElementById('medicalMeal').value = '';
         document.getElementById('medicalSymptoms').value = '';
 
+        alert('記録を保存しました！');
+
         // テーブルを再レンダリング
         renderMedicalHistory();
     } catch (error) {
-        console.error('病歴追加エラー:', error);
-        alert('記録に失敗しました');
+        console.error('❌ 病歴追加エラー:', error);
+        alert('記録に失敗しました: ' + error.message);
     }
 }
 
