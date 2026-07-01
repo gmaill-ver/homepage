@@ -1703,6 +1703,7 @@ function loadFeatureData(featureName) {
             break;
         case 'medicalHistory':
             renderMedicalHistory();
+            initializeMedicalFormDefaults();
             break;
         case 'expenses':
             initializeMonthlyExpenses();
@@ -3720,7 +3721,7 @@ async function addMedicalRecord() {
     const date = document.getElementById('medicalDate').value;
     const person = document.getElementById('medicalPerson').value.trim();
     const disease = document.getElementById('medicalDisease').value.trim();
-    const time = document.getElementById('medicalTime').value;
+    let time = document.getElementById('medicalTime').value.trim();
     const temp = document.getElementById('medicalTemp').value;
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
@@ -3731,6 +3732,9 @@ async function addMedicalRecord() {
     }
 
     try {
+        // 時間を標準化（朝→06:00、昼→12:00、晩→18:00）
+        time = normalizeTime(time);
+
         const dateObj = new Date(date + 'T00:00:00');
         const recordData = {
             date: dateObj,
@@ -3746,11 +3750,10 @@ async function addMedicalRecord() {
         const docRef = await db.collection('medicalHistory').add(recordData);
         console.log('✅ 病歴保存成功:', docRef.id);
 
-        // フォームをリセット
-        document.getElementById('medicalDate').value = '';
+        // フォームをリセット（日付と時間は現在値で再初期化）
+        initializeMedicalFormDefaults();
         document.getElementById('medicalPerson').value = '';
         document.getElementById('medicalDisease').value = '';
-        document.getElementById('medicalTime').value = '';
         document.getElementById('medicalTemp').value = '';
         document.getElementById('medicalMeal').value = '';
         document.getElementById('medicalSymptoms').value = '';
@@ -3906,6 +3909,33 @@ async function deleteMedicalRecordFromSettings(id) {
         console.error('❌ 削除エラー:', error);
         alert('削除に失敗しました');
     }
+}
+
+// 日付・時間のデフォルト値を設定
+function initializeMedicalFormDefaults() {
+    const today = new Date();
+    const dateStr = today.getFullYear() + '-' +
+                   String(today.getMonth() + 1).padStart(2, '0') + '-' +
+                   String(today.getDate()).padStart(2, '0');
+
+    const timeStr = String(today.getHours()).padStart(2, '0') + ':' +
+                   String(today.getMinutes()).padStart(2, '0');
+
+    document.getElementById('medicalDate').value = dateStr;
+    document.getElementById('medicalTime').value = timeStr;
+}
+
+// 時間を標準化（朝→06:00、昼→12:00、晩→18:00）
+function normalizeTime(timeStr) {
+    if (!timeStr) return null;
+
+    const timeMap = {
+        '朝': '06:00',
+        '昼': '12:00',
+        '晩': '18:00'
+    };
+
+    return timeMap[timeStr] || timeStr;
 }
 
 /*
