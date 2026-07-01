@@ -3605,12 +3605,13 @@ let selectedMedicalPerson = null;
 async function loadMedicalPersonsFromFirestore() {
     try {
         const doc = await db.collection('settings').doc('medicalPersons').get();
-        if (doc.exists) {
-            medicalPersonList = doc.data().persons || [];
+        if (doc.exists && doc.data().persons) {
+            medicalPersonList = doc.data().persons;
+            console.log('✅ Firestoreから人物リスト読み込み:', medicalPersonList);
         } else {
+            console.log('ℹ️ Firestoreに人物リストが未保存');
             medicalPersonList = [];
         }
-        console.log('✅ 人物リスト読み込み:', medicalPersonList);
     } catch (error) {
         console.error('❌ 人物リスト読み込みエラー:', error);
         medicalPersonList = [];
@@ -3652,6 +3653,9 @@ async function renderMedicalHistory() {
         });
 
         medicalPersonList = Array.from(personsSet).sort();
+
+        console.log('🔍 medicalPersonList（統合後）:', medicalPersonList);
+        console.log('🔍 personsSet:', Array.from(personsSet));
 
         // 保存された人物を復元、またはリストの最初の人物を選択
         const savedPerson = localStorage.getItem('selectedMedicalPerson');
@@ -3710,13 +3714,20 @@ async function renderMedicalHistory() {
 // 人物セレクトを更新
 function updateMedicalPersonSelect() {
     const select = document.getElementById('medicalPersonSelect');
+    console.log('🔍 updateMedicalPersonSelect() 実行中、medicalPersonList:', medicalPersonList);
+
     select.innerHTML = `<option value="">誰が</option>` +
         medicalPersonList.map(person => `<option value="${person}">${person}</option>`).join('');
+
+    console.log('🔍 セレクトボックスのHTML:', select.innerHTML);
 
     // 保存された人物を復元
     const savedPerson = localStorage.getItem('selectedMedicalPerson');
     if (savedPerson && medicalPersonList.includes(savedPerson)) {
         select.value = savedPerson;
+        console.log('✅ 保存された人物を復元:', savedPerson);
+    } else {
+        console.log('ℹ️ 保存された人物がないまたは一覧にない');
     }
 }
 
