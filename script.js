@@ -4049,6 +4049,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 病歴編集モーダルを開く
 let currentEditRecordId = null;
+let currentEditRecord = null;
+
 async function openMedicalEditModal(recordId) {
     try {
         const doc = await db.collection('medicalHistory').doc(recordId).get();
@@ -4059,6 +4061,7 @@ async function openMedicalEditModal(recordId) {
 
         const record = doc.data();
         currentEditRecordId = recordId;
+        currentEditRecord = record;
 
         const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
         const dateStr = dateObj.getFullYear() + '-' +
@@ -4066,7 +4069,6 @@ async function openMedicalEditModal(recordId) {
                        String(dateObj.getDate()).padStart(2, '0');
 
         document.getElementById('editMedicalDate').value = dateStr;
-        document.getElementById('editMedicalPerson').value = record.person || '';
         document.getElementById('editMedicalDisease').value = record.disease || '';
         document.getElementById('editMedicalTime').value = '';
         document.getElementById('editMedicalTimeLabel').value = record.time && (record.time === '朝' || record.time === '昼' || record.time === '晩') ? record.time : '';
@@ -4080,12 +4082,13 @@ async function openMedicalEditModal(recordId) {
         document.getElementById('editMedicalSymptoms').value = record.symptoms || '';
 
         updateEditTimeLabelButtons(document.getElementById('editMedicalTimeLabel').value);
-        renderEditMedicalPersonButtons();
+        renderEditMedicalPersonButtons(record.person || '');
 
         document.getElementById('medicalEditModal').style.display = 'block';
+        console.log('✅ 編集モーダルを開いた:', recordId);
     } catch (error) {
         console.error('❌ 編集モーダル開く時エラー:', error);
-        alert('エラーが発生しました');
+        alert('エラーが発生しました: ' + error.message);
     }
 }
 
@@ -4138,13 +4141,13 @@ function updateEditTimeLabelButtons(activeLabel) {
 }
 
 // 編集モーダルの人物ボタンを生成
-function renderEditMedicalPersonButtons() {
+function renderEditMedicalPersonButtons(selectedPerson = '') {
     const container = document.getElementById('editMedicalPersonButtons');
-    const person = document.getElementById('editMedicalPerson').value;
+    const person = selectedPerson || (currentEditRecord ? currentEditRecord.person : '');
 
     container.innerHTML = medicalPersonList.map(p => `
         <button onclick="setEditMedicalPerson('${p}')"
-                style="padding: 0.5rem 1rem; border: 2px solid ${person === p ? '#667eea' : '#E5E7EB'}; background: ${person === p ? '#667eea' : 'white'}; color: ${person === p ? 'white' : '#374151'}; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; font-weight: ${person === p ? '600' : '400'};">
+                style="padding: 0.5rem 1rem; border: 2px solid ${person === p ? '#667eea' : '#E5E7EB'}; background: ${person === p ? '#667eea' : 'white'}; color: ${person === p ? 'white' : '#374151'}; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; font-weight: ${person === p ? '600' : '400'}; transition: all 0.2s;">
             ${p}
         </button>
     `).join('');
@@ -4152,8 +4155,10 @@ function renderEditMedicalPersonButtons() {
 
 // 編集モーダルで人物を選択
 function setEditMedicalPerson(person) {
-    document.getElementById('editMedicalPerson').value = person;
-    renderEditMedicalPersonButtons();
+    if (currentEditRecord) {
+        currentEditRecord.person = person;
+    }
+    renderEditMedicalPersonButtons(person);
 }
 
 // 病歴編集を保存
@@ -4161,7 +4166,7 @@ async function saveMedicalRecordEdit() {
     if (!currentEditRecordId) return;
 
     const date = document.getElementById('editMedicalDate').value;
-    const person = document.getElementById('editMedicalPerson').value;
+    const person = currentEditRecord ? currentEditRecord.person : '';
     const disease = document.getElementById('editMedicalDisease').value.trim();
     const timeLabel = document.getElementById('editMedicalTimeLabel').value.trim();
     const time = timeLabel || document.getElementById('editMedicalTime').value.trim();
@@ -4188,10 +4193,10 @@ async function saveMedicalRecordEdit() {
 
         closeMedicalEditModal();
         renderMedicalHistory();
-        alert('保存しました');
+        console.log('✅ 編集を保存しました:', { date, person, disease });
     } catch (error) {
         console.error('❌ 保存エラー:', error);
-        alert('保存に失敗しました');
+        alert('保存に失敗しました: ' + error.message);
     }
 }
 
