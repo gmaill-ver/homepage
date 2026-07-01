@@ -3747,7 +3747,10 @@ async function addMedicalRecord() {
     const date = document.getElementById('medicalDate').value;
     const person = selectedMedicalPerson;
     const disease = document.getElementById('medicalDisease').value.trim();
-    let time = document.getElementById('medicalTime').value.trim();
+
+    // timeLabelInput の値があればそちらを優先、なければ time input の値を使用
+    const timeLabel = document.getElementById('medicalTimeLabel').value.trim();
+    let time = timeLabel || document.getElementById('medicalTime').value.trim();
     const temp = document.getElementById('medicalTemp').value;
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
@@ -3962,13 +3965,52 @@ function initializeMedicalFormDefaults() {
 
     document.getElementById('medicalDate').value = dateStr;
     document.getElementById('medicalTime').value = timeStr;
+    document.getElementById('medicalTimeLabel').value = ''; // 時間ラベルをクリア
+
+    // ボタンのハイライトを解除
+    updateTimeLabelButtons('');
 }
 
 // 時間をボタンで設定（朝・昼・晩）
-function setMedicalTime(timeLabel) {
+function setMedicalTimeLabel(label) {
     const timeInput = document.getElementById('medicalTime');
-    timeInput.value = timeLabel;
-    console.log('✅ 時間を設定:', timeLabel);
+    const timeLabelInput = document.getElementById('medicalTimeLabel');
+
+    // timeInput をクリアして、timeLabelInput に値を設定
+    timeInput.value = '';
+    timeLabelInput.value = label;
+
+    console.log('✅ 時間ラベルを設定:', label);
+
+    // ボタンの色を更新
+    updateTimeLabelButtons(label);
+}
+
+// 時間ラベルボタンの色を更新
+function updateTimeLabelButtons(activeLabel) {
+    const btnMorning = document.getElementById('btnMorning');
+    const btnNoon = document.getElementById('btnNoon');
+    const btnEvening = document.getElementById('btnEvening');
+
+    const buttons = {
+        '朝': btnMorning,
+        '昼': btnNoon,
+        '晩': btnEvening
+    };
+
+    // 全ボタンをリセット
+    [btnMorning, btnNoon, btnEvening].forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#374151';
+        btn.style.borderColor = '#E5E7EB';
+    });
+
+    // アクティブなボタンをハイライト
+    if (buttons[activeLabel]) {
+        buttons[activeLabel].style.background = '#667eea';
+        buttons[activeLabel].style.color = 'white';
+        buttons[activeLabel].style.borderColor = '#667eea';
+    }
 }
 
 /*
