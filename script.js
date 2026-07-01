@@ -3669,21 +3669,28 @@ async function renderMedicalHistory() {
         console.log(`✅ ${records.length}件の記録を取得、人物数: ${medicalPersonList.length}、選択人物: ${selectedMedicalPerson}`);
 
         // 選択された人物の記録を表示
+        console.log('🔍 テーブル表示時の selectedMedicalPerson:', selectedMedicalPerson);
+        console.log('🔍 全記録数:', records.length);
+
         const filteredRecords = selectedMedicalPerson
             ? records.filter(r => r.person === selectedMedicalPerson)
             : [];
 
+        console.log('🔍 フィルタ後の記録数:', filteredRecords.length);
+
         if (filteredRecords.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
+                    <td colspan="6" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
                         ${selectedMedicalPerson ? `${selectedMedicalPerson}の病歴がありません` : '人物を選択してください'}
                     </td>
                 </tr>
             `;
+            console.log('ℹ️ 表示する記録がありません');
             return;
         }
 
+        console.log('✅ テーブルに', filteredRecords.length, '件の記録を表示');
         tableBody.innerHTML = filteredRecords.map(record => {
             const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
             const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
@@ -3781,17 +3788,27 @@ async function addMedicalRecord() {
 }
 
 // 人物を選択
-function selectMedicalPerson(person) {
+async function selectMedicalPerson(person) {
+    console.log('📍 selectMedicalPerson() 実行:', person);
     selectedMedicalPerson = person;
     localStorage.setItem('selectedMedicalPerson', person);
-    renderMedicalHistory();
+    console.log('💾 selectedMedicalPerson に保存:', selectedMedicalPerson);
+
+    // テーブルを即座に再レンダリング
+    await renderMedicalHistory();
+    console.log('✅ テーブル更新完了');
 }
 
 // セレクトボックスで人物を変更
-function changeMedicalPerson() {
+async function changeMedicalPerson() {
     const person = document.getElementById('medicalPersonSelect').value;
+    console.log('🔄 changeMedicalPerson() 実行:', person);
+
     if (person) {
-        selectMedicalPerson(person);
+        console.log('✅ 人物を選択:', person);
+        await selectMedicalPerson(person);
+    } else {
+        console.log('ℹ️ 人物が未選択');
     }
 }
 
