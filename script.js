@@ -3631,6 +3631,17 @@ async function saveMedicalPersonsToFirestore() {
 }
 
 // 病歴を表示
+// 朝・昼・晩をHH:MM に変換する関数
+function convertTimeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    if (timeStr === '朝') return 6 * 60;      // 6:00
+    if (timeStr === '昼') return 12 * 60;    // 12:00
+    if (timeStr === '晩' || timeStr === '夜') return 18 * 60; // 18:00
+    // HH:MM 形式の場合は分に変換
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return (hours || 0) * 60 + (minutes || 0);
+}
+
 async function renderMedicalHistory() {
     const tableBody = document.getElementById('medicalTableBody');
     const personTabsContainer = document.getElementById('medicalPersonTabs');
@@ -3672,9 +3683,24 @@ async function renderMedicalHistory() {
         console.log('🔍 テーブル表示時の selectedMedicalPerson:', selectedMedicalPerson);
         console.log('🔍 全記録数:', records.length);
 
-        const filteredRecords = selectedMedicalPerson
+        let filteredRecords = selectedMedicalPerson
             ? records.filter(r => r.person === selectedMedicalPerson)
             : [];
+
+        // ソート処理：日付は新しい順、同じ日付内では時間が新しい順（夜 > 昼 > 朝）
+        filteredRecords.sort((a, b) => {
+            const dateA = a.date && a.date.toDate ? a.date.toDate() : new Date(a.date);
+            const dateB = b.date && b.date.toDate ? b.date.toDate() : new Date(b.date);
+
+            // 日付で比較（新しい順）
+            const dateDiff = dateB - dateA;
+            if (dateDiff !== 0) return dateDiff;
+
+            // 同じ日付内では時間で比較（新しい順：夜 > 昼 > 朝）
+            const timeA = convertTimeToMinutes(a.time);
+            const timeB = convertTimeToMinutes(b.time);
+            return timeB - timeA;
+        });
 
         console.log('🔍 フィルタ後の記録数:', filteredRecords.length);
 
