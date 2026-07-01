@@ -3597,6 +3597,7 @@ async function deleteExpiryItem(id) {
 }
 
 // ========== 病歴カード管理 ==========
+let currentMedicalRecordId = null;
 
 // 病歴を表示
 async function renderMedicalHistory() {
@@ -3618,7 +3619,7 @@ async function renderMedicalHistory() {
         if (records.length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="7" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
+                    <td colspan="4" style="padding: 2rem; text-align: center; color: #9CA3AF; border: 1px solid #E5E7EB;">
                         記録がありません
                     </td>
                 </tr>
@@ -3627,37 +3628,117 @@ async function renderMedicalHistory() {
         }
 
         tableBody.innerHTML = records.map(record => {
-            const dateStr = record.date ? record.date.toDate ? record.date.toDate().toLocaleDateString('ja-JP') : record.date : '-';
+            const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
+            const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
+            const person = record.person || '-';
             return `
                 <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="showMedicalDetail('${record.id}')">
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${dateStr}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${person}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.disease || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.time || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.temp ? record.temp + '℃' : '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.meal ? (record.meal.length > 10 ? record.meal.substring(0, 10) + '...' : record.meal) : '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB;">${record.symptoms ? (record.symptoms.length > 10 ? record.symptoms.substring(0, 10) + '...' : record.symptoms) : '-'}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center;">
-                        <button onclick="event.stopPropagation(); deleteMedicalRecord('${record.id}')" class="btn-icon-simple" title="削除">🗑️</button>
+                        <button onclick="event.stopPropagation(); showMedicalDetail('${record.id}')" class="btn-icon-simple" title="詳細">⚙️</button>
                     </td>
                 </tr>
             `;
         }).join('');
     } catch (error) {
         console.error('❌ 病歴読み込みエラー:', error);
-        tableBody.innerHTML = `<tr><td colspan="7" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
+    }
+}
+
+// 医療記録の詳細表示
+async function showMedicalDetail(id) {
+    try {
+        const doc = await db.collection('medicalHistory').doc(id).get();
+        if (!doc.exists) {
+            alert('記録が見つかりません');
+            return;
+        }
+
+        const record = doc.data();
+        const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
+        const dateStr = dateObj.toLocaleDateString('ja-JP');
+
+        currentMedicalRecordId = id;
+
+        const detailContent = `
+            <div style="background: #F9FAFB; padding: 1rem; border-radius: 0.375rem;">
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">日付</div>
+                    <div style="font-weight: 600; color: #111827;">${dateStr}</div>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">誰が</div>
+                    <div style="font-weight: 600; color: #111827;">${record.person || '-'}</div>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">病名</div>
+                    <div style="font-weight: 600; color: #111827;">${record.disease || '-'}</div>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">時間</div>
+                    <div style="color: #111827;">${record.time || '-'}</div>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">体温</div>
+                    <div style="color: #111827;">${record.temp ? record.temp + '℃' : '-'}</div>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="color: #6B7280; font-size: 0.875rem;">食事</div>
+                    <div style="color: #111827;">${record.meal || '-'}</div>
+                </div>
+                <div>
+                    <div style="color: #6B7280; font-size: 0.875rem;">症状</div>
+                    <div style="color: #111827;">${record.symptoms || '-'}</div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('medicalDetailTitle').textContent = `${record.disease || '病歴詳細'} - ${record.person || ''}`;
+        document.getElementById('medicalDetailContent').innerHTML = detailContent;
+        document.getElementById('medicalDetailModal').style.display = 'flex';
+        document.getElementById('medicalDetailModal').style.justifyContent = 'center';
+    } catch (error) {
+        console.error('❌ 詳細読み込みエラー:', error);
+        alert('詳細情報の取得に失敗しました');
+    }
+}
+
+// 詳細表示モーダルを閉じる
+function closeMedicalDetailModal() {
+    document.getElementById('medicalDetailModal').style.display = 'none';
+    currentMedicalRecordId = null;
+}
+
+// モーダルから削除
+async function deleteMedicalRecordFromModal() {
+    if (!currentMedicalRecordId) return;
+    if (!confirm('この記録を削除しますか？')) return;
+
+    try {
+        await db.collection('medicalHistory').doc(currentMedicalRecordId).delete();
+        console.log('✅ 削除成功:', currentMedicalRecordId);
+        closeMedicalDetailModal();
+        renderMedicalHistory();
+    } catch (error) {
+        console.error('❌ 削除エラー:', error);
+        alert('削除に失敗しました');
     }
 }
 
 // 医療記録を追加
 async function addMedicalRecord() {
     const date = document.getElementById('medicalDate').value;
+    const person = document.getElementById('medicalPerson').value.trim();
     const disease = document.getElementById('medicalDisease').value.trim();
     const time = document.getElementById('medicalTime').value;
     const temp = document.getElementById('medicalTemp').value;
     const meal = document.getElementById('medicalMeal').value.trim();
     const symptoms = document.getElementById('medicalSymptoms').value.trim();
 
-    console.log('🩺 病歴追加開始:', { date, disease, time, temp, meal, symptoms });
+    console.log('🩺 病歴追加開始:', { date, person, disease, time, temp, meal, symptoms });
 
     if (!date || !disease) {
         alert('日付と病名は必須です');
@@ -3668,6 +3749,7 @@ async function addMedicalRecord() {
         const dateObj = new Date(date + 'T00:00:00');
         const recordData = {
             date: dateObj,
+            person: person || null,
             disease: disease,
             time: time || null,
             temp: temp ? parseFloat(temp) : null,
@@ -3683,6 +3765,7 @@ async function addMedicalRecord() {
 
         // フォームをリセット
         document.getElementById('medicalDate').value = '';
+        document.getElementById('medicalPerson').value = '';
         document.getElementById('medicalDisease').value = '';
         document.getElementById('medicalTime').value = '';
         document.getElementById('medicalTemp').value = '';
@@ -3699,22 +3782,9 @@ async function addMedicalRecord() {
     }
 }
 
-// 医療記録を削除
-async function deleteMedicalRecord(id) {
-    if (!confirm('この記録を削除しますか？')) return;
-
-    try {
-        await db.collection('medicalHistory').doc(id).delete();
-        renderMedicalHistory();
-    } catch (error) {
-        console.error('病歴削除エラー:', error);
-        alert('削除に失敗しました');
-    }
-}
-
-// 医療記録の詳細表示
-function showMedicalDetail(id) {
-    alert('詳細表示機能は今後実装予定です');
+// 設定モーダルの切り替え（実装）
+function toggleMedicalSettingsModal() {
+    // 現在は使用していないが、将来的な拡張用に保持
 }
 
 /*
