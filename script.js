@@ -3559,17 +3559,27 @@ async function renderMedicalHistory() {
 
 // 人物ボタンを生成・更新
 function updateMedicalPersonButtons() {
+    console.log('▶️ updateMedicalPersonButtons() 開始');
     const container = document.getElementById('medicalPersonButtons');
-    console.log('🔍 updateMedicalPersonButtons() 実行中、medicalPersonList:', medicalPersonList);
+
+    if (!container) {
+        console.error('❌ medicalPersonButtons コンテナが見つかりません');
+        return;
+    }
+    console.log('✅ medicalPersonButtons コンテナ取得成功');
+    console.log('📊 medicalPersonList:', medicalPersonList);
 
     if (!medicalPersonList || medicalPersonList.length === 0) {
+        console.warn('⚠️ medicalPersonList が空です');
         container.innerHTML = '<span style="color: #9CA3AF; font-size: 0.875rem;">人物を登録してください</span>';
+        console.log('✅ 空メッセージを表示しました');
         return;
     }
 
     // 保存された人物を復元
     const savedPerson = localStorage.getItem('selectedMedicalPerson');
     const activePerson = savedPerson || medicalPersonList[0];
+    console.log('🎯 選択人物:', activePerson, '（保存:', savedPerson, '）');
 
     container.innerHTML = medicalPersonList.map(person => `
         <button onclick="changeMedicalPersonButton('${person}')"
@@ -3578,7 +3588,7 @@ function updateMedicalPersonButtons() {
         </button>
     `).join('');
 
-    console.log('✅ 人物ボタンを生成:', medicalPersonList);
+    console.log('✅ updateMedicalPersonButtons() 完了 - ボタン数:', medicalPersonList.length);
 }
 
 // 医療記録を追加
