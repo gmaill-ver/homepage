@@ -3459,6 +3459,7 @@ async function renderMedicalHistory() {
     try {
         // Firestoreから人物リストを読み込む
         await loadMedicalPersonsFromFirestore();
+        console.log('✅ medicalPersonList:', medicalPersonList);
 
         console.log('📖 病歴読み込み開始...');
         const snapshot = await db.collection('medicalHistory')
