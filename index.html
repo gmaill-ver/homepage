@@ -328,10 +328,10 @@
                             <button id="btnEvening" onclick="setMedicalTimeLabel('晩')" style="padding: 0.5rem 0.75rem; border: 2px solid #E5E7EB; background: white; color: #374151; border-radius: 0.375rem; cursor: pointer; font-weight: 500; transition: all 0.2s;">晩</button>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <input type="text" id="medicalDisease" placeholder="病名（例：風邪）" style="display: block; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
+                            <input type="text" id="medicalDisease" placeholder="病名" style="display: block; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
                             <input type="number" id="medicalTemp" placeholder="体温" step="0.1" min="35" max="42" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
-                            <input type="text" id="medicalMeal" placeholder="食事（例：おかゆ）" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
-                            <input type="text" id="medicalSymptoms" placeholder="症状（例：咳、頭痛）" style="display: block; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
+                            <input type="text" id="medicalMeal" placeholder="食事" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
+                            <input type="text" id="medicalSymptoms" placeholder="症状" style="display: block; padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
                             <input type="text" id="medicalRemarks" placeholder="備考" style="padding: 0.5rem; border: 2px solid #E5E7EB; border-radius: 0.375rem; font-size: 0.875rem; width: 100%; box-sizing: border-box;">
                         </div>
                         <button onclick="addMedicalRecord()" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem; border: none; background: #E5E7EB; color: #4B5563; border-radius: 0.375rem; font-weight: 500; cursor: pointer;">記録する</button>
@@ -342,10 +342,10 @@
                         <table class="medical-table yearly-summary-table" style="border-collapse: collapse; font-size: 0.85rem; table-layout: auto; width: auto; min-width: 100%;">
                             <thead>
                                 <tr style="background: #F3F4F6; border-bottom: 2px solid #D1D5DB;">
-                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; width: 50px;">日付</th>
+                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">日付</th>
                                     <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">病名</th>
-                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; width: 50px;">時間</th>
-                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; width: 50px;">体温</th>
+                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">時間</th>
+                                    <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">体温</th>
                                     <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">症状</th>
                                     <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">食事</th>
                                     <th style="padding: 0.5rem; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap;">備考</th>

@@ -3610,11 +3610,6 @@ async function addMedicalRecord() {
         return;
     }
 
-    // 病名を保存（次回入力時に復元）
-    if (disease) {
-        localStorage.setItem('lastMedicalDisease', disease);
-    }
-
     try {
         // 時間はそのまま保存（朝・昼・晩またはHH:MM形式）
         const dateObj = new Date(date + 'T00:00:00');
@@ -3832,12 +3827,6 @@ function initializeMedicalFormDefaults() {
     document.getElementById('medicalDate').value = dateStr;
     document.getElementById('medicalTime').value = timeStr;
     document.getElementById('medicalTimeLabel').value = ''; // 時間ラベルをクリア
-
-    // 病名の前回入力を復元
-    const lastDisease = localStorage.getItem('lastMedicalDisease');
-    if (lastDisease) {
-        document.getElementById('medicalDisease').value = lastDisease;
-    }
 
     // ボタンのハイライトを解除
     updateTimeLabelButtons('');
