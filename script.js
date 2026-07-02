@@ -3532,6 +3532,7 @@ async function renderMedicalHistory() {
             const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
             const time = record.time || '-';
             const temp = record.temp ? record.temp : '-';
+            const tempStyle = record.temp && record.temp > 38 ? 'background: #FEE2E2; color: #991B1B; font-weight: 600;' : '';
             const symptoms = record.symptoms || '-';
             const meal = record.meal || '-';
             const remarks = record.remarks || '-';
@@ -3540,7 +3541,7 @@ async function renderMedicalHistory() {
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${dateStr}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${record.disease || '-'}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${time}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${temp}</td>
+                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap; ${tempStyle}">${temp}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${symptoms}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${meal}</td>
                     <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${remarks}</td>
