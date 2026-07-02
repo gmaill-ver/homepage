@@ -3531,7 +3531,7 @@ async function renderMedicalHistory() {
             const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
             const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
             const time = record.time || '-';
-            const temp = record.temp ? record.temp + '℃' : '-';
+            const temp = record.temp ? record.temp : '-';
             const symptoms = record.symptoms || '-';
             const meal = record.meal || '-';
             const remarks = record.remarks || '-';
