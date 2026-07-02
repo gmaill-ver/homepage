@@ -3524,31 +3524,30 @@ async function renderMedicalHistory() {
                 </tr>
             `;
             console.log('ℹ️ 表示する記録がありません');
-            return;
+        } else {
+            console.log('✅ テーブルに', filteredRecords.length, '件の記録を表示');
+            tableBody.innerHTML = filteredRecords.map(record => {
+                const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
+                const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
+                const time = record.time || '-';
+                const temp = record.temp ? record.temp : '-';
+                const tempStyle = record.temp && record.temp > 38 ? 'background: #FEE2E2; color: #991B1B; font-weight: 600;' : '';
+                const symptoms = record.symptoms || '-';
+                const meal = record.meal || '-';
+                const remarks = record.remarks || '-';
+                return `
+                    <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="openMedicalEditModal('${record.id}')">
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${dateStr}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${record.disease || '-'}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${time}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap; ${tempStyle}">${temp}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${symptoms}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${meal}</td>
+                        <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${remarks}</td>
+                    </tr>
+                `;
+            }).join('');
         }
-
-        console.log('✅ テーブルに', filteredRecords.length, '件の記録を表示');
-        tableBody.innerHTML = filteredRecords.map(record => {
-            const dateObj = record.date && record.date.toDate ? record.date.toDate() : new Date(record.date);
-            const dateStr = dateObj.getMonth() + 1 + '-' + String(dateObj.getDate()).padStart(2, '0');
-            const time = record.time || '-';
-            const temp = record.temp ? record.temp : '-';
-            const tempStyle = record.temp && record.temp > 38 ? 'background: #FEE2E2; color: #991B1B; font-weight: 600;' : '';
-            const symptoms = record.symptoms || '-';
-            const meal = record.meal || '-';
-            const remarks = record.remarks || '-';
-            return `
-                <tr style="border-bottom: 1px solid #E5E7EB; cursor: pointer;" onclick="openMedicalEditModal('${record.id}')">
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${dateStr}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${record.disease || '-'}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${time}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap; ${tempStyle}">${temp}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${symptoms}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${meal}</td>
-                    <td style="padding: 0.5rem; border: 1px solid #E5E7EB; text-align: center; white-space: nowrap;">${remarks}</td>
-                </tr>
-            `;
-        }).join('');
     } catch (error) {
         console.error('❌ 病歴読み込みエラー:', error);
         tableBody.innerHTML = `<tr><td colspan="5" style="padding: 1rem; text-align: center; color: #EF4444;">読み込みエラー: ${error.message}</td></tr>`;
