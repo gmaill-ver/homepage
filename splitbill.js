@@ -14,6 +14,15 @@ async function loadSplitBillData() {
             const data = doc.data();
             splitExpenses = data.expenses || [];
             splitCumulativeBalances = data.cumulativeBalances || {};
+            // 端数（0.5円未満）だけ残った繰越は、表示に残り続けるので取り除く
+            let pruned = false;
+            Object.keys(splitCumulativeBalances).forEach(person => {
+                if (Math.round(splitCumulativeBalances[person]) === 0) {
+                    delete splitCumulativeBalances[person];
+                    pruned = true;
+                }
+            });
+            if (pruned) saveSplitBillData();
             splitSettlementHistory = data.settlementHistory || [];
             updateSplitBillDisplay();
             updateSplitHistoryDisplay();
@@ -71,6 +80,11 @@ async function deleteSplitExpense(index) {
 async function doSplitSettlement() {
     const hasCarryOver = Object.values(splitCumulativeBalances).some(v => Math.round(v) !== 0);
     if (splitExpenses.length === 0 && !hasCarryOver) {
+        if (Object.keys(splitCumulativeBalances).length > 0) {
+            splitCumulativeBalances = {};
+            await saveSplitBillData();
+            updateSplitBillDisplay();
+        }
         alert('精算する支払いがありません');
         return;
     }
@@ -174,7 +188,7 @@ function updateSplitBillDisplay() {
 
     const allPeople = new Set([
         ...Object.keys(totals),
-        ...Object.keys(splitCumulativeBalances)
+        ...Object.keys(splitCumulativeBalances).filter(p => Math.round(splitCumulativeBalances[p]) !== 0)
     ]);
 
     const numPeople = Object.keys(totals).length || allPeople.size;
