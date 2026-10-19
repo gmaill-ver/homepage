@@ -67,12 +67,14 @@ async function deleteSplitExpense(index) {
     updateSplitNameList();
 }
 
-// 精算完了
+// 精算完了（支払い・累積残高をクリアして履歴に記録）
 async function doSplitSettlement() {
-    if (splitExpenses.length === 0) {
+    const hasCarryOver = Object.values(splitCumulativeBalances).some(v => Math.round(v) !== 0);
+    if (splitExpenses.length === 0 && !hasCarryOver) {
         alert('精算する支払いがありません');
         return;
     }
+    if (!confirm('精算を完了して、今の精算結果をクリアしますか？\n（内容は精算履歴に残ります）')) return;
 
     // 今回の精算を計算
     const totals = {};
@@ -84,34 +86,52 @@ async function doSplitSettlement() {
     });
 
     const numPeople = Object.keys(totals).length;
-    const perPersonAmount = grandTotal / numPeople;
+    const perPersonAmount = numPeople > 0 ? grandTotal / numPeople : 0;
 
-    const currentBalances = {};
-    Object.keys(totals).forEach(person => {
-        currentBalances[person] = totals[person] - perPersonAmount;
-    });
-
-    // 累積残高を更新
-    Object.keys(currentBalances).forEach(person => {
-        splitCumulativeBalances[person] = (splitCumulativeBalances[person] || 0) + currentBalances[person];
+    // 画面に表示していた最終残高（前回からの繰越 + 今回分）
+    const settledBalances = {};
+    new Set([...Object.keys(totals), ...Object.keys(splitCumulativeBalances)]).forEach(person => {
+        const current = person in totals ? totals[person] - perPersonAmount : 0;
+        settledBalances[person] = (splitCumulativeBalances[person] || 0) + current;
     });
 
     // 履歴に追加
     splitSettlementHistory.push({
         date: new Date().toLocaleString('ja-JP'),
         expenses: [...splitExpenses],
-        balances: {...currentBalances},
+        balances: settledBalances,
         total: grandTotal
     });
 
-    // 今回の支払いをクリア
+    // 精算が済んだので、支払いも繰越残高もクリア
     splitExpenses = [];
+    splitCumulativeBalances = {};
 
     await saveSplitBillData();
     updateSplitBillDisplay();
     updateSplitHistoryDisplay();
+    updateSplitNameList();
 
     alert('精算完了しました！');
+}
+
+// 精算履歴を1件削除
+async function deleteSplitHistory(index) {
+    const h = splitSettlementHistory[index];
+    if (!h) return;
+    if (!confirm(`精算 #${index + 1}（${h.date}）の履歴を削除しますか？`)) return;
+    splitSettlementHistory.splice(index, 1);
+    await saveSplitBillData();
+    updateSplitHistoryDisplay();
+}
+
+// 精算履歴をすべて削除
+async function clearSplitHistory() {
+    if (splitSettlementHistory.length === 0) return;
+    if (!confirm(`精算履歴 ${splitSettlementHistory.length} 件をすべて削除しますか？\n（元に戻せません）`)) return;
+    splitSettlementHistory = [];
+    await saveSplitBillData();
+    updateSplitHistoryDisplay();
 }
 
 // 名前リストを更新
@@ -222,15 +242,27 @@ function updateSplitHistoryDisplay() {
     }
 
     historySection.style.display = 'block';
-    historyList.innerHTML = splitSettlementHistory.map((settlement, index) => `
-        <div style="background: #F5F5F5; padding: 0.5rem; border-radius: 0.375rem; margin-bottom: 0.25rem;">
-            <div style="font-weight: bold; color: #333; margin-bottom: 0.25rem; font-size: 0.875rem;">精算 #${index + 1} - ${settlement.date}</div>
-            <div style="font-size: 0.75rem; color: #666; margin: 0.125rem 0;">合計: ¥${settlement.total.toLocaleString()}</div>
-            <div style="font-size: 0.75rem; color: #666;">
-                ${settlement.expenses.map(e => `${e.name} (${e.payer}: ¥${e.amount.toLocaleString()})`).join(', ')}
+    historyList.innerHTML = splitSettlementHistory.map((settlement, index) => {
+        const balances = settlement.balances || {};
+        const balanceText = Object.keys(balances)
+            .filter(person => Math.round(balances[person]) !== 0)
+            .map(person => `${person}: ${balances[person] >= 0 ? 'もらう' : '払う'} ¥${Math.round(Math.abs(balances[person])).toLocaleString()}`)
+            .join(' / ');
+        const expenseText = settlement.expenses.length
+            ? settlement.expenses.map(e => `${e.name} (${e.payer}: ¥${e.amount.toLocaleString()})`).join(', ')
+            : '繰越分の精算';
+        return `
+        <div style="background: #F5F5F5; padding: 0.5rem; border-radius: 0.375rem; margin-bottom: 0.25rem; display: flex; align-items: flex-start; gap: 0.5rem;">
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: bold; color: #333; margin-bottom: 0.25rem; font-size: 0.875rem;">精算 #${index + 1} - ${settlement.date}</div>
+                <div style="font-size: 0.75rem; color: #666; margin: 0.125rem 0;">合計: ¥${settlement.total.toLocaleString()}</div>
+                <div style="font-size: 0.75rem; color: #666;">${expenseText}</div>
+                ${balanceText ? `<div style="font-size: 0.75rem; color: #666; margin-top: 0.125rem;">${balanceText}</div>` : ''}
             </div>
+            <button onclick="deleteSplitHistory(${index})" title="この履歴を削除" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 0.125rem 0.25rem;">&#x1f5d1;&#xfe0f;</button>
         </div>
-    `).reverse().join('');
+    `;
+    }).reverse().join('');
 }
 
 // 初期化
