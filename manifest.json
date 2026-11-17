@@ -4,8 +4,8 @@
   "description": "家族専用ホームページ - 写真、カレンダー、お知らせを共有",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFF7ED",
-  "theme_color": "#FB923C",
+  "background_color": "#EFF6FF",
+  "theme_color": "#EFF6FF",
   "orientation": "portrait-primary",
   "icons": [
     {
